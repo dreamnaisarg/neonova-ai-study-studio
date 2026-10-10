@@ -33,6 +33,7 @@ import {
 import PhonePeQrCard from './PhonePeQrCard';
 import { buildPhonePeUpiUri } from '../../lib/phonepeQrHelper';
 import AdminPaymentPortalModal from './AdminPaymentPortalModal';
+import CreditCardPaymentView from './CreditCardPaymentView';
 
 interface PaymentCheckoutModalProps {
   isOpen: boolean;
@@ -496,19 +497,19 @@ export default function PaymentCheckoutModal({
                     onClick={() => { setPaymentMethod('card'); setVerificationError(null); }}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                       paymentMethod === 'card'
-                        ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-2 ring-amber-500/20'
+                        ? 'border-indigo-600 bg-indigo-50/70 shadow-xs ring-2 ring-indigo-600/20'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <CreditCard size={20} className={paymentMethod === 'card' ? 'text-amber-600' : 'text-slate-400'} />
-                      <span className="text-[8px] font-black tracking-wider text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-full uppercase">
-                        TEMP UNAVAILABLE • QR
+                      <CreditCard size={20} className={paymentMethod === 'card' ? 'text-indigo-600' : 'text-slate-600'} />
+                      <span className="text-[9px] font-black tracking-wider text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full uppercase">
+                        SECURE • ACTIVE
                       </span>
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-800 leading-tight">Debit / Credit Card</div>
-                      <div className="text-[10px] text-amber-700 font-medium">Replaced with QR</div>
+                      <div className="text-xs font-bold text-slate-900 leading-tight">Pay by Credit Card</div>
+                      <div className="text-[10px] text-slate-500">RuPay, Visa, Mastercard</div>
                     </div>
                   </button>
 
@@ -848,136 +849,19 @@ export default function PaymentCheckoutModal({
                   </div>
                 )}
 
-                {/* 3. CARD METHOD (TEMPORARILY UNAVAILABLE - REPLACED WITH QR) */}
+                {/* 3. SECURE CREDIT CARD PAYMENT METHOD */}
                 {paymentMethod === 'card' && (
-                  <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 space-y-5 animate-in fade-in duration-150">
-                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-1.5 shadow-2xs">
-                      <div className="flex items-center gap-2 font-bold text-amber-900 text-xs">
-                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
-                        <span className="uppercase tracking-wider font-extrabold">Debit / Credit Cards: Temporarily Unavailable</span>
-                        <span className="text-[9px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-black">REPLACED WITH QR</span>
-                      </div>
-                      <p className="text-xs text-amber-800 leading-relaxed">
-                        Credit card and Debit card processing is <strong>temporarily unavailable</strong> while payment switch maintenance is in progress. As requested, it has been replaced with the official <strong>Instant UPI QR Code Payment</strong> below so you can proceed without interruption.
-                      </p>
-                    </div>
-
-                    <div className="flex bg-slate-200/80 p-1 rounded-2xl border border-slate-300/80">
-                      <button
-                        type="button"
-                        onClick={() => setUpiSubTab('phonepe')}
-                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          upiSubTab === 'phonepe'
-                            ? 'bg-[#5f259f] text-white shadow-xs'
-                            : 'text-slate-700 hover:text-slate-900'
-                        }`}
-                      >
-                        <span className="w-4 h-4 rounded-full bg-white text-[#5f259f] flex items-center justify-center text-[10px] font-bold">✓</span>
-                        <span>Official PhonePe QR (9898074424@axl)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setUpiSubTab('dynamic')}
-                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          upiSubTab === 'dynamic'
-                            ? 'bg-emerald-600 text-white shadow-xs'
-                            : 'text-slate-700 hover:text-slate-900'
-                        }`}
-                      >
-                        <QrCode size={14} />
-                        <span>Dynamic Order QR</span>
-                      </button>
-                    </div>
-
-                    {upiSubTab === 'phonepe' ? (
-                      <PhonePeQrCard
-                        amount={finalPrice}
-                        planName={currentPlan.name}
-                        orderId={orderId}
-                        onCopyUpi={handleCopyUpi}
-                      />
-                    ) : (
-                      <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-                        <div className="bg-white p-4 rounded-2xl border-2 border-emerald-500/30 shadow-md text-center shrink-0 flex flex-col items-center">
-                          <div className="w-48 h-48 bg-white rounded-xl flex items-center justify-center p-1 relative overflow-hidden border border-slate-100">
-                            {isGeneratingQr ? (
-                              <div className="flex flex-col items-center gap-2 text-slate-400">
-                                <RefreshCw size={24} className="animate-spin text-emerald-600" />
-                                <span className="text-[11px] font-medium">Generating QR...</span>
-                              </div>
-                            ) : upiQrDataUrl ? (
-                              <img 
-                                src={upiQrDataUrl} 
-                                alt="Official NeoNova UPI QR Code" 
-                                className="w-full h-full object-contain select-none"
-                              />
-                            ) : (
-                              <QrCode size={80} className="text-slate-300" />
-                            )}
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-600 mt-2 block">
-                            Direct NPCI Switch Settlement
-                          </span>
-                        </div>
-                        <div className="flex-1 space-y-3 w-full">
-                          <div className="space-y-1">
-                            <span className="text-xs font-bold text-slate-800 block">
-                              Pay via Any UPI App to Activate:
-                            </span>
-                            <div className="flex items-center gap-2 p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-800 justify-between">
-                              <span className="font-bold text-indigo-700">9898074424@axl</span>
-                              <button
-                                type="button"
-                                onClick={handleCopyUpi}
-                                className="px-2.5 py-1 text-[11px] font-sans font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-                              >
-                                {copiedUpi ? <CheckCheck size={12} /> : <Copy size={12} />}
-                                <span>{copiedUpi ? 'Copied!' : 'Copy UPI ID'}</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <form onSubmit={(e) => { e.preventDefault(); handleVerifyTransaction(); }} className="pt-3 border-t border-slate-200 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-xs font-bold text-slate-800">
-                          Enter your authorized transaction ID:
-                        </label>
-                        <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 font-mono">
-                          Example: 42134565
-                        </span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <input
-                          type="text"
-                          maxLength={32}
-                          value={enteredUtr}
-                          onChange={(e) => setEnteredUtr(e.target.value)}
-                          placeholder="Enter your authorized transaction ID (e.g. 42134565)"
-                          className="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-2xs"
-                        />
-                        <button
-                          type="submit"
-                          disabled={isProcessing}
-                          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
-                        >
-                          {isProcessing ? (
-                            <>
-                              <RefreshCw size={13} className="animate-spin" />
-                              <span>Verifying with Server...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ShieldCheck size={14} />
-                              <span>Verify & Activate</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                  <CreditCardPaymentView
+                    planTier={tier}
+                    billingCycle={billingCycle}
+                    studentName={studentName}
+                    studentEmail={studentEmail}
+                    onBackToMethods={() => setPaymentMethod('upi')}
+                    onPaymentSuccess={(receipt) => {
+                      setVerifiedReceipt(receipt);
+                      onPaymentSuccess(receipt);
+                    }}
+                  />
                 )}
 
                 {/* 4. NET BANKING METHOD (TEMPORARILY UNAVAILABLE - REPLACED WITH QR) */}
