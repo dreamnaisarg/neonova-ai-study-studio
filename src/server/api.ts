@@ -329,22 +329,32 @@ export function sanitizeEducationalOutput(text: string): string {
   return cleaned;
 }
 
-// Initialize Gemini client (picks up process.env.GEMINI_API_KEY)
+// Initialize Gemini client (picks up process.env.GEMINI_API_KEY or env.GEMINI_API_KEY)
 let aiClient: GoogleGenAI | null = null;
 try {
-  aiClient = new GoogleGenAI();
+  if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  } else {
+    aiClient = new GoogleGenAI();
+  }
 } catch (e) {
   console.warn('GoogleGenAI failed to initialize directly:', e);
 }
 
-function getAi() {
-  if (!aiClient) {
-    aiClient = new GoogleGenAI();
+function getAi(env?: any) {
+  const apiKey = env?.GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : undefined);
+  if (apiKey) {
+    return new GoogleGenAI({ apiKey });
   }
-  return aiClient;
+  if (!aiClient) {
+    try {
+      aiClient = new GoogleGenAI();
+    } catch {}
+  }
+  return aiClient!;
 }
 
-export async function handleApiRoute(url: string, body: any): Promise<{ status: number; data: any }> {
+export async function handleApiRoute(url: string, body: any, env?: any): Promise<{ status: number; data: any }> {
   try {
     // Health & Connectivity probes
     if (url === '/api/health' || url.startsWith('/api/health?') || url === '/api/status') {

@@ -22,12 +22,14 @@ export interface BookContentResult {
   fullText?: string;
 }
 
-const CACHE_DIR = path.join(process.cwd(), 'books_cache');
-if (!fs.existsSync(CACHE_DIR)) {
-  try {
+let CACHE_DIR = 'books_cache';
+try {
+  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
+  CACHE_DIR = path.join(cwd, 'books_cache');
+  if (typeof fs !== 'undefined' && fs.existsSync && !fs.existsSync(CACHE_DIR)) {
     fs.mkdirSync(CACHE_DIR, { recursive: true });
-  } catch {}
-}
+  }
+} catch {}
 
 // Comprehensive registry of public domain works with authorized Project Gutenberg IDs
 export const KNOWN_GUTENBERG_MAPPING: Record<string, number> = {

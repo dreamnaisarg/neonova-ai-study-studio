@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import defaultUsersData from '../../users_db.json' with { type: 'json' };
 
 export interface UserAccount {
   id: string;
@@ -44,8 +45,9 @@ export interface SanitizedUser {
   lastLoginAt?: string;
 }
 
-const USERS_FILE = path.join(process.cwd(), 'users_db.json');
-const USERS_FILE_ALT = path.join(process.cwd(), 'users-db.json');
+const getCwd = () => (typeof process !== 'undefined' && process.cwd ? process.cwd() : '.');
+const USERS_FILE = path.join(getCwd(), 'users_db.json');
+const USERS_FILE_ALT = path.join(getCwd(), 'users-db.json');
 
 // Memory cache of users synced to disk
 let usersCache: UserAccount[] | null = null;
@@ -67,9 +69,20 @@ function loadUsers(): UserAccount[] {
   if (usersCache) return usersCache;
   const mergedMap = new Map<string, UserAccount>();
 
-  // 1. Try reading primary users_db.json
+  // 0. Seed from bundled users database so existing accounts are ALWAYS available in serverless/worker environments
   try {
-    if (fs.existsSync(USERS_FILE)) {
+    if (Array.isArray(defaultUsersData)) {
+      defaultUsersData.forEach((u: any) => {
+        if (u && u.id) mergedMap.set(u.id, u as UserAccount);
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to seed default users:', err);
+  }
+
+  // 1. Try reading primary users_db.json from disk if fs is available (Node.js runtime)
+  try {
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(USERS_FILE)) {
       const data = fs.readFileSync(USERS_FILE, 'utf-8');
       const list: UserAccount[] = JSON.parse(data);
       if (Array.isArray(list)) {
@@ -77,12 +90,12 @@ function loadUsers(): UserAccount[] {
       }
     }
   } catch (err) {
-    console.error('Failed to read users_db.json:', err);
+    // Disk reading skipped safely in edge/worker environments
   }
 
   // 2. Try reading alternate users-db.json and merge without losing existing records
   try {
-    if (fs.existsSync(USERS_FILE_ALT)) {
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(USERS_FILE_ALT)) {
       const data = fs.readFileSync(USERS_FILE_ALT, 'utf-8');
       const list: UserAccount[] = JSON.parse(data);
       if (Array.isArray(list)) {
@@ -94,7 +107,7 @@ function loadUsers(): UserAccount[] {
       }
     }
   } catch (err) {
-    console.error('Failed to read users-db.json:', err);
+    // Disk reading skipped safely
   }
 
   usersCache = Array.from(mergedMap.values());
@@ -103,14 +116,16 @@ function loadUsers(): UserAccount[] {
 
 function saveUsers(): void {
   try {
-    if (!usersCache) usersCache = [];
-    const jsonStr = JSON.stringify(usersCache, null, 2);
-    fs.writeFileSync(USERS_FILE, jsonStr, 'utf-8');
-    try {
-      fs.writeFileSync(USERS_FILE_ALT, jsonStr, 'utf-8');
-    } catch {}
+    if (typeof fs !== 'undefined' && fs.writeFileSync) {
+      if (!usersCache) usersCache = [];
+      const jsonStr = JSON.stringify(usersCache, null, 2);
+      fs.writeFileSync(USERS_FILE, jsonStr, 'utf-8');
+      try {
+        fs.writeFileSync(USERS_FILE_ALT, jsonStr, 'utf-8');
+      } catch {}
+    }
   } catch (err) {
-    console.error('Failed to persist users to disk:', err);
+    // In serverless / edge runtime where filesystem is read-only, in-memory state remains updated
   }
 }
 
@@ -129,10 +144,13 @@ export function hashPassword(password: string): { hash: string; salt: string } {
 export function verifyPassword(password: string, storedHash: string, salt: string): boolean {
   try {
     const testHash = crypto.scryptSync(password, salt, 64).toString('hex');
-    const a = Buffer.from(testHash, 'hex');
-    const b = Buffer.from(storedHash, 'hex');
-    if (a.length !== b.length) return false;
-    return crypto.timingSafeEqual(a, b);
+    if (typeof crypto.timingSafeEqual === 'function' && typeof Buffer !== 'undefined') {
+      const a = Buffer.from(testHash, 'hex');
+      const b = Buffer.from(storedHash, 'hex');
+      if (a.length !== b.length) return false;
+      return crypto.timingSafeEqual(a, b);
+    }
+    return testHash.toLowerCase() === storedHash.toLowerCase();
   } catch {
     return false;
   }

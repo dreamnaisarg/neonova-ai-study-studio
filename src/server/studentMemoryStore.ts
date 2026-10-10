@@ -49,11 +49,15 @@ export interface StudentLearningProfile {
   lastRevisionGeneratedAt?: string;
 }
 
-const MEMORY_DB_PATH = path.join(process.cwd(), 'student_memory.json');
+let MEMORY_DB_PATH = 'student_memory.json';
+try {
+  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
+  MEMORY_DB_PATH = path.join(cwd, 'student_memory.json');
+} catch {}
 
 function loadMemoryDb(): { [userId: string]: StudentLearningProfile } {
   try {
-    if (fs.existsSync(MEMORY_DB_PATH)) {
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(MEMORY_DB_PATH)) {
       const raw = fs.readFileSync(MEMORY_DB_PATH, 'utf-8');
       return JSON.parse(raw);
     }

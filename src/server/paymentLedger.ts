@@ -37,18 +37,23 @@ export interface AdminLogEntry {
   details: string;
 }
 
-const LEDGER_FILE = path.join(process.cwd(), 'payment_ledger.json');
-const ADMIN_LOG_FILE = path.join(process.cwd(), 'payment_admin_logs.json');
+let LEDGER_FILE = 'payment_ledger.json';
+let ADMIN_LOG_FILE = 'payment_admin_logs.json';
+try {
+  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
+  LEDGER_FILE = path.join(cwd, 'payment_ledger.json');
+  ADMIN_LOG_FILE = path.join(cwd, 'payment_admin_logs.json');
+} catch {}
 
 // Initialize with authoritative seed records for verified orders
 function loadLedger(): AuthoritativeTransaction[] {
   try {
-    if (fs.existsSync(LEDGER_FILE)) {
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(LEDGER_FILE)) {
       const data = fs.readFileSync(LEDGER_FILE, 'utf-8');
       return JSON.parse(data);
     }
   } catch (e) {
-    console.error('Failed to read ledger file, using in-memory store:', e);
+    console.warn('Failed to read ledger file, using in-memory store:', e);
   }
   
   // Default verified transactions for demo/testing by Naisarg Ramdatti
