@@ -1,0 +1,11 @@
+{
+  "name": "NeoNova AI Study Studio",
+  "description": "A futuristic space-themed AI homework & study studio featuring an interactive progress tracker with topic mastery analytics, a grade-tailored 'Help Me Understand' concept explainer, practice quizzes, 3D anatomical models, and particle animations.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

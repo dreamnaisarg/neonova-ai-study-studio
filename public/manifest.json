@@ -1,0 +1,63 @@
+{
+  "id": "com.neonova.app",
+  "name": "NeoNova AI Study Studio",
+  "short_name": "neonova",
+  "author": "Naisarg Ramdatti",
+  "developer": {
+    "name": "Naisarg Ramdatti"
+  },
+  "description": "Interactive AI homework helper, math solver, 3D science labs, and progress mastery tracker for students from 1st to 12th grade.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#070b19",
+  "theme_color": "#070b19",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "AI Homework Solver",
+      "short_name": "AI Solver",
+      "description": "Instant step-by-step problem explanations tailored to your grade.",
+      "url": "/?tab=homework"
+    },
+    {
+      "name": "3D Science Labs",
+      "short_name": "Science Labs",
+      "description": "Interactive 3D anatomical and physics simulations.",
+      "url": "/?tab=three_d_lab"
+    },
+    {
+      "name": "Practice Quiz",
+      "short_name": "Quiz",
+      "description": "Test your knowledge with diagnostic questions.",
+      "url": "/?tab=quiz"
+    },
+    {
+      "name": "Study Notes Maker",
+      "short_name": "Notes",
+      "description": "Create and organize your academic study notes.",
+      "url": "/?tab=notes"
+    }
+  ]
+}

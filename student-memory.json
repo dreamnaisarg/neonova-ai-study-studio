@@ -1,0 +1,24 @@
+{
+  "student-1": {
+    "userId": "student-1",
+    "curriculum": {
+      "country": "India",
+      "board": "cbse",
+      "grade": "Grade 8",
+      "textbook": "NCERT Mathematics"
+    },
+    "preferredExplanationStyle": "step_by_step",
+    "mistakes": [],
+    "topicStats": {},
+    "weakTopics": [],
+    "recommendedTopics": [
+      {
+        "topic": "Rational Numbers & Linear Equations",
+        "subject": "Mathematics",
+        "reason": "Recommended core foundation based on Grade 8 curriculum standards.",
+        "estimatedMinutes": 15,
+        "recommendedQuestionCount": 5
+      }
+    ]
+  }
+}
