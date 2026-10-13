@@ -255,5 +255,27 @@
     "verifiedAt": "2026-10-13T12:08:18.131Z",
     "verifiedBy": "PCI-DSS Certified 3D-Secure Card Gateway (Settlement: Bank of Baroda **5536)",
     "claimedByAccount": "student-default"
+  },
+  {
+    "transactionId": "TXN-CARD-1791894407013-YA7VUW",
+    "orderId": "order_card_1791894407013-YA7VUW",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "successful",
+    "studentName": "Test Student",
+    "studentEmail": "student@example.com",
+    "accountId": "student-default",
+    "createdAt": "2026-10-13T12:26:47.013Z",
+    "gatewayOrderId": "order_rzp_1791894407013-YA7VUW",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Verified card transaction. Settling to Bank of Baroda **5536 (Naisarg Ramdatti). Payment ID: pay_test_1791894407014",
+    "gatewayPaymentId": "pay_test_1791894407014",
+    "verifiedAt": "2026-10-13T12:26:47.023Z",
+    "verifiedBy": "PCI-DSS Certified 3D-Secure Card Gateway (Settlement: Bank of Baroda **5536)",
+    "claimedByAccount": "student-default"
   }
 ]

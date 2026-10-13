@@ -230,5 +230,24 @@
     "subscriptionStatus": "none",
     "lastLoginAt": "2026-10-13T12:08:18.075Z",
     "studyXP": 100
+  },
+  {
+    "id": "usr_1791894406855_d27a48eb",
+    "username": "student_1791894406761",
+    "email": "student_1791894406761@example.com",
+    "passwordHash": "99cadc4beaf954136c8aafb59572587e2d149eecf3c963241104f6afaa29014f25554d6fbbcc9c9700e9be1f8932239589a09f24cbad1cb04907e538d58c6634",
+    "passwordSalt": "1fa80e3eb07046ce86091ae1cbef6c03",
+    "isEmailVerified": true,
+    "verificationCode": "709366",
+    "verificationExpires": "2026-10-13T13:26:46.854Z",
+    "createdAt": "2026-10-13T12:26:46.855Z",
+    "grade": "Grade 9",
+    "studentName": "student_1791894406761",
+    "studentAvatar": "🎓",
+    "planTier": "starter",
+    "billingCycle": "monthly",
+    "subscriptionStatus": "none",
+    "lastLoginAt": "2026-10-13T12:26:46.934Z",
+    "studyXP": 100
   }
 ]
