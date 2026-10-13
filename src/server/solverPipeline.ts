@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { runSymbolicMathPipeline, SymbolicMathResult } from './symbolicMathEngine';
+import { runSymbolicMathPipeline, SymbolicMathResult, verifyMathEquation, evaluateMathExpression } from './symbolicMathEngine';
 import { runScienceReasoningPipeline, ScienceReasoningResult } from './scienceReasoningEngine';
 import { runCSReasoningPipeline, CSReasoningResult } from './computerScienceEngine';
 import { runLanguageReasoningPipeline, LanguageReasoningResult } from './languageReasoningEngine';
@@ -15,6 +15,7 @@ import { matchCurriculumTopic } from './curriculumCatalog';
 import { analyzeEducationalImage, MultimodalAnalysisResult } from './ocrVisionEngine';
 
 export interface SolverStepStructure {
+  quickAnswer?: string;
   givenInfo: string[];
   formula: string;
   substitution: string;
@@ -100,6 +101,7 @@ export interface VisualExplanationData {
 export interface HomeworkSolverResponse {
   success: boolean;
   question: string;
+  quickAnswer?: string;
   subject: string;
   grade: string;
   curriculumBoard: string;
@@ -441,18 +443,21 @@ export async function processEducationalProblem(
     }
   }
 
-  // J. General Educational Synthesis (Word problem, conceptual query, essay analysis)
+  const hasDeterministicResult = structuredSteps !== null && structuredSteps.finalAnswer !== 'Analyzing solution...';
+
+  // J. General Educational Synthesis & Structured Multi-Stage Solver
   if (!structuredSteps) {
     confidenceState = 'Needs Review';
     engineUsedName = 'Curriculum Cross-Reference';
     sourceDistinction = 'AI-assisted pedagogical explanation';
     structuredSteps = {
+      quickAnswer: '',
       givenInfo: [rawQuestion],
       formula: `${subject} Syllabus & Foundational Principles`,
-      substitution: 'N/A — Conceptual Curriculum Analysis',
-      calculation: ['Authoritative curriculum syllabus matching and step-by-step analytical derivation'],
-      simplification: 'Synthesis of educational concepts',
-      finalAnswer: 'Analyzing solution...',
+      substitution: 'Analytical derivation',
+      calculation: [],
+      simplification: '',
+      finalAnswer: '',
       verification: {
         status: 'Needs Review',
         method: 'Cross-reference with official curriculum learning standards',
@@ -462,78 +467,148 @@ export async function processEducationalProblem(
     };
   }
 
-  // 4. Grounded AI Pedagogical Explanation & Similar Practice Questions Generation
+  // 4. Grounded Multi-Stage AI Pedagogical Explanation & Independent Verification
   let narrativeExplanation = '';
   let similarPracticeQuestions: SimilarPracticeQuestion[] = [];
 
   try {
     const prompt = `Student Question: "${rawQuestion}"
-Grade: ${grade}
+Grade Level: ${grade} (Grades 1 to 12)
 Subject: ${subject}
-Selected Curriculum: ${board.toUpperCase()} (Textbook: ${curriculumMatch?.textbook || 'Standard curriculum syllabus'})
-Specialized Reasoning Engine Result: ${JSON.stringify(structuredSteps)}
-${ocrResult ? `Multimodal Vision Data: ${JSON.stringify(ocrResult)}` : ''}
+Curriculum Board: ${board.toUpperCase()} (Textbook reference: ${curriculumMatch?.textbook || 'Standard curriculum syllabus'})
+${hasDeterministicResult ? `Pre-Verified Engine Deterministic Final Answer: "${structuredSteps.finalAnswer}" (Formula: ${structuredSteps.formula})` : 'Solve this question with maximum precision, rigorous step-by-step calculations, correct units, correct negative signs, and accurate scientific/mathematical notation.'}
+${ocrResult ? `Multimodal Vision Details: ${JSON.stringify(ocrResult)}` : ''}
 
-CRITICAL RULES:
-1. NEVER contradict or invent calculations, facts, or grammar. If the verified specialized engine determined the final answer is "${structuredSteps.finalAnswer}", use this exact deterministic truth.
-2. Provide a clear, pedagogical, student-friendly explanation tailored to ${grade} students in ${subject}.
-3. Align terminology with the selected ${board.toUpperCase()} curriculum.
-4. Structure the explanation into:
-   - What the question asks
-   - Key principles / formulas / rules
-   - Step-by-step breakdown
-   - Real-world intuition or memory tip
-5. At the very end of your response, provide EXACTLY 3 progressive multiple-choice practice questions (Easy, Medium, Hard) to help the student test their understanding of this exact concept, formatted in a JSON block like:
-\`\`\`json
-[
-  {
-    "id": "p1",
-    "difficulty": "Easy",
-    "question": "Question 1 text",
-    "options": ["A", "B", "C", "D"],
-    "correctIndex": 0,
-    "explanation": "Brief step explanation"
+CRITICAL RULES FOR ACCURACY:
+1. ${hasDeterministicResult ? `NEVER contradict the pre-verified final answer "${structuredSteps.finalAnswer}". Use this exact result.` : 'Compute the exact final answer. Preserve all fractions, square roots, signs, exponents, scientific notation, and physical units.'}
+2. Provide a "quickAnswer" (a concise 1-sentence answer for students who just want the direct solution) AND a "finalAnswer".
+3. Provide step-by-step intermediate calculations leading logically from the original problem to the final answer.
+4. Provide a student-friendly explanation tailored to ${grade} students in ${subject}, including real-world analogies and memory tips.
+5. Provide EXACTLY 3 progressive multiple-choice practice questions (Easy, Medium, Hard).
+
+Respond strictly with valid JSON conforming to this schema:
+{
+  "quickAnswer": string,
+  "finalAnswer": string,
+  "givenInfo": string[],
+  "formula": string,
+  "substitution": string,
+  "calculation": string[],
+  "simplification": string,
+  "verification": {
+    "status": "Verified" | "Needs Review",
+    "method": string,
+    "details": string
   },
-  {
-    "id": "p2",
-    "difficulty": "Medium",
-    "question": "Question 2 text",
-    "options": ["A", "B", "C", "D"],
-    "correctIndex": 0,
-    "explanation": "Brief step explanation"
-  },
-  {
-    "id": "p3",
-    "difficulty": "Hard",
-    "question": "Question 3 text",
-    "options": ["A", "B", "C", "D"],
-    "correctIndex": 0,
-    "explanation": "Brief step explanation"
-  }
-]
-\`\`\``;
+  "narrativeExplanation": string,
+  "practiceQuestions": [
+    {
+      "id": "p1",
+      "difficulty": "Easy",
+      "question": string,
+      "options": string[],
+      "correctIndex": number,
+      "explanation": string
+    },
+    {
+      "id": "p2",
+      "difficulty": "Medium",
+      "question": string,
+      "options": string[],
+      "correctIndex": number,
+      "explanation": string
+    },
+    {
+      "id": "p3",
+      "difficulty": "Hard",
+      "question": string,
+      "options": string[],
+      "correctIndex": number,
+      "explanation": string
+    }
+  ]
+}`;
 
     const aiRes = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: [{ text: prompt }],
       config: {
-        systemInstruction: `You are the master educational explanation assistant for NeoNova. You explain with absolute accuracy, mathematical and scientific precision, zero hallucinations, and generate 3 rigorous practice questions.
-CRITICAL FORMATTING:
-- Write using clean, natural educational typography WITHOUT unnecessary symbols.
-- NEVER use raw markdown hashes (###) or stray asterisks.
-- NEVER use raw LaTeX delimiters like \\( or \\), or \\[ or \\]. Use clean unicode symbols (×, ÷, ², ³, √, ±, °, π) and plain text.`
+        systemInstruction: `You are the master educational explanation and accuracy verification assistant for NeoNova.
+You provide 100% verified educational answers for Grades 1–12, zero hallucinations, step-by-step working, correct units, and 3 progressive practice questions. Output strictly valid JSON.`,
+        responseMimeType: 'application/json'
       }
     });
 
-    const fullResponseText = aiRes.text || '';
-    
-    // Extract JSON block for practice questions if present
-    const jsonMatch = fullResponseText.match(/```(?:json)?\s*(\[\s*\{[\s\S]*?\}\s*\])\s*```/);
-    if (jsonMatch) {
+    const fullResponseText = aiRes.text?.trim() || '';
+    if (fullResponseText) {
       try {
-        const parsed = JSON.parse(jsonMatch[1]);
-        if (Array.isArray(parsed) && parsed.length >= 1) {
-          similarPracticeQuestions = parsed.map((q: any, i: number) => ({
+        const parsed = JSON.parse(fullResponseText);
+
+        if (!hasDeterministicResult) {
+          if (parsed.finalAnswer) {
+            structuredSteps.finalAnswer = parsed.finalAnswer;
+          }
+          if (parsed.quickAnswer) {
+            structuredSteps.quickAnswer = parsed.quickAnswer;
+          }
+          if (Array.isArray(parsed.givenInfo) && parsed.givenInfo.length > 0) {
+            structuredSteps.givenInfo = parsed.givenInfo;
+          }
+          if (parsed.formula) {
+            structuredSteps.formula = parsed.formula;
+          }
+          if (parsed.substitution) {
+            structuredSteps.substitution = parsed.substitution;
+          }
+          if (Array.isArray(parsed.calculation) && parsed.calculation.length > 0) {
+            structuredSteps.calculation = parsed.calculation;
+          }
+          if (parsed.simplification) {
+            structuredSteps.simplification = parsed.simplification;
+          }
+
+          // Independent mathematical verification of AI's solution
+          if (rawQuestion.includes('=')) {
+            const mathEqCheck = verifyMathEquation(rawQuestion, 'x', parsed.finalAnswer);
+            if (mathEqCheck.verified) {
+              confidenceState = 'Verified';
+              structuredSteps.verification = {
+                status: 'Verified',
+                method: 'Independent symbolic equation verification (mathjs)',
+                details: `Verified LHS = RHS equality with zero divergence (LHS = ${mathEqCheck.lhs}, RHS = ${mathEqCheck.rhs}).`,
+                engineUsed: 'Symbolic Math Engine (mathjs)'
+              };
+              engineUsedName = 'Symbolic Math Engine (mathjs)';
+              sourceDistinction = 'Verified curriculum & symbolic computation';
+            } else if (parsed.verification) {
+              structuredSteps.verification = {
+                status: parsed.verification.status === 'Verified' ? 'Verified' : 'Needs Review',
+                method: parsed.verification.method || 'Curriculum verification',
+                details: parsed.verification.details || 'Verified against syllabus principles.',
+                engineUsed: 'Curriculum Cross-Reference'
+              };
+              confidenceState = structuredSteps.verification.status;
+            }
+          } else if (parsed.verification) {
+            structuredSteps.verification = {
+              status: parsed.verification.status === 'Verified' ? 'Verified' : 'Needs Review',
+              method: parsed.verification.method || 'Curriculum verification',
+              details: parsed.verification.details || 'Step-by-step verified against curriculum principles.',
+              engineUsed: 'Curriculum Cross-Reference'
+            };
+            confidenceState = structuredSteps.verification.status;
+          }
+        } else {
+          // Keep deterministic finalAnswer and add quickAnswer
+          if (!structuredSteps.quickAnswer) {
+            structuredSteps.quickAnswer = parsed.quickAnswer || `Final answer: ${structuredSteps.finalAnswer}`;
+          }
+        }
+
+        narrativeExplanation = parsed.narrativeExplanation || '';
+
+        if (Array.isArray(parsed.practiceQuestions) && parsed.practiceQuestions.length >= 1) {
+          similarPracticeQuestions = parsed.practiceQuestions.map((q: any, i: number) => ({
             id: q.id || `sim-${i + 1}`,
             difficulty: q.difficulty || (i === 0 ? 'Easy' : i === 1 ? 'Medium' : 'Hard'),
             question: q.question,
@@ -542,25 +617,14 @@ CRITICAL FORMATTING:
             explanation: q.explanation || 'Verified curriculum derivation.'
           }));
         }
-        // Remove JSON block from narrative explanation
-        narrativeExplanation = fullResponseText.replace(/```(?:json)?\s*\[\s*\{[\s\S]*?\}\s*\]\s*```/g, '').trim();
       } catch (jsonErr) {
-        console.warn('Practice questions parsing error:', jsonErr);
+        console.warn('Could not parse JSON response from solver AI:', jsonErr);
         narrativeExplanation = fullResponseText;
       }
-    } else {
-      narrativeExplanation = fullResponseText;
     }
 
     if (!narrativeExplanation) {
-      narrativeExplanation = 'Step-by-step educational explanation generated.';
-    }
-    
-    // If structuredSteps had placeholder finalAnswer:
-    if (structuredSteps.finalAnswer === 'Analyzing solution...') {
-      confidenceState = 'Verified';
-      structuredSteps.finalAnswer = 'Comprehensive conceptual solution verified against curriculum.';
-      structuredSteps.verification.status = 'Verified';
+      narrativeExplanation = `Step-by-step educational derivation completed for ${subject} (${grade}).\n\nFinal Answer: ${structuredSteps.finalAnswer}`;
     }
   } catch (err: any) {
     console.warn('AI explanation generation error:', err);
@@ -744,6 +808,7 @@ CRITICAL FORMATTING:
   return {
     success: true,
     question: rawQuestion,
+    quickAnswer: cleanServerText(structuredSteps.quickAnswer || `Final Answer: ${cleanStructuredSteps.finalAnswer}`),
     subject,
     grade,
     curriculumBoard: board,

@@ -86,9 +86,11 @@ export default function AIHomeworkSolverView({
   const [ocrConfirmationNeeded, setOcrConfirmationNeeded] = useState(false);
   const [ocrDetectedText, setOcrDetectedText] = useState('');
   const [imageQualityIssue, setImageQualityIssue] = useState<{ issue: string; feedback: string } | null>(null);
+  const [detectedQuestionsList, setDetectedQuestionsList] = useState<Array<{ id: string; label: string; text: string; subject?: string; topic?: string }>>([]);
 
   // Result state
   const [solverResult, setSolverResult] = useState<any | null>(null);
+  const [solutionViewMode, setSolutionViewMode] = useState<'quick' | 'detailed'>('quick');
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [stepDetailModal, setStepDetailModal] = useState<{ title: string; explanation: string } | null>(null);
 
@@ -202,11 +204,20 @@ export default function AIHomeworkSolverView({
             issue: data.quality.issue,
             feedback: data.quality.feedback
           });
+        } else if (Array.isArray(data.detectedQuestions) && data.detectedQuestions.length > 1) {
+          setDetectedQuestionsList(data.detectedQuestions);
+          setQuestionInput(data.detectedQuestions[0].text);
+          if (data.detectedQuestions[0].subject) {
+            setActiveSubject(data.detectedQuestions[0].subject);
+          }
         } else if (data.needsConfirmation && data.detectedText) {
           setOcrConfirmationNeeded(true);
           setOcrDetectedText(data.detectedText);
         } else if (data.detectedText && !questionInput.trim()) {
           setQuestionInput(data.detectedText);
+          if (data.detectedSubject) {
+            setActiveSubject(data.detectedSubject);
+          }
         }
       } catch (err) {
         console.warn('OCR check error:', err);
@@ -725,6 +736,38 @@ export default function AIHomeworkSolverView({
           </div>
         )}
 
+        {/* Multi-Question Detection Chips */}
+        {detectedQuestionsList.length > 1 && (
+          <div className="p-3 bg-cyan-50/80 border border-cyan-200 rounded-2xl space-y-2 animate-in fade-in">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-cyan-900 flex items-center gap-1.5">
+                <Layers size={14} className="text-cyan-700" />
+                <span>Multiple Questions Detected on Page ({detectedQuestionsList.length})</span>
+              </span>
+              <span className="text-[10px] text-cyan-800 font-semibold">Tap to select:</span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {detectedQuestionsList.map((q, idx) => (
+                <button
+                  key={q.id || idx}
+                  type="button"
+                  onClick={() => {
+                    setQuestionInput(q.text);
+                    if (q.subject) setActiveSubject(q.subject);
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    questionInput === q.text
+                      ? 'bg-cyan-600 text-white border-cyan-600 shadow-2xs'
+                      : 'bg-white border-cyan-200 text-cyan-900 hover:bg-cyan-100'
+                  }`}
+                >
+                  {q.label || `Question ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Image Quality Warning Banner */}
         {imageQualityIssue && (
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1.5 animate-in fade-in">
@@ -838,6 +881,32 @@ export default function AIHomeworkSolverView({
                 <span>Print Worksheet</span>
               </button>
 
+              {/* Quick vs Detailed View Toggle */}
+              <div className="flex bg-slate-200/80 p-0.5 rounded-xl text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setSolutionViewMode('quick')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    solutionViewMode === 'quick' 
+                      ? 'bg-white text-slate-900 shadow-2xs' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Quick Answer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSolutionViewMode('detailed')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    solutionViewMode === 'detailed' 
+                      ? 'bg-white text-slate-900 shadow-2xs' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Detailed Steps
+                </button>
+              </div>
+
               {isOfflineResult && (
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-xl">
                   ⚡ Offline Engine
@@ -858,12 +927,36 @@ export default function AIHomeworkSolverView({
             )}
           </div>
 
-          {/* 7-Step Breakdown Cards */}
-          <div className="space-y-4">
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Layers size={14} className="text-indigo-600" />
-              <span>Rigorous 7-Stage Mathematical & Conceptual Breakdown</span>
-            </h2>
+          {/* Quick Answer Banner */}
+          <div className="p-4 rounded-2xl bg-indigo-50/70 border-2 border-indigo-400/40 space-y-1.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-indigo-600" />
+                <span>Verified Final Answer</span>
+              </span>
+              <span className="text-[10px] font-mono text-indigo-800 font-bold bg-indigo-100/70 px-2 py-0.5 rounded-md">
+                {solverResult.engineUsed || 'Verified'}
+              </span>
+            </div>
+
+            <div className="text-base sm:text-lg font-black text-slate-900 font-mono">
+              {cleanEducationalText(solverResult.structuredSteps?.finalAnswer || '')}
+            </div>
+
+            {solverResult.quickAnswer && (
+              <p className="text-xs text-indigo-950 font-medium leading-relaxed pt-0.5">
+                {cleanEducationalText(solverResult.quickAnswer)}
+              </p>
+            )}
+          </div>
+
+          {/* 7-Step Breakdown Cards (shown when detailed mode is active) */}
+          {solutionViewMode === 'detailed' && (
+            <div className="space-y-4">
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <Layers size={14} className="text-indigo-600" />
+                <span>Rigorous 7-Stage Mathematical & Conceptual Breakdown</span>
+              </h2>
 
             {/* Step 1: Given Information */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-1.5">
@@ -958,6 +1051,7 @@ export default function AIHomeworkSolverView({
               </div>
             </div>
           </div>
+        )}
 
           {/* Visual Homework Explanation (Interactive SVG Diagram, Graph, or Breakdown) */}
           {solverResult.visualExplanation && (
@@ -1080,7 +1174,6 @@ export default function AIHomeworkSolverView({
               </div>
             </div>
           )}
-
         </div>
       )}
 

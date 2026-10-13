@@ -1,5 +1,7 @@
 import { handleWorkerRequest } from '../src/server/workerHandler';
 import { getUserByToken } from '../src/server/userStore';
+import { verifyMathEquation, evaluateMathExpression } from '../src/server/symbolicMathEngine';
+import { calculateMolarMass } from '../src/server/scienceReasoningEngine';
 
 async function runTestSuite() {
   console.log('--- NeoNova Backend & Authentication Test Suite ---');
@@ -182,6 +184,101 @@ async function runTestSuite() {
     const data = await res.json();
     assert(res.status === 200, 'Health endpoint returns 200 OK');
     assert(data.status === 'ok', 'Health status is ok');
+  }
+
+  // 11. Credit Card Payment - Merchant Info
+  {
+    const req = new Request('https://neonovastudy.com/api/payment/merchant-info', {
+      method: 'GET'
+    });
+    const res = await handleWorkerRequest(req);
+    const data = await res.json();
+    assert(res.status === 200, 'Payment merchant info returns 200 OK');
+    assert(data.settlementBank === 'Bank of Baroda', 'Settlement bank is Bank of Baroda');
+    assert(data.accountNumberMasked.endsWith('5536'), 'Settlement account ends in 5536');
+  }
+
+  // 12. Credit Card Payment - Server Order Creation & Price Calculation
+  let createdOrderId = '';
+  {
+    const req = new Request('https://neonovastudy.com/api/payment/create-card-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tier: 'plus',
+        billingCycle: 'monthly',
+        studentName: 'Test Student',
+        studentEmail: 'student@example.com'
+      })
+    });
+    const res = await handleWorkerRequest(req);
+    const data = await res.json();
+    assert(res.status === 200, 'Create card order returns 200 OK');
+    assert(data.success === true, 'Order created successfully');
+    assert(data.amount === 99, 'Plus monthly price strictly calculated on server as 99 INR');
+    assert(data.amountInPaise === 9900, 'Amount in paise is 9900');
+    assert(Boolean(data.orderId), 'Order ID is returned');
+    createdOrderId = data.orderId;
+  }
+
+  // 13. Credit Card Payment - Authoritative Verification
+  {
+    const req = new Request('https://neonovastudy.com/api/payment/verify-card-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: createdOrderId,
+        gatewayPaymentId: 'pay_test_' + Date.now(),
+        tier: 'plus',
+        billingCycle: 'monthly',
+        studentName: 'Test Student',
+        studentEmail: 'student@example.com'
+      })
+    });
+    const res = await handleWorkerRequest(req);
+    const data = await res.json();
+    assert(res.status === 200, 'Verify card payment returns 200 OK');
+    assert(data.verified === true, 'Card payment verified successfully on server');
+    assert(data.verifiedState && data.verifiedState.tier === 'plus', 'User subscription updated to Plus tier');
+  }
+
+  // 14. Symbolic Math Verification - Equation Solving
+  {
+    const eqCheck = verifyMathEquation('2x + 7 = 19', 'x', 6);
+    assert(eqCheck.verified === true, 'Symbolic Math Engine accurately verifies 2(6) + 7 = 19');
+    assert(eqCheck.lhs === 19 && eqCheck.rhs === 19, 'LHS and RHS equality confirmed with zero divergence');
+
+    const wrongCheck = verifyMathEquation('2x + 7 = 19', 'x', 5);
+    assert(wrongCheck.verified === false, 'Incorrect root x = 5 is correctly rejected');
+  }
+
+  // 15. Symbolic Math Verification - Fraction & Arithmetic Reduction
+  {
+    const evalRes = evaluateMathExpression('3/4 + 5/6');
+    assert(evalRes.success === true, 'Fractions evaluated successfully');
+    assert(String(evalRes.result).startsWith('1.5833') || evalRes.result === '19/12', 'Accurate fractional arithmetic result');
+  }
+
+  // 16. Science Engine - Molar Mass & Chemical Accuracy
+  {
+    const waterMass = calculateMolarMass('H2O');
+    assert(waterMass !== null, 'Molar mass of H2O calculated');
+    assert(Math.round(waterMass!.molarMass) === 18, 'Molar mass of H2O is ~18 g/mol');
+
+    const sulfuricMass = calculateMolarMass('H2SO4');
+    assert(sulfuricMass !== null, 'Molar mass of H2SO4 calculated');
+    assert(Math.round(sulfuricMass!.molarMass) === 98, 'Molar mass of H2SO4 is ~98 g/mol');
+  }
+
+  // 17. OCR API endpoint availability
+  {
+    const req = new Request('https://neonovastudy.com/api/solver/ocr-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const res = await handleWorkerRequest(req);
+    assert(res.status === 400, 'OCR endpoint requires image payload and returns 400 safely when empty');
   }
 
   console.log(`\nResults: ${passed}/${total} tests passed.`);

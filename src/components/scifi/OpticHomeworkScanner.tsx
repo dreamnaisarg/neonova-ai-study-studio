@@ -1,10 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { 
   Camera, 
   RefreshCw, 
   X, 
   Check, 
   RotateCw, 
+  RotateCcw,
   Crop, 
   Upload, 
   AlertTriangle, 
@@ -23,7 +24,15 @@ import {
   Printer,
   Wifi,
   WifiOff,
-  CheckCheck
+  CheckCheck,
+  Zap,
+  ZapOff,
+  SlidersHorizontal,
+  ChevronRight,
+  Maximize2,
+  Copy,
+  PlusCircle,
+  HelpCircle
 } from 'lucide-react';
 import VisualHomeworkExplainer, { VisualExplanationData } from '../homework/VisualHomeworkExplainer';
 import { formatTutorResponse, cleanEducationalText } from '../../utils';
@@ -33,6 +42,13 @@ import {
   printHomeworkSolution, 
   OfflineSpeechNarrator 
 } from '../../lib/offlineSolver';
+import { 
+  processAndEnhanceImage, 
+  EnhancementFilter, 
+  getCameraCapabilities, 
+  toggleTorch 
+} from '../../lib/imageEnhancer';
+import { DetectedQuestionItem } from '../../server/ocrVisionEngine';
 
 interface OpticHomeworkScannerProps {
   onCaptureImage: (base64Data: string, mimeType: string) => void;
@@ -42,7 +58,22 @@ interface OpticHomeworkScannerProps {
   curriculumBoard?: string;
 }
 
-type ScannerStep = 'capture' | 'edit_crop' | 'analyzing' | 'quality_warning' | 'recognized' | 'solving' | 'solved';
+type ScannerStep = 
+  | 'capture' 
+  | 'edit_crop' 
+  | 'analyzing' 
+  | 'quality_warning' 
+  | 'multi_question_select'
+  | 'recognized' 
+  | 'solving' 
+  | 'solved';
+
+export interface ScannedPageItem {
+  id: string;
+  thumbnail: string;
+  dataUrl: string;
+  timestamp: number;
+}
 
 export default function OpticHomeworkScanner({ 
   onCaptureImage, 
@@ -54,32 +85,57 @@ export default function OpticHomeworkScanner({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filePickerRef = useRef<HTMLInputElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  // Camera stream & hardware states
   const [cameraState, setCameraState] = useState<'idle' | 'requesting' | 'active' | 'denied' | 'unsupported'>('idle');
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [isTorchSupported, setIsTorchSupported] = useState(false);
+  const [isTorchOn, setIsTorchOn] = useState(false);
   const [step, setStep] = useState<ScannerStep>('capture');
+  
+  // Continuous scanning reel (multi-page session support)
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
+  const [scannedPages, setScannedPages] = useState<ScannedPageItem[]>([]);
+  const [activePageIndex, setActivePageIndex] = useState<number>(0);
 
-  // Captured / Uploaded Image
+  // Active Working Image
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [rotationDegrees, setRotationDegrees] = useState<number>(0);
+  const [tiltDegrees, setTiltDegrees] = useState<number>(0);
+  const [activeFilter, setActiveFilter] = useState<EnhancementFilter>('document');
+  const [brightness, setBrightness] = useState<number>(0);
+  const [contrast, setContrast] = useState<number>(10);
   
-  // Crop margins (in percentage 0 - 40)
+  // Crop margins (in percentage 0 - 50)
   const [cropTop, setCropTop] = useState(0);
   const [cropBottom, setCropBottom] = useState(0);
   const [cropLeft, setCropLeft] = useState(0);
   const [cropRight, setCropRight] = useState(0);
+  const [cropPreset, setCropPreset] = useState<'full' | 'top' | 'bottom' | 'center' | 'custom'>('full');
 
-  // Processed base64
-  const [processedImage, setProcessedImage] = useState<{ base64: string; mimeType: string } | null>(null);
+  // Processed output preview
+  const [processedImage, setProcessedImage] = useState<{ base64: string; mimeType: string; dataUrl: string } | null>(null);
+
+  // Multi-stage analysis progress messaging
+  const [analysisStageText, setAnalysisStageText] = useState('Improving image clarity...');
+  const [solvingStageText, setSolvingStageText] = useState('Reading your question...');
 
   // OCR and Solution states
   const [ocrResult, setOcrResult] = useState<any | null>(null);
+  const [detectedQuestionsList, setDetectedQuestionsList] = useState<DetectedQuestionItem[]>([]);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number>(0);
   const [editableQuestion, setEditableQuestion] = useState('');
   const [detectedSubject, setDetectedSubject] = useState(currentSubject);
+  const [selectedGrade, setSelectedGrade] = useState(currentGrade);
   const [qualityFeedback, setQualityFeedback] = useState('');
+  const [uncertainNotations, setUncertainNotations] = useState<string[]>([]);
+  
+  // Solved state & Solution mode toggle
   const [solverResult, setSolverResult] = useState<any | null>(null);
+  const [solutionViewMode, setSolutionViewMode] = useState<'quick' | 'detailed'>('quick');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [copiedNotification, setCopiedNotification] = useState(false);
 
   // Offline, speech & export states
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -87,6 +143,7 @@ export default function OpticHomeworkScanner({
   const [isSavedLocally, setIsSavedLocally] = useState(false);
   const [isDeviceOnline, setIsDeviceOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
+  // Network listener
   useEffect(() => {
     const handleOnline = () => setIsDeviceOnline(true);
     const handleOffline = () => setIsDeviceOnline(false);
@@ -98,21 +155,30 @@ export default function OpticHomeworkScanner({
     };
   }, []);
 
+  // Offline speech narration subscriber
   useEffect(() => {
     return OfflineSpeechNarrator.subscribe(setIsSpeaking);
   }, []);
 
-  const stopActiveStream = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+  // Stop active camera stream tracks
+  const stopActiveStream = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => {
+        try {
+          track.stop();
+        } catch {}
+      });
+      mediaStreamRef.current = null;
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-  };
+    setIsTorchOn(false);
+    setIsTorchSupported(false);
+  }, []);
 
-  const requestCameraPermission = async (targetFacing: 'environment' | 'user' = facingMode) => {
+  // Request camera permissions with fallback constraints
+  const requestCameraPermission = useCallback(async (targetFacing: 'environment' | 'user' = facingMode) => {
     stopActiveStream();
     setCameraState('requesting');
 
@@ -125,22 +191,33 @@ export default function OpticHomeworkScanner({
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: { ideal: targetFacing },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1920, max: 2560 },
+          height: { ideal: 1080, max: 1440 }
         },
         audio: false
       };
 
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-      setStream(mediaStream);
+      mediaStreamRef.current = mediaStream;
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
+
+      // Check hardware torch support
+      const videoTrack = mediaStream.getVideoTracks()[0];
+      if (videoTrack) {
+        const caps = await getCameraCapabilities(videoTrack);
+        setIsTorchSupported(caps.supportsTorch);
+      }
+
       setCameraState('active');
     } catch {
       try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        setStream(fallbackStream);
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: targetFacing },
+          audio: false
+        });
+        mediaStreamRef.current = fallbackStream;
         if (videoRef.current) {
           videoRef.current.srcObject = fallbackStream;
         }
@@ -149,28 +226,71 @@ export default function OpticHomeworkScanner({
         setCameraState('denied');
       }
     }
-  };
+  }, [facingMode, stopActiveStream]);
 
+  // Mount camera initialization and unmount cleanup
   useEffect(() => {
     requestCameraPermission('environment');
     return () => {
       stopActiveStream();
+      OfflineSpeechNarrator.stop();
     };
-  }, []);
+  }, [requestCameraPermission, stopActiveStream]);
 
+  // Flip camera front/back
   const handleToggleFacingMode = () => {
     const nextMode = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(nextMode);
     requestCameraPermission(nextMode);
   };
 
-  // Capture from live video stream
+  // Toggle Hardware Torch / Flashlight
+  const handleToggleTorch = async () => {
+    const videoTrack = mediaStreamRef.current?.getVideoTracks()[0];
+    if (videoTrack && isTorchSupported) {
+      const nextState = !isTorchOn;
+      const success = await toggleTorch(videoTrack, nextState);
+      if (success) {
+        setIsTorchOn(nextState);
+      }
+    }
+  };
+
+  // Apply crop preset
+  const handleApplyCropPreset = (preset: 'full' | 'top' | 'bottom' | 'center' | 'custom') => {
+    setCropPreset(preset);
+    if (preset === 'full') {
+      setCropTop(0);
+      setCropBottom(0);
+      setCropLeft(0);
+      setCropRight(0);
+    } else if (preset === 'top') {
+      setCropTop(0);
+      setCropBottom(48);
+      setCropLeft(2);
+      setCropRight(2);
+    } else if (preset === 'bottom') {
+      setCropTop(48);
+      setCropBottom(0);
+      setCropLeft(2);
+      setCropRight(2);
+    } else if (preset === 'center') {
+      setCropTop(20);
+      setCropBottom(20);
+      setCropLeft(10);
+      setCropRight(10);
+    }
+  };
+
+  // Capture photo from live video stream
   const handleCaptureFromVideo = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+      const vw = video.videoWidth || 1280;
+      const vh = video.videoHeight || 720;
+      canvas.width = vw;
+      canvas.height = vh;
       const ctx = canvas.getContext('2d');
       if (ctx) {
         if (facingMode === 'user') {
@@ -179,22 +299,55 @@ export default function OpticHomeworkScanner({
         }
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+
+        // If continuous multi-page mode is enabled, add to reel and keep camera active
+        if (isContinuousMode) {
+          const newPage: ScannedPageItem = {
+            id: `page-${Date.now()}`,
+            thumbnail: dataUrl,
+            dataUrl,
+            timestamp: Date.now()
+          };
+          setScannedPages(prev => [...prev, newPage]);
+          setActivePageIndex(scannedPages.length);
+          // Optional sound / vibration feedback
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(40);
+          }
+          return;
+        }
+
+        // Single capture mode
         stopActiveStream();
         setOriginalImage(dataUrl);
         setRotationDegrees(0);
-        setCropTop(0);
-        setCropBottom(0);
-        setCropLeft(0);
-        setCropRight(0);
+        setTiltDegrees(0);
+        handleApplyCropPreset('full');
         setStep('edit_crop');
       }
     }
   };
 
-  // File picker handler
+  // Select a captured page from continuous scanning reel to edit and solve
+  const handleSelectPageFromReel = (page: ScannedPageItem, index: number) => {
+    setActivePageIndex(index);
+    stopActiveStream();
+    setOriginalImage(page.dataUrl);
+    setRotationDegrees(0);
+    setTiltDegrees(0);
+    handleApplyCropPreset('full');
+    setStep('edit_crop');
+  };
+
+  // Upload image from disk or photo library
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate image format
+      if (!file.type.startsWith('image/')) {
+        setErrorMessage('Please select a valid image file (JPEG, PNG, WebP).');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         const result = event.target?.result as string;
@@ -202,10 +355,8 @@ export default function OpticHomeworkScanner({
           stopActiveStream();
           setOriginalImage(result);
           setRotationDegrees(0);
-          setCropTop(0);
-          setCropBottom(0);
-          setCropLeft(0);
-          setCropRight(0);
+          setTiltDegrees(0);
+          handleApplyCropPreset('full');
           setStep('edit_crop');
         }
       };
@@ -213,104 +364,90 @@ export default function OpticHomeworkScanner({
     }
   };
 
-  const handleRotate = () => {
-    setRotationDegrees((prev) => (prev + 90) % 360);
+  const handleRotateCw = () => {
+    setRotationDegrees(prev => (prev + 90) % 360);
   };
 
-  const handleResetCrop = () => {
+  const handleRotateCcw = () => {
+    setRotationDegrees(prev => (prev - 90 + 360) % 360);
+  };
+
+  const handleResetAdjustments = () => {
     setRotationDegrees(0);
-    setCropTop(0);
-    setCropBottom(0);
-    setCropLeft(0);
-    setCropRight(0);
+    setTiltDegrees(0);
+    setActiveFilter('document');
+    setBrightness(0);
+    setContrast(10);
+    handleApplyCropPreset('full');
   };
 
   const handleRetake = () => {
     setOriginalImage(null);
     setOcrResult(null);
+    setDetectedQuestionsList([]);
     setSolverResult(null);
     setEditableQuestion('');
+    setUncertainNotations([]);
     setStep('capture');
     requestCameraPermission(facingMode);
   };
 
-  // Generate processed cropped/rotated image on canvas
-  const generateProcessedImage = async (): Promise<{ base64: string; mimeType: string } | null> => {
+  // Generate processed and enhanced image via client-side canvas engine
+  const generateProcessedImage = async (): Promise<{ base64: string; mimeType: string; dataUrl: string } | null> => {
     if (!originalImage) return null;
 
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(null);
-          return;
-        }
-
-        const isSideways = rotationDegrees === 90 || rotationDegrees === 270;
-        const origW = isSideways ? img.height : img.width;
-        const origH = isSideways ? img.width : img.height;
-
-        // Apply crop percentages
-        const cropX = (cropLeft / 100) * origW;
-        const cropY = (cropTop / 100) * origH;
-        const cropW = origW * (1 - (cropLeft + cropRight) / 100);
-        const cropH = origH * (1 - (cropTop + cropBottom) / 100);
-
-        canvas.width = Math.max(50, cropW);
-        canvas.height = Math.max(50, cropH);
-
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((rotationDegrees * Math.PI) / 180);
-
-        if (isSideways) {
-          ctx.drawImage(
-            img,
-            -img.height / 2 + cropY,
-            -img.width / 2 + cropX,
-            img.height,
-            img.width
-          );
-        } else {
-          ctx.drawImage(
-            img,
-            -img.width / 2 + cropX,
-            -img.height / 2 + cropY,
-            img.width,
-            img.height
-          );
-        }
-        ctx.restore();
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        const parts = dataUrl.split(',');
-        const mimeType = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
-        const base64 = parts[1] || parts[0];
-        resolve({ base64, mimeType });
+    try {
+      const res = await processAndEnhanceImage(originalImage, {
+        filter: activeFilter,
+        rotationDegrees,
+        tiltDegrees,
+        brightness,
+        contrast,
+        cropPercentages: {
+          top: cropTop,
+          bottom: cropBottom,
+          left: cropLeft,
+          right: cropRight
+        },
+        maxDimension: 1600
+      });
+      return {
+        base64: res.base64,
+        mimeType: res.mimeType,
+        dataUrl: res.dataUrl
       };
-      img.src = originalImage;
-    });
+    } catch (e) {
+      console.error('Image enhancement error:', e);
+      return null;
+    }
   };
 
-  // Proceed to analyze with Pre-flight Quality & OCR
+  // Run Quality Assessment & Multi-Question OCR Analysis
   const handleProceedToAnalyze = async () => {
     setErrorMessage(null);
     setStep('analyzing');
+    setAnalysisStageText('Improving image clarity & contrast...');
 
     const processed = await generateProcessedImage();
     if (!processed) {
-      setErrorMessage('Failed to process image. Please try again.');
+      setErrorMessage('Could not process image. Please try again.');
       setStep('edit_crop');
       return;
     }
     setProcessedImage(processed);
 
-    // Fast probe for Cloud OCR (3.5s timeout) to ensure the camera never hangs
+    // Progressive stage feedback
+    const stageTimer1 = setTimeout(() => {
+      setAnalysisStageText('Reading your question & mathematical notation...');
+    }, 1200);
+
+    const stageTimer2 = setTimeout(() => {
+      setAnalysisStageText('Detecting question boundaries & diagrams...');
+    }, 2800);
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 18000);
 
       const res = await fetch('/api/solver/ocr-check', {
         method: 'POST',
@@ -322,60 +459,87 @@ export default function OpticHomeworkScanner({
         signal: controller.signal
       });
       clearTimeout(timeoutId);
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
 
       if (res.ok) {
         const data = await res.json();
         setOcrResult(data);
 
-        // Check Quality First
+        // Quality check
         if (data.quality && !data.quality.isAcceptable) {
           setQualityFeedback(
             data.quality?.feedback ||
-            'Some parts of this homework image are unclear or cut off. Please retake the photo with the complete question visible.'
+            'The question in this photo is unclear, cut off, or too dark. Please align and retake.'
           );
           setStep('quality_warning');
           return;
         }
 
+        // Multi-question detection
+        if (Array.isArray(data.detectedQuestions) && data.detectedQuestions.length > 1) {
+          setDetectedQuestionsList(data.detectedQuestions);
+          setSelectedQuestionIndex(0);
+          setEditableQuestion(data.detectedQuestions[0].text);
+          if (data.detectedQuestions[0].subject) {
+            setDetectedSubject(data.detectedQuestions[0].subject);
+          }
+          setStep('multi_question_select');
+          return;
+        }
+
+        // Single question detection
         if (data.detectedText && data.detectedText.trim()) {
           setEditableQuestion(data.detectedText.trim());
         }
         if (data.detectedSubject) {
           setDetectedSubject(data.detectedSubject);
         }
+        if (Array.isArray(data.uncertainParts) && data.uncertainParts.length > 0) {
+          setUncertainNotations(data.uncertainParts);
+        }
         setIsOfflineEngineUsed(false);
         setStep('recognized');
         return;
       }
     } catch (err: any) {
-      console.info('Using local offline solver engine for scanned image:', err?.message || err);
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
+      console.info('Switching to local offline OCR fallback:', err?.message || err);
     }
 
-    // Seamless offline transition - camera scanner remains 100% functional
+    // Offline fallback: preserve student question if already typed or use friendly prompt
     setIsOfflineEngineUsed(true);
-    if (!editableQuestion.trim() || editableQuestion === 'Solve the visible question in the uploaded homework') {
-      const defaultProblem = 
-        currentSubject === 'Mathematics' ? 'Solve equation: 2x + 7 = 19' :
-        currentSubject === 'Science' || currentSubject === 'Physics' ? 'Calculate force if mass = 5kg and acceleration = 2m/s²' :
-        'Solve the problem captured in worksheet';
-      setEditableQuestion(defaultProblem);
+    if (!editableQuestion.trim()) {
+      setEditableQuestion('Solve the equation or question shown in the worksheet');
     }
     setStep('recognized');
   };
 
-  // Solve the verified question with resilient online/offline fallbacks
+  // Solve the verified question with multi-stage reasoning
   const handleSolveQuestion = async () => {
     setErrorMessage(null);
     setStep('solving');
+    setSolvingStageText('Routing to verified subject reasoning engine...');
 
     const textToSolve = editableQuestion.trim() || 'Solve the question in the uploaded worksheet';
 
-    // 1. If offline, use client-side verified offline solver immediately
+    const stageTimer1 = setTimeout(() => {
+      setSolvingStageText('Checking calculations & independent verification...');
+    }, 1500);
+
+    const stageTimer2 = setTimeout(() => {
+      setSolvingStageText('Preparing step-by-step student explanation...');
+    }, 3200);
+
+    // 1. If offline, use client-side verified offline solver
     if (!isDeviceOnline) {
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
       const offlineSol = solveHomeworkOffline({
         questionText: textToSolve,
         subject: detectedSubject,
-        grade: currentGrade,
+        grade: selectedGrade,
         curriculumBoard,
         imageBase64: processedImage?.base64
       });
@@ -407,7 +571,7 @@ export default function OpticHomeworkScanner({
       return;
     }
 
-    // 2. If online, attempt cloud multimodal verification
+    // 2. Online cloud verified solver
     try {
       const res = await fetch('/api/solver/solve', {
         method: 'POST',
@@ -417,13 +581,15 @@ export default function OpticHomeworkScanner({
           imageBase64: processedImage?.base64,
           imageMimeType: processedImage?.mimeType,
           subject: detectedSubject,
-          grade: currentGrade,
+          grade: selectedGrade,
           curriculumBoard
         })
       });
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
 
       if (!res.ok) {
-        throw new Error('Cloud solver temporarily unavailable');
+        throw new Error('Cloud solver request failed');
       }
 
       const data = await res.json();
@@ -434,14 +600,14 @@ export default function OpticHomeworkScanner({
       saveScanToCache({
         question: data.question,
         subject: data.subject,
-        grade: data.grade || currentGrade,
+        grade: data.grade || selectedGrade,
         curriculumBoard: data.curriculumBoard || curriculumBoard,
         finalAnswer: data.structuredSteps?.finalAnswer || 'Verified',
-        steps: (data.structuredSteps?.stepByStepCalculations || []).map((s: any) => ({
-          stepNumber: s.stepNumber,
-          title: s.operation,
-          content: `${s.intermediateResult} (${s.verificationNote})`,
-          verificationMethod: s.verificationNote
+        steps: (data.structuredSteps?.calculation || []).map((s: string, idx: number) => ({
+          stepNumber: idx + 1,
+          title: `Step ${idx + 1}`,
+          content: s,
+          verificationMethod: data.structuredSteps?.verification?.method || 'Verified'
         })),
         narrativeExplanation: data.narrativeExplanation,
         visualExplanation: data.visualExplanation,
@@ -453,12 +619,13 @@ export default function OpticHomeworkScanner({
       setIsSavedLocally(true);
       setStep('solved');
     } catch (err: any) {
-      console.warn('Cloud solve unavailable, seamless fallback to client-side offline solver:', err);
-      // Seamless offline fallback
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
+      console.warn('Falling back to local offline solver engine:', err);
       const offlineSol = solveHomeworkOffline({
         questionText: textToSolve,
         subject: detectedSubject,
-        grade: currentGrade,
+        grade: selectedGrade,
         curriculumBoard,
         imageBase64: processedImage?.base64
       });
@@ -490,28 +657,28 @@ export default function OpticHomeworkScanner({
     }
   };
 
-  // Toggle Step-by-Step Speech Narration
+  // Toggle Speech Narration
   const handleToggleReadAloud = () => {
     if (isSpeaking) {
       OfflineSpeechNarrator.stop();
     } else if (solverResult) {
-      const speechText = `Question: ${solverResult.question}. Verified final answer: ${solverResult.structuredSteps?.finalAnswer || ''}. Academic reasoning: ${solverResult.narrativeExplanation || ''}`;
+      const speechText = `Question: ${solverResult.question}. Final answer: ${solverResult.structuredSteps?.finalAnswer || ''}. Explanation: ${solverResult.narrativeExplanation || ''}`;
       OfflineSpeechNarrator.speak(speechText);
     }
   };
 
-  // 1-Click Printable Worksheet Export
+  // Printable Worksheet Export
   const handlePrintSolution = () => {
     if (!solverResult) return;
-    const steps = (solverResult.structuredSteps?.stepByStepCalculations || []).map((s: any) => ({
-      stepNumber: s.stepNumber,
-      title: s.operation || `Step ${s.stepNumber}`,
-      content: `${s.intermediateResult} - ${s.verificationNote || ''}`
+    const steps = (solverResult.structuredSteps?.calculation || []).map((s: string, idx: number) => ({
+      stepNumber: idx + 1,
+      title: `Step ${idx + 1}`,
+      content: s
     }));
     printHomeworkSolution({
       question: solverResult.question,
       subject: solverResult.subject || detectedSubject,
-      grade: currentGrade,
+      grade: selectedGrade,
       curriculumBoard,
       finalAnswer: solverResult.structuredSteps?.finalAnswer || 'Verified',
       steps: steps.length > 0 ? steps : [{ stepNumber: 1, title: 'Calculated Derivation', content: solverResult.narrativeExplanation || '' }],
@@ -519,7 +686,16 @@ export default function OpticHomeworkScanner({
     });
   };
 
-  // Send to AI Homework Notebook
+  // Copy final answer
+  const handleCopyAnswer = () => {
+    if (solverResult?.structuredSteps?.finalAnswer) {
+      navigator.clipboard.writeText(solverResult.structuredSteps.finalAnswer);
+      setCopiedNotification(true);
+      setTimeout(() => setCopiedNotification(false), 2000);
+    }
+  };
+
+  // Send to AI Homework Workspace
   const handleUseInNotebook = () => {
     if (processedImage) {
       onCaptureImage(processedImage.base64, processedImage.mimeType);
@@ -528,7 +704,12 @@ export default function OpticHomeworkScanner({
   };
 
   return (
-    <div id="optic-homework-scanner-modal" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs font-sans overflow-y-auto">
+    <div 
+      id="optic-homework-scanner-modal" 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm font-sans overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+    >
       <canvas ref={canvasRef} className="hidden" />
       <input 
         type="file" 
@@ -538,25 +719,25 @@ export default function OpticHomeworkScanner({
         className="hidden" 
       />
 
-      <div className="bg-white border border-slate-200/90 max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl relative flex flex-col my-auto max-h-[92vh]">
-        {/* Top Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+      <div className="bg-white border border-slate-200/90 max-w-3xl w-full rounded-3xl overflow-hidden shadow-2xl relative flex flex-col my-auto max-h-[94vh]">
+        {/* Header Bar */}
+        <div className="p-3.5 sm:p-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold shadow-2xs">
-              <Camera size={19} />
+            <div className="w-10 h-10 rounded-2xl bg-cyan-50 border border-cyan-200/80 flex items-center justify-center text-cyan-600 font-bold shadow-2xs">
+              <Camera size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
-                  Scan Homework & Worksheet
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                  NeoNova Smart AI Scanner
                 </h3>
-                <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200 uppercase flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>Scanner Ready · {isDeviceOnline ? 'Cloud AI Verified' : 'Local Symbolic Engine'}</span>
+                <span className="text-[10px] font-mono font-bold bg-cyan-50 text-cyan-800 px-2.5 py-0.5 rounded-full border border-cyan-200 uppercase flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                  <span>{isDeviceOnline ? 'AI Vision & Symbolic Engine' : 'Offline Math Engine'}</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                Full optical camera capture + verified step-by-step solutions (100% functional with or without internet).
+              <p className="text-[11px] sm:text-xs text-slate-500">
+                Capture worksheets, textbook pages, equations & diagrams with automated enhancement.
               </p>
             </div>
           </div>
@@ -571,19 +752,22 @@ export default function OpticHomeworkScanner({
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        {/* Modal Body */}
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {errorMessage && (
-            <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-2xl flex items-center gap-2">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-2xl flex items-center gap-2">
               <AlertTriangle size={16} className="shrink-0 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* STEP 1: CAPTURE OR UPLOAD */}
+          {/* ========================================================
+              STEP 1: LIVE CAMERA CAPTURE / CONTINUOUS SCANNING
+              ======================================================== */}
           {step === 'capture' && (
             <div className="space-y-4">
-              <div className="relative rounded-2xl bg-slate-950 aspect-4/3 overflow-hidden flex items-center justify-center border border-slate-800">
+              {/* Camera Viewfinder Viewport */}
+              <div className="relative rounded-2xl bg-slate-950 aspect-4/3 sm:aspect-16/10 overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner">
                 {cameraState === 'active' ? (
                   <video 
                     ref={videoRef} 
@@ -602,55 +786,129 @@ export default function OpticHomeworkScanner({
                         {cameraState === 'requesting' ? 'Requesting Camera Access...' : 'Camera Access Needed'}
                       </p>
                       <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-                        Allow camera permissions or upload an image/screenshot from your device below.
+                        Allow camera permissions to scan workbook questions, or upload any worksheet photo below.
                       </p>
                     </div>
                     {cameraState === 'denied' && (
                       <button
                         type="button"
                         onClick={() => requestCameraPermission(facingMode)}
-                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold"
+                        className="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold transition-colors cursor-pointer"
                       >
-                        Retry Camera
+                        Retry Camera Permission
                       </button>
                     )}
                   </div>
                 )}
 
-                {/* Overlaid Grid lines for document alignment */}
+                {/* Overlaid Viewfinder Target Frame */}
                 {cameraState === 'active' && (
-                  <div className="absolute inset-0 border-2 border-indigo-400/40 m-6 rounded-xl pointer-events-none flex items-center justify-center">
-                    <span className="text-[11px] font-mono text-white/70 bg-black/40 px-2 py-0.5 rounded-md">
-                      Align question inside frame
-                    </span>
+                  <div className="absolute inset-0 pointer-events-none p-6 sm:p-8 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div className="w-8 h-8 border-t-3 border-l-3 border-cyan-400 rounded-tl-lg"></div>
+                      <span className="text-[10px] font-mono font-bold text-white bg-slate-900/70 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-white/20">
+                        {isContinuousMode ? 'Continuous Mode • Snap Pages' : 'Align Question in Frame'}
+                      </span>
+                      <div className="w-8 h-8 border-t-3 border-r-3 border-cyan-400 rounded-tr-lg"></div>
+                    </div>
+
+                    <div className="flex justify-between items-end">
+                      <div className="w-8 h-8 border-b-3 border-l-3 border-cyan-400 rounded-bl-lg"></div>
+                      <div className="w-8 h-8 border-b-3 border-r-3 border-cyan-400 rounded-br-lg"></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Top Corner Quick Camera Controls */}
+                {cameraState === 'active' && (
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    {isTorchSupported && (
+                      <button
+                        type="button"
+                        onClick={handleToggleTorch}
+                        className={`p-2 rounded-xl backdrop-blur-md transition-all cursor-pointer ${
+                          isTorchOn 
+                            ? 'bg-amber-400 text-slate-950 shadow-md' 
+                            : 'bg-slate-900/60 text-white hover:bg-slate-900/90'
+                        }`}
+                        title={isTorchOn ? 'Turn off flash' : 'Turn on flash'}
+                      >
+                        {isTorchOn ? <Zap size={16} /> : <ZapOff size={16} />}
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleToggleFacingMode}
+                      className="p-2 rounded-xl bg-slate-900/60 hover:bg-slate-900/90 text-white backdrop-blur-md transition-all cursor-pointer"
+                      title="Flip camera"
+                    >
+                      <RefreshCw size={16} />
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* Multi-Page Continuous Scanning Reel (if pages captured) */}
+              {scannedPages.length > 0 && (
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                      <Layers size={14} className="text-cyan-600" />
+                      <span>Captured Pages Reel ({scannedPages.length})</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">Tap a page to edit & solve</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {scannedPages.map((page, idx) => (
+                      <button
+                        key={page.id}
+                        type="button"
+                        onClick={() => handleSelectPageFromReel(page, idx)}
+                        className={`shrink-0 relative w-16 h-20 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                          activePageIndex === idx ? 'border-cyan-500 ring-2 ring-cyan-200' : 'border-slate-300 opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={page.thumbnail} alt={`Page ${idx + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 right-1 bg-slate-900/80 text-white text-[9px] font-mono px-1 rounded">
+                          P{idx + 1}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Controls Bar */}
+              <div className="flex flex-wrap items-center gap-2.5">
                 {cameraState === 'active' && (
                   <button
                     type="button"
                     onClick={handleCaptureFromVideo}
-                    className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    className="flex-1 py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 active:scale-98 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                   >
                     <Camera size={18} />
-                    <span>Capture Photo</span>
+                    <span>{isContinuousMode ? 'Snap Next Page' : 'Capture Question'}</span>
                   </button>
                 )}
 
-                {cameraState === 'active' && (
-                  <button
-                    type="button"
-                    onClick={handleToggleFacingMode}
-                    className="p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-                    title="Switch camera"
-                  >
-                    <RefreshCw size={18} />
-                  </button>
-                )}
+                {/* Continuous Mode Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsContinuousMode(prev => !prev)}
+                  className={`py-3 px-3.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    isContinuousMode 
+                      ? 'bg-violet-50 border-violet-300 text-violet-700 shadow-2xs' 
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                  title="Scan multiple pages continuously"
+                >
+                  <Layers size={16} className={isContinuousMode ? 'text-violet-600' : 'text-slate-500'} />
+                  <span>{isContinuousMode ? 'Continuous: ON' : 'Continuous Mode'}</span>
+                </button>
 
+                {/* File Upload Button */}
                 <button
                   type="button"
                   onClick={() => filePickerRef.current?.click()}
@@ -659,126 +917,274 @@ export default function OpticHomeworkScanner({
                   }`}
                 >
                   <Upload size={18} />
-                  <span>Upload Screenshot / Worksheet</span>
+                  <span>Upload Image</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: EDIT & CROP */}
+          {/* ========================================================
+              STEP 2: ENHANCE, CROP & ROTATE
+              ======================================================== */}
           {step === 'edit_crop' && originalImage && (
             <div className="space-y-4">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                  <Crop size={15} className="text-indigo-600" />
-                  <span>Crop & Rotate Homework Image</span>
+              {/* Adjustment Toolbar */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Crop size={15} className="text-cyan-600" />
+                  <span>Enhance & Crop Question</span>
                 </span>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={handleRotate}
-                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 flex items-center gap-1 text-[11px] font-bold cursor-pointer"
-                    title="Rotate 90° clockwise"
+                    onClick={handleRotateCcw}
+                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Rotate 90° counter-clockwise"
                   >
-                    <RotateCw size={13} />
-                    <span>Rotate</span>
+                    <RotateCcw size={14} />
                   </button>
                   <button
                     type="button"
-                    onClick={handleResetCrop}
-                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 text-[11px] font-bold cursor-pointer"
+                    onClick={handleRotateCw}
+                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Rotate 90° clockwise"
+                  >
+                    <RotateCw size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetAdjustments}
+                    className="py-1 px-2.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 text-[11px] font-bold cursor-pointer"
                   >
                     Reset
                   </button>
                 </div>
               </div>
 
-              {/* Preview with Crop Box */}
-              <div className="relative rounded-2xl bg-slate-950 max-h-[320px] overflow-hidden flex items-center justify-center border border-slate-800 p-2">
+              {/* Image Preview with Dynamic Crop Boundary Box */}
+              <div className="relative rounded-2xl bg-slate-950 max-h-[300px] overflow-hidden flex items-center justify-center border border-slate-800 p-2">
                 <div 
                   className="relative overflow-hidden transition-transform duration-200"
-                  style={{ transform: `rotate(${rotationDegrees}deg)` }}
+                  style={{ transform: `rotate(${rotationDegrees + tiltDegrees}deg)` }}
                 >
                   <img 
                     src={originalImage} 
                     alt="Homework preview" 
-                    className="max-h-[290px] w-auto object-contain rounded-lg"
+                    className={`max-h-[280px] w-auto object-contain rounded-lg ${
+                      activeFilter === 'grayscale' ? 'grayscale' :
+                      activeFilter === 'high_contrast' ? 'contrast-200 grayscale' :
+                      activeFilter === 'document' ? 'contrast-125 brightness-105' : ''
+                    }`}
                   />
-                  {/* Visual Crop Overlay */}
+
+                  {/* Visual Crop Overlay Rectangle */}
                   {(cropTop > 0 || cropBottom > 0 || cropLeft > 0 || cropRight > 0) && (
                     <div 
-                      className="absolute border-2 border-indigo-400 bg-indigo-500/10 pointer-events-none rounded"
+                      className="absolute border-2 border-cyan-400 bg-cyan-500/15 pointer-events-none rounded shadow-sm"
                       style={{
                         top: `${cropTop}%`,
                         bottom: `${cropBottom}%`,
                         left: `${cropLeft}%`,
                         right: `${cropRight}%`
                       }}
-                    />
+                    >
+                      <div className="absolute top-1 left-1 bg-cyan-600 text-white text-[9px] font-bold px-1.5 rounded">
+                        Target Area
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Crop Margin Sliders */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
-                    <span>Crop Top</span>
-                    <span>{cropTop}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={40}
-                    value={cropTop}
-                    onChange={(e) => setCropTop(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
-                    <span>Crop Bottom</span>
-                    <span>{cropBottom}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={40}
-                    value={cropBottom}
-                    onChange={(e) => setCropBottom(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
-                    <span>Crop Left</span>
-                    <span>{cropLeft}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={40}
-                    value={cropLeft}
-                    onChange={(e) => setCropLeft(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
-                    <span>Crop Right</span>
-                    <span>{cropRight}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={40}
-                    value={cropRight}
-                    onChange={(e) => setCropRight(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
+              {/* Enhancement Filter Selector Pills */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Document Clarity & Enhancement Filter:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('document')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                      activeFilter === 'document'
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-800 shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Sparkles size={12} className="text-cyan-600" />
+                    <span>Auto-Document</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('high_contrast')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      activeFilter === 'high_contrast'
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-800 shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    High-Contrast B&W
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('sharpen')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      activeFilter === 'sharpen'
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-800 shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    Sharpen / De-Blur
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('grayscale')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      activeFilter === 'grayscale'
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-800 shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    Grayscale
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter('original')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      activeFilter === 'original'
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-800 shadow-2xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    Original
+                  </button>
                 </div>
               </div>
 
+              {/* Crop Presets & Boundary Sliders */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <SlidersHorizontal size={14} className="text-cyan-600" />
+                    <span>Crop Framing Area</span>
+                  </span>
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCropPreset('full')}
+                      className={`px-2 py-0.5 rounded-lg font-bold cursor-pointer ${
+                        cropPreset === 'full' ? 'bg-cyan-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      Full Page
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCropPreset('top')}
+                      className={`px-2 py-0.5 rounded-lg font-bold cursor-pointer ${
+                        cropPreset === 'top' ? 'bg-cyan-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      Top Half
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCropPreset('bottom')}
+                      className={`px-2 py-0.5 rounded-lg font-bold cursor-pointer ${
+                        cropPreset === 'bottom' ? 'bg-cyan-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      Bottom Half
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCropPreset('center')}
+                      className={`px-2 py-0.5 rounded-lg font-bold cursor-pointer ${
+                        cropPreset === 'center' ? 'bg-cyan-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      Center
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
+                      <span>Crop Top</span>
+                      <span>{cropTop}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={45}
+                      value={cropTop}
+                      onChange={(e) => {
+                        setCropTop(Number(e.target.value));
+                        setCropPreset('custom');
+                      }}
+                      className="w-full accent-cyan-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
+                      <span>Crop Bottom</span>
+                      <span>{cropBottom}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={45}
+                      value={cropBottom}
+                      onChange={(e) => {
+                        setCropBottom(Number(e.target.value));
+                        setCropPreset('custom');
+                      }}
+                      className="w-full accent-cyan-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
+                      <span>Crop Left</span>
+                      <span>{cropLeft}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={45}
+                      value={cropLeft}
+                      onChange={(e) => {
+                        setCropLeft(Number(e.target.value));
+                        setCropPreset('custom');
+                      }}
+                      className="w-full accent-cyan-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-600 uppercase">
+                      <span>Crop Right</span>
+                      <span>{cropRight}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={45}
+                      value={cropRight}
+                      onChange={(e) => {
+                        setCropRight(Number(e.target.value));
+                        setCropPreset('custom');
+                      }}
+                      className="w-full accent-cyan-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -790,47 +1196,51 @@ export default function OpticHomeworkScanner({
                 <button
                   type="button"
                   onClick={handleProceedToAnalyze}
-                  className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <Sparkles size={16} />
-                  <span>Run Quality Check & Recognize</span>
+                  <span>Auto-Detect & Recognize Question</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: ANALYZING SPINNER */}
+          {/* ========================================================
+              STEP 3: ANALYZING SPINNER (ACCURATE PROGRESS FEEDBACK)
+              ======================================================== */}
           {step === 'analyzing' && (
-            <div className="p-12 text-center space-y-4">
-              <RefreshCw size={36} className="animate-spin text-indigo-600 mx-auto" />
+            <div className="p-10 text-center space-y-4">
+              <RefreshCw size={36} className="animate-spin text-cyan-600 mx-auto" />
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-slate-900">
-                  Inspecting Image & Optical Structure...
+                  {analysisStageText}
                 </h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Performing pre-flight quality check, optical character recognition, and subject classification.
+                  Assessing image clarity, extracting mathematical formulas & detecting question boundaries.
                 </p>
               </div>
             </div>
           )}
 
-          {/* STEP 4: QUALITY WARNING (DO NOT GUESS) */}
+          {/* ========================================================
+              STEP 4: QUALITY WARNING (NEVER GUESS BLURRY IMAGES)
+              ======================================================== */}
           {step === 'quality_warning' && (
             <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 space-y-4 text-center">
               <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
-                <AlertTriangle size={26} />
+                <AlertTriangle size={24} />
               </div>
 
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-amber-950">
-                  Image Quality Check: Unclear Content
+                  Image Quality Alert: Unclear or Cut-Off Content
                 </h4>
                 <p className="text-xs text-amber-900 leading-relaxed max-w-md mx-auto">
                   {qualityFeedback}
                 </p>
                 {ocrResult?.quality?.unreadablePartDescription && (
-                  <p className="text-[11px] font-mono text-amber-800 bg-amber-100/70 py-1 px-3 rounded-lg inline-block mt-2">
-                    Note: {ocrResult.quality.unreadablePartDescription}
+                  <p className="text-[11px] font-mono text-amber-800 bg-amber-100/80 py-1 px-3 rounded-lg inline-block mt-2">
+                    Detail: {ocrResult.quality.unreadablePartDescription}
                   </p>
                 )}
               </div>
@@ -841,38 +1251,115 @@ export default function OpticHomeworkScanner({
                   onClick={handleRetake}
                   className="py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  Retake Photo with Complete Question
+                  Retake Photo with Full Question
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep('recognized')}
                   className="py-2.5 px-4 rounded-xl bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 text-xs font-bold cursor-pointer"
                 >
-                  Edit Question Manually
+                  Type Question Manually
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 5: RECOGNIZED QUESTION & SUBJECT DETECTION */}
+          {/* ========================================================
+              STEP 5: MULTI-QUESTION SELECTION (PAGE CONTAINS Q1, Q2, Q3)
+              ======================================================== */}
+          {step === 'multi_question_select' && (
+            <div className="space-y-4">
+              <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-2xl flex items-center justify-between text-xs">
+                <span className="font-bold text-cyan-900 flex items-center gap-1.5">
+                  <Layers size={15} className="text-cyan-700" />
+                  <span>Multiple Questions Detected on Page ({detectedQuestionsList.length})</span>
+                </span>
+                <span className="text-[10px] text-cyan-800 font-bold">Select one to solve</span>
+              </div>
+
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                {detectedQuestionsList.map((q, idx) => (
+                  <button
+                    key={q.id || idx}
+                    type="button"
+                    onClick={() => {
+                      setSelectedQuestionIndex(idx);
+                      setEditableQuestion(q.text);
+                      if (q.subject) setDetectedSubject(q.subject);
+                    }}
+                    className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                      selectedQuestionIndex === idx
+                        ? 'bg-cyan-50/80 border-cyan-400 shadow-2xs'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 bg-cyan-100/70 px-2 py-0.5 rounded-md">
+                          {q.label || `Question ${idx + 1}`}
+                        </span>
+                        {q.topic && (
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            {q.topic}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-800 font-medium leading-relaxed">
+                        {q.text}
+                      </p>
+                    </div>
+
+                    <div className={`shrink-0 w-5 h-5 rounded-full border flex items-center justify-center mt-1 ${
+                      selectedQuestionIndex === idx
+                        ? 'border-cyan-600 bg-cyan-600 text-white'
+                        : 'border-slate-300 bg-white text-transparent'
+                    }`}>
+                      <Check size={12} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleRetake}
+                  className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer"
+                >
+                  Retake Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep('recognized')}
+                  className="flex-1 py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                >
+                  <span>Review Selected Question</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              STEP 6: RECOGNIZED QUESTION & AMBIGUITY VERIFICATION
+              ======================================================== */}
           {step === 'recognized' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Edit3 size={14} className="text-indigo-600" />
-                  <span>Recognized Question (Review or Edit)</span>
+                  <Edit3 size={14} className="text-cyan-600" />
+                  <span>Review Extracted Question</span>
                 </span>
                 
-                {/* Subject Auto-detector Badge */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase">Detected Subject:</span>
+                {/* Subject & Grade Selectors */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <select
                     value={detectedSubject}
                     onChange={(e) => setDetectedSubject(e.target.value)}
-                    className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-0.5"
+                    className="text-xs font-bold text-cyan-800 bg-cyan-50 border border-cyan-200 rounded-lg px-2.5 py-1"
                   >
                     <option value="Mathematics">Mathematics</option>
-                    <option value="Science">Science</option>
+                    <option value="Science">Science (Physics / Chem / Bio)</option>
                     <option value="English">English</option>
                     <option value="Hindi">Hindi</option>
                     <option value="Gujarati">Gujarati</option>
@@ -881,8 +1368,31 @@ export default function OpticHomeworkScanner({
                     <option value="Computer Science">Computer Science</option>
                     <option value="General Knowledge">General Knowledge</option>
                   </select>
+
+                  <select
+                    value={selectedGrade}
+                    onChange={(e) => setSelectedGrade(e.target.value)}
+                    className="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1"
+                  >
+                    {[...Array(12)].map((_, i) => (
+                      <option key={i + 1} value={`Grade ${i + 1}`}>Grade {i + 1}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
+
+              {/* Ambiguity notice if unclear characters detected */}
+              {uncertainNotations.length > 0 && (
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                  <HelpCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="font-bold">Check notation before solving:</span>
+                    <p className="text-[11px] text-amber-800">
+                      Possible ambiguous symbols: {uncertainNotations.join(', ')}. Please verify that numbers, signs, and exponents are correct.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Editable Question Textbox */}
               <div className="space-y-1.5">
@@ -891,10 +1401,10 @@ export default function OpticHomeworkScanner({
                   onChange={(e) => setEditableQuestion(e.target.value)}
                   rows={4}
                   placeholder="Enter or verify the detected homework question..."
-                  className="w-full text-xs sm:text-sm p-3.5 rounded-2xl border border-slate-300 bg-white text-slate-900 focus:outline-indigo-500 font-medium leading-relaxed"
+                  className="w-full text-xs sm:text-sm p-3.5 rounded-2xl border border-slate-300 bg-white text-slate-900 focus:outline-cyan-500 font-medium leading-relaxed shadow-2xs"
                 />
                 <div className="flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-1">
-                  <span>Verify equations, symbols, and signs before solving.</span>
+                  <span>Preserve negative signs, brackets, fractions, and units.</span>
                   {processedImage && (
                     <button
                       type="button"
@@ -902,15 +1412,15 @@ export default function OpticHomeworkScanner({
                         onCaptureImage(processedImage.base64, processedImage.mimeType);
                         onClose();
                       }}
-                      className="text-indigo-600 hover:text-indigo-800 font-bold underline cursor-pointer"
+                      className="text-cyan-700 hover:text-cyan-900 font-bold underline cursor-pointer"
                     >
-                      Attach image to main workspace
+                      Attach photo to main workspace
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Quick Formula / Equation Chips */}
+              {/* Quick Academic Formula Presets */}
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   Quick Academic Presets:
@@ -971,7 +1481,7 @@ export default function OpticHomeworkScanner({
                   type="button"
                   onClick={handleSolveQuestion}
                   disabled={!editableQuestion.trim()}
-                  className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <Sparkles size={16} />
                   <span>Solve with Academic Verification</span>
@@ -980,26 +1490,30 @@ export default function OpticHomeworkScanner({
             </div>
           )}
 
-          {/* STEP 6: SOLVING SPINNER */}
+          {/* ========================================================
+              STEP 7: SOLVING SPINNER
+              ======================================================== */}
           {step === 'solving' && (
-            <div className="p-12 text-center space-y-4">
-              <RefreshCw size={36} className="animate-spin text-indigo-600 mx-auto" />
+            <div className="p-10 text-center space-y-4">
+              <RefreshCw size={36} className="animate-spin text-cyan-600 mx-auto" />
               <div className="space-y-1">
                 <h4 className="text-base font-bold text-slate-900">
-                  Solving and Verifying Result...
+                  {solvingStageText}
                 </h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Running multi-step symbolic calculation, conceptual verification, and rendering visual explanation.
+                  Running multi-step symbolic calculation, checking units, formulas, and verified accuracy.
                 </p>
               </div>
             </div>
           )}
 
-          {/* STEP 7: SOLVED RESULT + VISUAL EXPLANATION */}
+          {/* ========================================================
+              STEP 8: SOLVED RESULT + STEP-BY-STEP EXPLANATION
+              ======================================================== */}
           {step === 'solved' && solverResult && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               
-              {/* Top Action Bar: Read Aloud, Print, Offline status */}
+              {/* Utility Header: Audio Narration, Print, View Mode Toggle */}
               <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
                 <div className="flex items-center gap-2">
                   <button
@@ -1008,11 +1522,11 @@ export default function OpticHomeworkScanner({
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
                       isSpeaking 
                         ? 'bg-rose-50 border-rose-300 text-rose-700 animate-pulse'
-                        : 'bg-white border-slate-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-200'
+                        : 'bg-white border-slate-200 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-200'
                     }`}
-                    title={isSpeaking ? 'Stop speech narration' : 'Listen to solution read aloud'}
+                    title={isSpeaking ? 'Stop narration' : 'Listen to solution read aloud'}
                   >
-                    {isSpeaking ? <VolumeX size={14} className="text-rose-600" /> : <Volume2 size={14} className="text-indigo-600" />}
+                    {isSpeaking ? <VolumeX size={14} className="text-rose-600" /> : <Volume2 size={14} className="text-cyan-600" />}
                     <span>{isSpeaking ? 'Stop Audio' : 'Read Aloud'}</span>
                   </button>
 
@@ -1020,78 +1534,183 @@ export default function OpticHomeworkScanner({
                     type="button"
                     onClick={handlePrintSolution}
                     className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                    title="Print solution or save as PDF worksheet"
+                    title="Print worksheet or save as PDF"
                   >
                     <Printer size={14} className="text-slate-600" />
                     <span>Print Worksheet</span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {isOfflineEngineUsed ? (
-                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl flex items-center gap-1">
-                      <span>⚡ Local Offline Engine</span>
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl flex items-center gap-1">
-                      <CheckCheck size={12} className="text-emerald-600" />
-                      <span>Cloud AI Verified</span>
-                    </span>
-                  )}
-                  {isSavedLocally && (
-                    <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">
-                      Saved to Notebook
-                    </span>
-                  )}
+                {/* Quick vs Detailed View Toggle */}
+                <div className="flex bg-slate-200/80 p-0.5 rounded-xl text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setSolutionViewMode('quick')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                      solutionViewMode === 'quick' 
+                        ? 'bg-white text-slate-900 shadow-2xs' 
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Quick Answer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSolutionViewMode('detailed')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                      solutionViewMode === 'detailed' 
+                        ? 'bg-white text-slate-900 shadow-2xs' 
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Detailed Steps
+                  </button>
                 </div>
               </div>
 
-              {/* Question Banner */}
+              {/* Question Summary Banner */}
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
-                  Question ({solverResult.subject})
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                    Question ({solverResult.subject} · {selectedGrade})
+                  </span>
+                  {isOfflineEngineUsed ? (
+                    <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                      ⚡ Local Offline Engine
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <CheckCheck size={11} className="text-emerald-600" />
+                      <span>Independently Verified</span>
+                    </span>
+                  )}
+                </div>
                 <p className="font-semibold text-slate-900 leading-snug">
                   {cleanEducationalText(solverResult.question)}
                 </p>
               </div>
 
-              {/* Verified Final Answer Badge */}
-              <div className="p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-500/30 space-y-1">
+              {/* Verified Final Answer Card */}
+              <div className="p-4 rounded-2xl bg-cyan-50/70 border-2 border-cyan-400/40 space-y-1.5 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black text-indigo-900 uppercase tracking-wider block">
-                    Verified Final Answer
+                  <span className="text-[11px] font-black text-cyan-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-cyan-600" />
+                    <span>Verified Final Answer</span>
                   </span>
-                  <span className="text-[10px] font-mono text-indigo-700 font-bold">
-                    {solverResult.engineUsed || 'Verified'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyAnswer}
+                      className="text-[11px] font-bold text-cyan-700 hover:text-cyan-900 flex items-center gap-1 cursor-pointer"
+                      title="Copy answer"
+                    >
+                      <Copy size={12} />
+                      <span>{copiedNotification ? 'Copied!' : 'Copy'}</span>
+                    </button>
+                    <span className="text-[10px] font-mono text-cyan-800 font-bold bg-cyan-100/70 px-2 py-0.5 rounded-md">
+                      {solverResult.engineUsed || 'Verified'}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-base sm:text-lg font-black text-slate-900 font-mono">
+
+                <div className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight">
                   {cleanEducationalText(solverResult.structuredSteps?.finalAnswer || '')}
                 </div>
+
+                {solverResult.quickAnswer && (
+                  <p className="text-xs text-cyan-950 font-medium leading-relaxed pt-0.5">
+                    {cleanEducationalText(solverResult.quickAnswer)}
+                  </p>
+                )}
               </div>
 
-              {/* Visual Homework Explanation (Geometry, Number line, Graph, etc.) */}
-              {solverResult.visualExplanation && (
-                <VisualHomeworkExplainer visual={solverResult.visualExplanation} />
+              {/* DETAILED MODE: Givens, Formula, Steps, Visual Diagram & Practice Questions */}
+              {solutionViewMode === 'detailed' && (
+                <div className="space-y-4">
+                  {/* Givens & Formula Row */}
+                  {(solverResult.structuredSteps?.givenInfo?.length > 0 || solverResult.structuredSteps?.formula) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {solverResult.structuredSteps?.givenInfo?.length > 0 && (
+                        <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+                            Given Information
+                          </span>
+                          <ul className="list-disc list-inside space-y-0.5 text-slate-800">
+                            {solverResult.structuredSteps.givenInfo.map((g: string, i: number) => (
+                              <li key={i}>{cleanEducationalText(g)}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {solverResult.structuredSteps?.formula && (
+                        <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+                            Governing Principle / Formula
+                          </span>
+                          <p className="font-mono text-slate-900 font-bold">
+                            {cleanEducationalText(solverResult.structuredSteps.formula)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Step-by-Step Intermediate Calculations */}
+                  {Array.isArray(solverResult.structuredSteps?.calculation) && solverResult.structuredSteps.calculation.length > 0 && (
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+                        Step-by-Step Derivation & Intermediate Steps
+                      </span>
+                      <div className="space-y-1.5">
+                        {solverResult.structuredSteps.calculation.map((stepText: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2 text-slate-800 font-mono leading-relaxed">
+                            <span className="w-5 h-5 rounded-md bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 text-slate-600">
+                              {idx + 1}
+                            </span>
+                            <span className="flex-1">{cleanEducationalText(stepText)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Independent Verification Method Note */}
+                  {solverResult.structuredSteps?.verification && (
+                    <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs space-y-1">
+                      <span className="text-[10px] font-black text-emerald-900 uppercase tracking-wider block flex items-center gap-1.5">
+                        <ShieldCheck size={14} className="text-emerald-600" />
+                        <span>Independent Verification Note</span>
+                      </span>
+                      <p className="text-emerald-950 font-medium">
+                        {solverResult.structuredSteps.verification.details || 'Calculation verified against curriculum principles.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Visual Homework Explainer (Geometry, Science Diagram, Coordinate Graph) */}
+                  {solverResult.visualExplanation && (
+                    <VisualHomeworkExplainer visual={solverResult.visualExplanation} />
+                  )}
+
+                  {/* Academic Reasoning & Intuition Narrative */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                      Student Explanation & Memory Analogy
+                    </h4>
+                    <div className="text-xs text-slate-800 leading-relaxed">
+                      {formatTutorResponse(solverResult.narrativeExplanation)}
+                    </div>
+                  </div>
+                </div>
               )}
 
-              {/* Step-by-Step Breakdown */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <h4 className="text-xs font-bold uppercase text-slate-800 tracking-wider">
-                  Academic Reasoning & Steps
-                </h4>
-                <div className="text-xs text-slate-800 leading-relaxed">
-                  {formatTutorResponse(solverResult.narrativeExplanation)}
-                </div>
-              </div>
-
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={handleUseInNotebook}
-                  className="flex-1 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <FileText size={16} />
                   <span>Open in AI Homework Chat</span>
@@ -1100,9 +1719,10 @@ export default function OpticHomeworkScanner({
                 <button
                   type="button"
                   onClick={handleRetake}
-                  className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold cursor-pointer"
+                  className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  Scan Another Question
+                  <PlusCircle size={15} />
+                  <span>Scan Another Question</span>
                 </button>
               </div>
             </div>
