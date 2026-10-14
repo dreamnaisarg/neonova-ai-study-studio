@@ -29,6 +29,18 @@ export async function handleWorkerRequest(request: Request, env: WorkerEnv = {})
     });
   }
 
+  // Handle Google AdSense & AdMob seller verification files
+  if (path === '/ads.txt' || path === '/app-ads.txt') {
+    return new Response('google.com, pub-2809682199317733, DIRECT, f08c47fec0942fa0\n', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
+
   // Handle API routes
   if (path.startsWith('/api/')) {
     // Option B: If an external authoritative backend URL is provided, attempt proxy

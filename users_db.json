@@ -12,11 +12,11 @@
     "studentAvatar": "🎓",
     "planTier": "pro",
     "studyXP": 100,
-    "sessionToken": "neo_sess_b00c8f6f3fb6c871fce8c0078b849a228b6edbaf1027dfa4ba7d1497e2b27416",
-    "sessionExpires": "2027-10-13T12:04:19.148Z",
-    "lastLoginAt": "2026-10-13T12:04:19.148Z",
+    "sessionToken": "neo_sess_e6b2733d1945fccb96dbbf230781ef6f97c4ee75c47857c669db5538146bf3e9",
+    "sessionExpires": "2027-10-14T01:56:37.155Z",
+    "lastLoginAt": "2026-10-14T01:56:37.155Z",
     "billingCycle": "monthly",
-    "subscriptionExpires": "2026-11-09T09:17:19.879Z",
+    "subscriptionExpires": "2026-11-12T02:03:41.644Z",
     "subscriptionStatus": "active"
   },
   {
@@ -248,6 +248,25 @@
     "billingCycle": "monthly",
     "subscriptionStatus": "none",
     "lastLoginAt": "2026-10-13T12:26:46.934Z",
+    "studyXP": 100
+  },
+  {
+    "id": "usr_1791943083997_280337b3",
+    "username": "student_1791943083935",
+    "email": "student_1791943083935@example.com",
+    "passwordHash": "a37d1926ead2d77de110181eaa0c6ac73785b287d04fc8593e7163df8c3d0eb7e2358d6c677ca197294ee8a9040b262d32e2177313227e8cf57a969fa9714735",
+    "passwordSalt": "025de9016a1f1bf94f30a1fd01878e31",
+    "isEmailVerified": true,
+    "verificationCode": "348027",
+    "verificationExpires": "2026-10-14T02:58:03.997Z",
+    "createdAt": "2026-10-14T01:58:03.997Z",
+    "grade": "Grade 9",
+    "studentName": "student_1791943083935",
+    "studentAvatar": "🎓",
+    "planTier": "starter",
+    "billingCycle": "monthly",
+    "subscriptionStatus": "none",
+    "lastLoginAt": "2026-10-14T01:58:04.061Z",
     "studyXP": 100
   }
 ]

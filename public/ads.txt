@@ -1,0 +1,6 @@
+# Google AdSense and AdMob Authorized Digital Sellers for NeoNova
+# Publisher ID: pub-2809682199317733
+# AdSense Account: ca-pub-2809682199317733
+# AdMob App ID: ca-app-pub-2809682199317733~5604007359
+# AdMob Ad Unit ID: ca-app-pub-2809682199317733/2650540953
+google.com, pub-2809682199317733, DIRECT, f08c47fec0942fa0

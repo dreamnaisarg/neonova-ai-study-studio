@@ -281,6 +281,21 @@ async function runTestSuite() {
     assert(res.status === 400, 'OCR endpoint requires image payload and returns 400 safely when empty');
   }
 
+  // 18. Google AdSense & AdMob Seller Verification (ads.txt & app-ads.txt)
+  {
+    const adsReq = new Request('https://neonovastudy.com/ads.txt', { method: 'GET' });
+    const adsRes = await handleWorkerRequest(adsReq);
+    const adsContent = await adsRes.text();
+    assert(adsRes.status === 200, 'ads.txt returns 200 OK');
+    assert(adsContent.includes('pub-2809682199317733'), 'ads.txt contains publisher ID');
+
+    const appAdsReq = new Request('https://neonovastudy.com/app-ads.txt', { method: 'GET' });
+    const appAdsRes = await handleWorkerRequest(appAdsReq);
+    const appAdsContent = await appAdsRes.text();
+    assert(appAdsRes.status === 200, 'app-ads.txt returns 200 OK');
+    assert(appAdsContent.includes('pub-2809682199317733'), 'app-ads.txt contains publisher ID');
+  }
+
   console.log(`\nResults: ${passed}/${total} tests passed.`);
 }
 
