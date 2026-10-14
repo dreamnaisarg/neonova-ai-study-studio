@@ -37,17 +37,21 @@ export default function StageSystemMain({
 
   const [viewMode, setViewMode] = useState<'hub' | 'testing' | 'results'>('hub');
   const [activeStage, setActiveStage] = useState<StageNumber>(1);
+  const [activeSessionId, setActiveSessionId] = useState<string>(() => `sess_${Date.now()}`);
   const [testQuestions, setTestQuestions] = useState<StageQuestion[]>([]);
   const [latestAttempt, setLatestAttempt] = useState<StageTestAttempt | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingStep, setLoadingStep] = useState<string>('');
 
   const handleStartStage = async (stageNum: StageNumber) => {
+    const newSessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    setActiveSessionId(newSessionId);
     setActiveStage(stageNum);
     setIsLoading(true);
     setLoadingStep(`Preparing Stage ${stageNum} assessment for ${currentSubject}...`);
     try {
       const questions = await generateStageQuestions({
+        sessionId: newSessionId,
         subject: currentSubject,
         grade: currentGrade,
         topic: selectedTopic,
@@ -118,11 +122,13 @@ export default function StageSystemMain({
           onTopicChange={setSelectedTopic}
           onStartStage={handleStartStage}
           academicXP={academicXP}
+          onNavigateTab={onNavigateTab}
         />
       )}
 
       {viewMode === 'testing' && (
         <StageTestRunner
+          key={activeSessionId}
           subject={currentSubject}
           grade={currentGrade}
           topic={selectedTopic}

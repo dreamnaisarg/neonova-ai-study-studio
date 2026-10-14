@@ -20,11 +20,13 @@ import {
   Lock,
   Search,
   Wrench,
-  Bot
+  Bot,
+  Trophy
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { SUBJECTS } from '../../types';
 import { PlanTier, PLANS, canAccessFeature } from '../../lib/billing';
+import Mission7QuickWidget from '../missions/Mission7QuickWidget';
 
 interface HomePageProps {
   studentName: string;
@@ -129,7 +131,18 @@ export default function HomePage({
 
   // Comprehensive Catalog of All Features & Learning Tools
   const allFeatures = [
-    // 1. TESTING & EXAM MASTERY
+    {
+      id: 'mission7',
+      category: 'testing' as FeatureCategory,
+      title: 'Mission 7 Mastery Championship',
+      description: '7-Day progressive academic quest. Complete daily objectives, earn badges, and win your official Certificate.',
+      badge: 'EVENT LIVE',
+      badgeColor: 'bg-amber-100 text-amber-800 font-bold',
+      icon: Trophy,
+      iconColor: 'text-amber-600 bg-amber-50 border-amber-200',
+      tierRequired: 'starter' as PlanTier,
+      action: () => onNavigateTab('mission7' as any)
+    },
     {
       id: 'stages',
       category: 'testing' as FeatureCategory,
@@ -446,6 +459,13 @@ export default function HomePage({
           </div>
         </form>
       </section>
+
+      {/* 2a. Mission 7 Seasonal Event Widget */}
+      <Mission7QuickWidget 
+        onOpenEventHub={() => onNavigateTab('mission7' as any)}
+        studentName={studentName}
+        grade={currentGrade}
+      />
 
       {/* 2b. SMART HOME DASHBOARD: Continue Learning, Recommended Practice, Weak Topics */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -22,7 +22,8 @@ import {
   LayoutGrid,
   Target,
   AlertTriangle,
-  Box
+  Box,
+  Trophy
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS } from '../../lib/billing';
@@ -73,6 +74,7 @@ export default function MobileDrawerNav({
     { id: 'practice', label: 'Adaptive Practice', icon: Target },
     { id: 'mistakes', label: 'Mistakes Review', icon: AlertTriangle },
     { id: 'stages', label: '4-Stage Testing System', icon: Award },
+    { id: 'mission7', label: 'Mission 7 Championship', icon: Trophy },
     { id: 'library', label: 'Classics Reading Library', icon: Library },
     { id: 'neovision_hub', label: 'NeoVision 3D Lab', icon: Box },
     { id: 'progress', label: 'Progress & Mastery Analytics', icon: TrendingUp },

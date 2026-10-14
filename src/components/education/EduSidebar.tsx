@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   FlaskConical,
   Award,
+  Trophy,
   PanelLeftClose,
   PanelLeftOpen,
   Target,
@@ -28,6 +29,8 @@ import NeoNovaLogo from '../common/NeoNovaLogo';
 
 export type EduTab = 
   | 'home' 
+  | 'stages'
+  | 'mission7'
   | 'subjects' 
   | 'homework'
   | 'practice'
@@ -36,7 +39,6 @@ export type EduTab =
   | 'library' 
   | 'neovision_hub'
   | 'profile'
-  | 'stages' 
   | 'ai_tutor' 
   | 'study_tools' 
   | 'settings' 
@@ -93,6 +95,8 @@ export default function EduSidebar({
 
   const primaryNavItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: 'Home', icon: Home },
+    { id: 'stages', label: '4-Stage Mastery', icon: Award },
+    { id: 'mission7', label: 'Mission 7', icon: Trophy },
     { id: 'study_tools', label: 'All Features', icon: LayoutGrid },
     { id: 'subjects', label: 'Subjects', icon: BookOpen },
     { id: 'homework', label: 'AI Homework', icon: FileText },

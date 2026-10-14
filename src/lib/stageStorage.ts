@@ -5,6 +5,7 @@ import {
   STAGE_CONFIGS 
 } from '../types/stageSystem';
 import { recordQuizScore, updateTopicMastery } from './progressStorage';
+import { triggerMission7Event } from './mission7Storage';
 
 const STORAGE_KEY_STAGE_PROGRESS = 'NEONOVA_4STAGE_PROGRESS_V1';
 const STORAGE_KEY_STAGE_HISTORY = 'NEONOVA_4STAGE_ATTEMPTS_HISTORY_V1';
@@ -158,6 +159,22 @@ export function recordStageAttempt(
     );
   } catch (err) {
     console.warn('Progress tracker sync failed:', err);
+  }
+
+  // Trigger Mission 7 event progression
+  try {
+    const studentUser = typeof window !== 'undefined' ? localStorage.getItem('neonova_auth_user') : null;
+    const parsedUser = studentUser ? JSON.parse(studentUser) : {};
+    const board = typeof window !== 'undefined' ? localStorage.getItem('neonova_curriculum_board') || 'CBSE' : 'CBSE';
+    triggerMission7Event(
+      'stage_completed',
+      { stageNumber: stageNum, passed: isPassed, score: newScore },
+      parsedUser.name || 'Student',
+      attempt.grade,
+      board
+    );
+  } catch (m7Err) {
+    console.warn('Mission 7 event trigger failed:', m7Err);
   }
 
   return current;

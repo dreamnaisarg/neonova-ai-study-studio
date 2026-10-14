@@ -33,6 +33,7 @@ import {
   updateStudentCurriculum 
 } from './studentMemoryStore';
 import { CURRICULUM_CATALOG } from './curriculumCatalog';
+import { generateStageQuestionsAuthoritative } from './stageEngine';
 
 // Comprehensive System Instruction for NeoNova AI Homework Helper
 export const NEONOVA_SYSTEM_INSTRUCTION = `# NEONOVA — ACCURATE AI HOMEWORK HELPER
@@ -675,46 +676,44 @@ Return valid JSON with schema:
     }
 
     if (url === '/api/stage-system/generate-test') {
-      const { subject = 'Mathematics', grade = 'Grade 8', topic = 'General', stage = 1, questionCount = 5 } = body;
-      const stageNames = ['Easy (Fundamentals)', 'Medium (Understanding)', 'Hard (Application)', 'Stage 4 Exam'];
-      const stageName = stageNames[stage - 1] || 'Assessment';
-      
-      const prompt = `Generate ${questionCount} multiple-choice questions for NeoNova 4-Stage Testing System.
-Subject: ${subject}
-Grade: ${grade}
-Topic: ${topic}
-Stage: ${stage} (${stageName})
-
-Return valid JSON with schema:
-{
-  "questions": [
-    {
-      "id": "st-1",
-      "stageNumber": ${stage},
-      "questionNumber": 1,
-      "questionText": "Question wording",
-      "options": ["A", "B", "C", "D"],
-      "correctOptionIndex": 0,
-      "correctAnswer": "A",
-      "explanation": "Clear explanation",
-      "internalDifficulty": "${stage === 1 ? 'EASY' : stage === 2 ? 'MEDIUM' : 'HARD'}",
-      "conceptTested": "${topic}",
-      "stepByStepHint": "Hint for students"
-    }
-  ]
-}`;
+      const {
+        sessionId,
+        userId = 'student_default',
+        subject = 'Mathematics',
+        grade = 'Grade 8',
+        topic = 'General Curriculum',
+        stage = 1,
+        questionCount = 8,
+        excludeSignatures = []
+      } = body;
 
       try {
         const ai = getAi();
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
-          contents: prompt,
-          config: { responseMimeType: 'application/json' }
+        const result = await generateStageQuestionsAuthoritative({
+          sessionId,
+          userId,
+          subject,
+          grade,
+          topic,
+          stage: Number(stage) as any,
+          questionCount: Number(questionCount) || 8,
+          excludeSignatures: Array.isArray(excludeSignatures) ? excludeSignatures : [],
+          aiInstance: ai
         });
-        const parsed = JSON.parse(response.text || '{}');
-        return { status: 200, data: parsed };
+        return { status: 200, data: result };
       } catch (err: any) {
-        return { status: 500, data: { error: 'Failed to generate stage questions' } };
+        console.warn('Backend stage questions endpoint fallback triggered:', err);
+        const fallbackResult = await generateStageQuestionsAuthoritative({
+          sessionId,
+          userId,
+          subject,
+          grade,
+          topic,
+          stage: Number(stage) as any,
+          questionCount: Number(questionCount) || 8,
+          excludeSignatures: Array.isArray(excludeSignatures) ? excludeSignatures : []
+        });
+        return { status: 200, data: fallbackResult };
       }
     }
 

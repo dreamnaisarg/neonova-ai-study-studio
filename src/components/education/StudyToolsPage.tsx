@@ -25,7 +25,8 @@ import {
   User,
   Box,
   Mic,
-  Calculator
+  Calculator,
+  Trophy
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS, canAccessFeature } from '../../lib/billing';
@@ -137,6 +138,15 @@ export default function StudyToolsPage({
       description: 'Track weak chapters, calculation errors, and sign slip-ups with personalized remediation drills.',
       icon: ShieldAlert,
       action: () => onNavigateTab('mistakes')
+    },
+    {
+      id: 'mission7_event',
+      category: 'practice',
+      title: 'Mission 7 Mastery Championship',
+      description: '7-Day academic quest and seasonal event. Complete daily curriculum missions, earn badges, and win your official verified Certificate.',
+      icon: Trophy,
+      tag: 'SEASONAL EVENT',
+      action: () => onNavigateTab('mission7' as any)
     },
     {
       id: 'stages_system',

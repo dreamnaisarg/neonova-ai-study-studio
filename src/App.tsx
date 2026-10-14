@@ -8,6 +8,7 @@ import EduMobileNav from './components/education/EduMobileNav';
 import HomePage from './components/education/HomePage';
 import SubjectsPage from './components/education/SubjectsPage';
 import StageSystemMain from './components/stages/StageSystemMain';
+import Mission7EventHub from './components/missions/Mission7EventHub';
 import HomeworkHelperView from './components/education/HomeworkHelperView';
 import NeoNovaAITutorTab from './components/scifi/NeoNovaAITutorTab';
 import StudyToolsPage from './components/education/StudyToolsPage';
@@ -925,6 +926,18 @@ export default function App() {
             />
           )}
 
+          {activeTab === 'mission7' && (
+            <Mission7EventHub
+              studentName={studentName}
+              currentGrade={currentGrade}
+              curriculumBoard={curriculumBoard}
+              academicXP={academicXP}
+              adjustXP={adjustXP}
+              onNavigateTab={setActiveTab}
+              onOpenScanner={() => setIsScannerOpen(true)}
+            />
+          )}
+
           {activeTab === 'homework' && (
             homeworkViewMode === 'chat' ? (
               <HomeworkHelperView
@@ -1118,7 +1131,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'daily' && <DailyHub />}
+          {activeTab === 'daily' && <DailyHub onNavigateTab={setActiveTab} />}
 
           {activeTab === 'memory' && (
             <MemoryBooster

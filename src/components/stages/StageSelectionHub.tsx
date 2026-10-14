@@ -29,6 +29,7 @@ import {
   DEFAULT_PASSING_THRESHOLD 
 } from '../../lib/stageStorage';
 import { getTopicsForSubject } from '../../lib/stageQuestionGenerator';
+import Mission7QuickWidget from '../missions/Mission7QuickWidget';
 
 interface StageSelectionHubProps {
   currentSubject: string;
@@ -39,6 +40,7 @@ interface StageSelectionHubProps {
   onTopicChange: (topic: string) => void;
   onStartStage: (stageNum: StageNumber) => void;
   academicXP?: number;
+  onNavigateTab?: (tab: any) => void;
 }
 
 export default function StageSelectionHub({
@@ -49,7 +51,8 @@ export default function StageSelectionHub({
   selectedTopic,
   onTopicChange,
   onStartStage,
-  academicXP = 0
+  academicXP = 0,
+  onNavigateTab
 }: StageSelectionHubProps) {
   const [subjectSearch, setSubjectSearch] = useState('');
 
@@ -114,6 +117,14 @@ export default function StageSelectionHub({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* MISSION 7 SEASONAL EVENT QUICK BANNER */}
+        <div className="mt-6 pt-6 border-t border-slate-100">
+          <Mission7QuickWidget 
+            onOpenEventHub={() => onNavigateTab && onNavigateTab('mission7')}
+            grade={currentGrade}
+          />
         </div>
 
         {/* PROGRESSION STEPPER INDICATOR */}

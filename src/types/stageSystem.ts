@@ -125,6 +125,11 @@ export interface StageQuestion {
   internalDifficulty: InternalQuestionDifficulty; // EASY, MEDIUM, or HARD (hidden from student during test!)
   topic?: string;
   hint?: string;
+  conceptTested?: string;
+  stepByStepHint?: string;
+  problemFamily?: string;
+  sessionId?: string;
+  source?: 'ai' | 'procedural';
 }
 
 export interface UserAnswerRecord {
@@ -142,6 +147,7 @@ export interface UserAnswerRecord {
 
 export interface StageTestAttempt {
   attemptId: string;
+  sessionId?: string;
   subject: string;
   grade: string;
   topic: string;

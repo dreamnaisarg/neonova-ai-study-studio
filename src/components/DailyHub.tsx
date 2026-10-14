@@ -14,6 +14,7 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
+import Mission7QuickWidget from './missions/Mission7QuickWidget';
 
 interface MemeResponse {
   templateStyle: string;
@@ -23,7 +24,11 @@ interface MemeResponse {
   academicAdvice: string;
 }
 
-export default function DailyHub() {
+interface DailyHubProps {
+  onNavigateTab?: (tab: any) => void;
+}
+
+export default function DailyHub({ onNavigateTab }: DailyHubProps = {}) {
   const [studentXP, setStudentXP] = useState(380);
   const [streakDays, setStreakDays] = useState(5);
   const [checkedDays, setCheckedDays] = useState<number[]>([0, 1, 2, 3, 4]);
@@ -247,6 +252,11 @@ export default function DailyHub() {
               })}
             </div>
           </div>
+
+          {/* Mission 7 Active Event Widget */}
+          <Mission7QuickWidget 
+            onOpenEventHub={() => onNavigateTab ? onNavigateTab('mission7') : null}
+          />
 
           {/* Daily Missions */}
           <div className="bg-white border border-slate-200 p-4 rounded-xl space-y-2.5 shadow-2xs">
