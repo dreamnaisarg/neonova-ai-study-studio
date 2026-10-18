@@ -26,12 +26,16 @@ interface PlansPageProps {
   currentTier: PlanTier;
   onSubscriptionUpdated: (newState: VerifiedSubscriptionState) => void;
   onClose?: () => void;
+  isGuest?: boolean;
+  onSelectPlan?: (targetTier: 'plus' | 'pro', billingCycle: 'monthly' | 'yearly') => void;
 }
 
 export default function PlansPage({
   currentTier,
   onSubscriptionUpdated,
-  onClose
+  onClose,
+  isGuest = false,
+  onSelectPlan
 }: PlansPageProps) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,6 +54,10 @@ export default function PlansPage({
       return;
     }
     setFeedbackMessage(null);
+    if (onSelectPlan) {
+      onSelectPlan(targetTier, billingCycle);
+      return;
+    }
     setCheckoutTargetTier(targetTier);
     setIsCheckoutOpen(true);
   };

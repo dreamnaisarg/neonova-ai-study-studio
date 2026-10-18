@@ -351,6 +351,7 @@ export async function verifyPaymentOnServer(payload: {
   billingCycle: 'monthly' | 'yearly';
   studentName?: string;
   studentEmail?: string;
+  token?: string;
 }): Promise<{
   verified: boolean;
   message?: string;

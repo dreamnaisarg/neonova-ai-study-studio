@@ -36,28 +36,28 @@
   "prefer_related_applications": false,
   "shortcuts": [
     {
+      "name": "Scan Homework",
+      "short_name": "Scan",
+      "description": "Scan or attach worksheet problems directly with camera.",
+      "url": "/?action=scan_homework"
+    },
+    {
+      "name": "3D AR Model Lab",
+      "short_name": "3D AR Lab",
+      "description": "Project 3D anatomical and scientific models into real world.",
+      "url": "/?ar=true&tab=three_d_lab"
+    },
+    {
+      "name": "Phone Study Widgets",
+      "short_name": "Widgets",
+      "description": "Daily study reminder alarms, flashcards, and streak widgets.",
+      "url": "/?modal=widgets"
+    },
+    {
       "name": "AI Homework Solver",
       "short_name": "AI Solver",
       "description": "Instant step-by-step problem explanations tailored to your grade.",
       "url": "/?tab=homework"
-    },
-    {
-      "name": "3D Science Labs",
-      "short_name": "Science Labs",
-      "description": "Interactive 3D anatomical and physics simulations.",
-      "url": "/?tab=three_d_lab"
-    },
-    {
-      "name": "Practice Quiz",
-      "short_name": "Quiz",
-      "description": "Test your knowledge with diagnostic questions.",
-      "url": "/?tab=quiz"
-    },
-    {
-      "name": "Study Notes Maker",
-      "short_name": "Notes",
-      "description": "Create and organize your academic study notes.",
-      "url": "/?tab=notes"
     }
   ]
 }

@@ -45,6 +45,9 @@ import MistakesDashboard from './components/education/MistakesDashboard';
 import RealtimeVoiceModal from './components/voice/RealtimeVoiceModal';
 import ThreeDModelGenerator from './components/education/ThreeDModelGenerator';
 import StudyAlertsPage from './components/education/StudyAlertsPage';
+import ARViewMode from './components/education/ARViewMode';
+import ARScienceLabView from './components/education/ARScienceLabView';
+import HomeScreenWidgetsHub from './components/widgets/HomeScreenWidgetsHub';
 import { stripAllSymbolsForPlaintext } from './utils';
 
 import { 
@@ -163,6 +166,12 @@ export default function App() {
 
   // Subscription / Billing Tier (Checks verified subscription & user account)
   const [subscriptionState, setSubscriptionState] = useState<VerifiedSubscriptionState>(() => {
+    // If not authenticated, guest users always start strictly on starter tier
+    const token = typeof window !== 'undefined' ? localStorage.getItem('neonova_auth_token') : null;
+    const userRaw = typeof window !== 'undefined' ? (localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile')) : null;
+    if (!token && !userRaw) {
+      return { tier: 'starter', status: 'none' };
+    }
     const entitlement = getCurrentSubscriptionState();
     return entitlement;
   });
@@ -171,6 +180,8 @@ export default function App() {
   // Modals & Overlays
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isWidgetsHubOpen, setIsWidgetsHubOpen] = useState(false);
+  const [isARModalOpen, setIsARModalOpen] = useState(false);
   const [isDrawingCanvasOpen, setIsDrawingCanvasOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTrustFooterOpen, setIsTrustFooterOpen] = useState(false);
@@ -181,6 +192,15 @@ export default function App() {
   });
   const [isPaymentCheckoutOpen, setIsPaymentCheckoutOpen] = useState(false);
   const [checkoutTargetTier, setCheckoutTargetTier] = useState<'plus' | 'pro'>('plus');
+  const [checkoutBillingCycle, setCheckoutBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
+  // Auth Modal State for Guest Login & Subscription Checkout
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState<string | undefined>(undefined);
+  const [pendingCheckout, setPendingCheckout] = useState<{
+    tier: 'plus' | 'pro';
+    billingCycle: 'monthly' | 'yearly';
+  } | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isHelpGuideOpen, setIsHelpGuideOpen] = useState(false);
   const [isAdminPortalOpen, setIsAdminPortalOpen] = useState(false);
@@ -363,6 +383,23 @@ export default function App() {
     verifySession();
   }, []);
 
+  const handleOpenLogin = (prompt?: string) => {
+    setAuthPromptMessage(prompt);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleSelectPlan = (targetTier: 'plus' | 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
+    if (!currentUser) {
+      setPendingCheckout({ tier: targetTier, billingCycle });
+      setAuthPromptMessage("Log in or create an account to purchase and manage your subscription.");
+      setIsAuthModalOpen(true);
+    } else {
+      setCheckoutTargetTier(targetTier);
+      setCheckoutBillingCycle(billingCycle);
+      setIsPaymentCheckoutOpen(true);
+    }
+  };
+
   const handleAuthSuccess = (user: AuthenticatedUser, token: string) => {
     setCurrentUser(user);
     localStorage.setItem('neonova_auth_token', token);
@@ -376,6 +413,17 @@ export default function App() {
       saveActiveSubscriptionPlan(user.planTier, user.billingCycle || 'monthly', user.studentName || user.username);
     }
     setSubscriptionState(getCurrentSubscriptionState());
+    setIsAuthModalOpen(false);
+
+    // If a plan checkout was requested before authentication, automatically continue checkout!
+    if (pendingCheckout) {
+      const target = pendingCheckout;
+      setPendingCheckout(null);
+      setAuthPromptMessage(undefined);
+      setCheckoutTargetTier(target.tier);
+      setCheckoutBillingCycle(target.billingCycle);
+      setIsPaymentCheckoutOpen(true);
+    }
   };
 
   const handleLogout = async () => {
@@ -391,7 +439,11 @@ export default function App() {
     }
     localStorage.removeItem('neonova_auth_token');
     localStorage.removeItem('neonova_auth_user');
+    localStorage.removeItem('neonova_installed_profile');
+    localStorage.removeItem('NEONOVA_SUBSCRIPTION_VERIFIED_STATE');
     setCurrentUser(null);
+    setSubscriptionState({ tier: 'starter', status: 'none' });
+    setStudentName('Alex');
   };
 
   // URL Hash routing listener for deep links (#privacy, #delete-account)
@@ -450,6 +502,8 @@ export default function App() {
       if (e.key === 'Escape') {
         setIsSearchOpen(false);
         setIsScannerOpen(false);
+        setIsWidgetsHubOpen(false);
+        setIsARModalOpen(false);
         setIsDrawingCanvasOpen(false);
         setIsProfileModalOpen(false);
         setIsTrustFooterOpen(false);
@@ -473,7 +527,7 @@ export default function App() {
     });
   };
 
-  // Sync profile from localStorage on boot
+  // Sync profile and handle PWA URL launch shortcuts on boot
   useEffect(() => {
     try {
       const saved = localStorage.getItem(PROFILE_KEY);
@@ -483,6 +537,18 @@ export default function App() {
         if (parsed.avatar) setStudentAvatar(parsed.avatar);
         if (parsed.grade) setCurrentGrade(parsed.grade);
         if (parsed.preferredSubjects) setPreferredSubjects(parsed.preferredSubjects);
+      }
+
+      // Check URL query parameters for home screen shortcuts
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'scan_homework') {
+          setIsScannerOpen(true);
+        } else if (urlParams.get('modal') === 'widgets') {
+          setIsWidgetsHubOpen(true);
+        } else if (urlParams.get('ar') === 'true') {
+          setIsARModalOpen(true);
+        }
       }
     } catch (e) {
       console.warn('Failed to load profile', e);
@@ -805,11 +871,6 @@ export default function App() {
     );
   }
 
-  // MANDATORY USER LOGIN & ACCOUNT SYSTEM
-  if (!currentUser) {
-    return <NeoNovaAuthScreen onAuthSuccess={handleAuthSuccess} />;
-  }
-
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-800 flex font-sans antialiased ${isDarkMode ? 'dark' : ''}`}>
       {/* Sidebar Navigation */}
@@ -824,6 +885,9 @@ export default function App() {
         currentGrade={currentGrade}
         currentTier={currentTier}
         onOpenHelpGuide={() => setIsHelpGuideOpen(true)}
+        isGuest={!currentUser}
+        onOpenLogin={() => handleOpenLogin()}
+        onOpenWidgets={() => setIsWidgetsHubOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -841,8 +905,9 @@ export default function App() {
           studentName={studentName}
           studentAvatar={studentAvatar}
           onOpenSearch={() => setIsSearchOpen(true)}
-          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenProfile={() => setActiveTab('profile')}
           onOpenScanner={() => setIsScannerOpen(true)}
+          onOpenWidgets={() => setIsWidgetsHubOpen(true)}
           onOpenMobileMenu={() => setIsMobileDrawerOpen(true)}
           academicXP={academicXP}
           currentTier={currentTier}
@@ -851,6 +916,8 @@ export default function App() {
           onCycleFontScale={cycleFontScale}
           onOpenHelpGuide={() => setIsHelpGuideOpen(true)}
           onLogout={handleLogout}
+          isGuest={!currentUser}
+          onOpenLogin={() => handleOpenLogin()}
         />
 
         {/* Tab View Router */}
@@ -888,6 +955,8 @@ export default function App() {
               currentTier={currentTier}
               onFeatureLocked={handleFeatureLocked}
               onOpenPlans={() => setActiveTab('plans')}
+              onOpenWidgets={() => setIsWidgetsHubOpen(true)}
+              onOpenARLab={() => setIsARModalOpen(true)}
             />
           )}
 
@@ -1038,6 +1107,8 @@ export default function App() {
               }}
               currentTier={currentTier}
               onFeatureLocked={handleFeatureLocked}
+              onOpenWidgets={() => setIsWidgetsHubOpen(true)}
+              onOpenARLab={() => setIsARModalOpen(true)}
             />
           )}
 
@@ -1095,6 +1166,8 @@ export default function App() {
               currentUser={currentUser || undefined}
               onLogout={handleLogout}
               onReplaySplash={() => setHasBooted(false)}
+              isGuest={!currentUser}
+              onOpenLogin={() => handleOpenLogin()}
             />
           )}
 
@@ -1102,6 +1175,8 @@ export default function App() {
             <PlansPage
               currentTier={currentTier}
               onSubscriptionUpdated={handleSubscriptionUpdated}
+              isGuest={!currentUser}
+              onSelectPlan={handleSelectPlan}
             />
           )}
 
@@ -1120,6 +1195,8 @@ export default function App() {
               onLogout={handleLogout}
               onOpenSettings={() => setActiveTab('settings')}
               onOpenPrivacyPolicy={() => setIsTrustFooterOpen(true)}
+              isGuest={!currentUser}
+              onOpenLogin={() => handleOpenLogin()}
             />
           )}
 
@@ -1144,6 +1221,18 @@ export default function App() {
           {activeTab === 'notes' && <NotesSummarizer adjustXP={adjustXP} />}
 
           {activeTab === 'career' && <FutureCareerMatch />}
+
+          {activeTab === 'ar_lab' && (
+            <ARScienceLabView
+              currentGrade={currentGrade}
+              onNavigateTab={(tab) => {
+                setActiveTab(tab as EduTab);
+                window.scrollTo(0, 0);
+              }}
+              currentTier={currentTier}
+              onOpenPlans={() => setActiveTab('plans')}
+            />
+          )}
 
           {activeTab === 'three_d_lab' && <ThreeDModelGenerator />}
 
@@ -1220,6 +1309,32 @@ export default function App() {
         />
       )}
 
+      {/* Phone Home Screen Interactive Widgets & Study Reminders Hub */}
+      <HomeScreenWidgetsHub
+        isOpen={isWidgetsHubOpen}
+        onClose={() => setIsWidgetsHubOpen(false)}
+        onLaunchScanner={() => setIsScannerOpen(true)}
+        onLaunchARLab={() => {
+          setActiveTab('ar_lab');
+        }}
+        onNavigateTab={(tab) => setActiveTab(tab)}
+        studentName={currentUser?.studentName || studentName}
+        currentGrade={currentGrade}
+      />
+
+      {/* AR View Mode (Project 3D Anatomical & Scientific Models into Real World) */}
+      {isARModalOpen && (
+        <ARViewMode
+          initialModelType="anatomy"
+          initialAnatomyModelId="heart"
+          onClose={() => setIsARModalOpen(false)}
+          onSwitchToStudio={() => {
+            setIsARModalOpen(false);
+            setActiveTab('three_d_lab');
+          }}
+        />
+      )}
+
       {/* Concept Explainer "Help Me Understand" Modal */}
       {helpMeUnderstandData.isOpen && (
         <HelpMeUnderstandModal
@@ -1274,8 +1389,7 @@ export default function App() {
         }}
         onUpgradeNow={(tier) => {
           setIsPremiumLockOpen(false);
-          setCheckoutTargetTier(tier);
-          setIsPaymentCheckoutOpen(true);
+          handleSelectPlan(tier, 'monthly');
         }}
       />
 
@@ -1284,8 +1398,10 @@ export default function App() {
         isOpen={isPaymentCheckoutOpen}
         onClose={() => setIsPaymentCheckoutOpen(false)}
         targetTier={checkoutTargetTier}
+        initialBillingCycle={checkoutBillingCycle}
         onPaymentSuccess={handleSubscriptionUpdated}
-        studentName={studentName}
+        studentName={currentUser?.studentName || studentName}
+        studentEmail={currentUser?.email || ''}
       />
 
       {/* Mobile & Tablet Full Slide-out Drawer */}
@@ -1308,6 +1424,9 @@ export default function App() {
         onOpenPrivacyPolicy={() => setIsTrustFooterOpen(true)}
         username={currentUser?.username}
         onLogout={handleLogout}
+        isGuest={!currentUser}
+        onOpenLogin={() => handleOpenLogin()}
+        onOpenWidgets={() => setIsWidgetsHubOpen(true)}
       />
 
       {/* How to Use & Accessibility Help Modal */}
@@ -1334,6 +1453,29 @@ export default function App() {
         isOpen={isAdminPortalOpen}
         onClose={() => setIsAdminPortalOpen(false)}
       />
+
+      {/* Auth Modal (Guest Login / Signup / Subscription Checkout Gate) */}
+      {isAuthModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sign In or Create Account"
+        >
+          <div className="relative w-full max-w-lg min-h-screen sm:min-h-0 bg-white sm:rounded-2xl sm:shadow-2xl sm:border sm:border-slate-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+            <NeoNovaAuthScreen
+              onAuthSuccess={handleAuthSuccess}
+              onClose={() => {
+                setIsAuthModalOpen(false);
+                setPendingCheckout(null);
+                setAuthPromptMessage(undefined);
+              }}
+              promptMessage={authPromptMessage}
+              targetPlanContext={pendingCheckout || undefined}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

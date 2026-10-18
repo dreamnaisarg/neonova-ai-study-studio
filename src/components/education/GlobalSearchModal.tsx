@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, BookOpen, FileText, CheckCircle2, FlaskConical, Bot, ArrowRight, CornerDownLeft, Award, Camera, Layers, Clock } from 'lucide-react';
+import { Search, X, BookOpen, FileText, CheckCircle2, FlaskConical, Bot, ArrowRight, CornerDownLeft, Award, Camera, Layers, Clock, Eye } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 
 interface SearchResultItem {
@@ -149,6 +149,17 @@ export default function GlobalSearchModal({
       icon: FileText,
       action: () => {
         onLaunchTool('memory');
+        onClose();
+      }
+    },
+    {
+      id: 'tool-ar-lab',
+      title: 'AR Science Lab (Live Camera Augmented Reality & Real World)',
+      category: 'Science Simulation',
+      type: 'tool',
+      icon: Eye,
+      action: () => {
+        onNavigateTab('ar_lab');
         onClose();
       }
     },

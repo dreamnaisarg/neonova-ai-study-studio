@@ -28,7 +28,8 @@ import {
   Stethoscope,
   ChevronRight,
   Sparkles,
-  Box
+  Box,
+  Camera
 } from 'lucide-react';
 import { 
   AnatomicalModelDefinition, 
@@ -40,13 +41,16 @@ import {
 import { ANATOMICAL_MODELS_CATALOG } from '../../lib/anatomyEngine/anatomyModelsCatalog';
 import { buildAnatomicalAssembly, BuiltAnatomyResult } from '../../lib/anatomyEngine/anatomyAssemblyBuilder';
 import { validateAnatomicalPrompt } from '../../lib/anatomyEngine/anatomyValidation';
+import ARViewMode from './ARViewMode';
 
 export interface AnatomyLabViewProps {
   onSwitchToEngineering?: () => void;
+  onOpenAR?: () => void;
 }
 
-export default function AnatomyLabView({ onSwitchToEngineering }: AnatomyLabViewProps = {}) {
+export default function AnatomyLabView({ onSwitchToEngineering, onOpenAR }: AnatomyLabViewProps = {}) {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [internalAROpen, setInternalAROpen] = useState(false);
 
   // Model & Filter state
   const [activeModelId, setActiveModelId] = useState<string>('heart');
@@ -626,6 +630,20 @@ export default function AnatomyLabView({ onSwitchToEngineering }: AnatomyLabView
                 {theme === 'clinical_light' ? <Moon size={14} /> : <Sun size={14} />}
               </button>
 
+              {/* AR View Mode Trigger */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenAR) onOpenAR();
+                  else setInternalAROpen(true);
+                }}
+                className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                title="Project Human Anatomy into Real World using Phone Camera (AR)"
+              >
+                <Camera size={13} className="text-cyan-200 animate-pulse" />
+                <span>AR Mode</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleExportSnapshot}
@@ -645,6 +663,16 @@ export default function AnatomyLabView({ onSwitchToEngineering }: AnatomyLabView
               </button>
             </div>
           </div>
+
+          {/* AR View Mode Modal */}
+          {internalAROpen && (
+            <ARViewMode
+              initialModelType="anatomy"
+              initialAnatomyModelId={activeModelId}
+              onClose={() => setInternalAROpen(false)}
+              onSwitchToStudio={() => setInternalAROpen(false)}
+            />
+          )}
 
           {/* Three.js Canvas Container */}
           <div ref={mountRef} className="w-full flex-1 min-h-[460px] cursor-grab active:cursor-grabbing relative" />

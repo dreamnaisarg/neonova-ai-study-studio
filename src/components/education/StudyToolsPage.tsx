@@ -26,7 +26,9 @@ import {
   Box,
   Mic,
   Calculator,
-  Trophy
+  Trophy,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS, canAccessFeature } from '../../lib/billing';
@@ -50,6 +52,8 @@ interface StudyToolsPageProps {
   onOpenNeoVisionSection: (section: 'teacher' | 'scanner' | 'timeline' | 'room' | 'manga' | 'panic' | 'lab' | 'arena' | 'visualizer' | 'city') => void;
   currentTier?: PlanTier;
   onFeatureLocked?: (featureName: string, requiredTier: PlanTier, description?: string) => void;
+  onOpenWidgets?: () => void;
+  onOpenARLab?: () => void;
 }
 
 export default function StudyToolsPage({
@@ -59,7 +63,9 @@ export default function StudyToolsPage({
   onLaunchTool,
   onOpenNeoVisionSection,
   currentTier = 'starter',
-  onFeatureLocked
+  onFeatureLocked,
+  onOpenWidgets,
+  onOpenARLab
 }: StudyToolsPageProps) {
   const [activeCategory, setActiveCategory] = useState<'all' | 'homework' | 'practice' | 'learning' | 'science' | 'neovision'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -256,6 +262,32 @@ export default function StudyToolsPage({
       description: 'Interactive 3D organ scans, molecules, and biological anatomy atlas models.',
       icon: Layers,
       action: () => onLaunchTool('three_d_lab')
+    },
+    {
+      id: 'ar_science_lab',
+      category: 'science',
+      title: 'AR Science Lab (Live Camera)',
+      description: 'Project 3D organs, physics models, and anatomy right into your room with your device camera.',
+      icon: Eye,
+      tag: 'Augmented Reality',
+      action: () => {
+        onNavigateTab('ar_lab');
+      }
+    },
+    {
+      id: 'phone_widgets',
+      category: 'learning',
+      title: 'Phone Home Screen Widgets & Alarms',
+      description: 'Set daily study alarms, flashcards, study streaks, and homework scan shortcuts on your phone screen.',
+      icon: Smartphone,
+      tag: 'Interactive Widgets',
+      action: () => {
+        if (onOpenWidgets) {
+          onOpenWidgets();
+        } else {
+          onLaunchTool('phone_widgets');
+        }
+      }
     },
 
     // NEOVISION

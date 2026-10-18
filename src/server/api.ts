@@ -1007,7 +1007,8 @@ Respond ONLY with valid JSON conforming to this schema:
         billingCycle = 'monthly', 
         studentName = 'Student', 
         studentEmail = '',
-        accountId = 'default-student' 
+        accountId = 'default-student',
+        token
       } = body;
       
       const refToVerify = (transactionRef || utrNumber || orderId || '').trim();
@@ -1046,9 +1047,10 @@ Respond ONLY with valid JSON conforming to this schema:
       }
 
       // Update user account subscription status in userStore if applicable
-      if (studentEmail || accountId) {
+      if (token || studentEmail || accountId) {
         try {
           updateUserSubscription({
+            token,
             userId: accountId,
             email: studentEmail,
             planTier: tier,

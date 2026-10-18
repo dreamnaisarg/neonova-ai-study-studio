@@ -529,15 +529,44 @@ export default function CreditCardPaymentView({
         </div>
       </div>
 
+      {/* TEMPORARILY UNAVAILABLE GATEWAY BANNER */}
+      <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 space-y-2 text-amber-950 shadow-xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-extrabold text-xs sm:text-sm text-amber-900">
+            <AlertCircle size={18} className="text-amber-600 shrink-0" />
+            <span>Credit & Debit Card Option: Temporarily Unavailable</span>
+          </div>
+          <span className="text-[10px] font-black uppercase bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+            MAINTENANCE
+          </span>
+        </div>
+        <p className="text-xs text-amber-900/90 leading-relaxed">
+          Card gateway checkout is temporarily disabled while our banking acquisition network completes scheduled RBI tokenization and security system maintenance.
+        </p>
+        <div className="pt-1 flex flex-col sm:flex-row items-center gap-2">
+          <button
+            type="button"
+            onClick={onBackToMethods}
+            className="w-full sm:w-auto px-4 py-2 bg-[#5f259f] hover:bg-[#4d1d82] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Sparkles size={13} />
+            <span>Switch to Instant PhonePe / UPI (Active)</span>
+          </button>
+          <span className="text-[11px] text-amber-800">
+            Immediate 0-second plan activation with zero transaction fee.
+          </span>
+        </div>
+      </div>
+
       {/* REAL, EDITABLE CREDIT CARD PAYMENT FORM */}
-      <form onSubmit={handleSubmitPayment} noValidate className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+      <form onSubmit={(e) => { e.preventDefault(); }} noValidate className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 opacity-85">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Lock size={13} className="text-indigo-600" />
-            <span>Enter Card Details</span>
+            <Lock size={13} className="text-slate-500" />
+            <span>Card Form (Temporarily Paused)</span>
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">
-            Encrypted 256-Bit SSL
+          <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-mono font-bold">
+            GATEWAY OFFLINE
           </span>
         </div>
 
@@ -744,21 +773,12 @@ export default function CreditCardPaymentView({
           </button>
 
           <button
-            type="submit"
-            disabled={isLoadingOrder || isProcessingCheckout}
-            className="w-full sm:flex-1 py-3 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            type="button"
+            onClick={onBackToMethods}
+            className="w-full sm:flex-1 py-3 px-6 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            {isProcessingCheckout ? (
-              <>
-                <RefreshCw size={15} className="animate-spin" />
-                <span>Processing Card Transaction...</span>
-              </>
-            ) : (
-              <>
-                <Lock size={15} />
-                <span>Pay Securely • ₹{finalPrice} INR</span>
-              </>
-            )}
+            <AlertCircle size={15} />
+            <span>Card Option Temporarily Unavailable — Use Instant UPI / PhonePe</span>
           </button>
         </div>
       </form>

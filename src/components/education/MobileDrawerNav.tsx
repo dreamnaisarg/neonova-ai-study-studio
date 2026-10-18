@@ -23,7 +23,9 @@ import {
   Target,
   AlertTriangle,
   Box,
-  Trophy
+  Trophy,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS } from '../../lib/billing';
@@ -45,6 +47,9 @@ interface MobileDrawerNavProps {
   onOpenPrivacyPolicy: () => void;
   username?: string;
   onLogout?: () => void;
+  isGuest?: boolean;
+  onOpenLogin?: () => void;
+  onOpenWidgets?: () => void;
 }
 
 export default function MobileDrawerNav({
@@ -62,12 +67,16 @@ export default function MobileDrawerNav({
   onCycleFontScale,
   onOpenPrivacyPolicy,
   username,
-  onLogout
+  onLogout,
+  isGuest = false,
+  onOpenLogin,
+  onOpenWidgets
 }: MobileDrawerNavProps) {
   if (!isOpen) return null;
 
   const navItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: 'Home Dashboard', icon: Home },
+    { id: 'ar_lab', label: 'AR Science Lab (Live Camera)', icon: Eye },
     { id: 'study_tools', label: 'All Features & Tools', icon: LayoutGrid },
     { id: 'subjects', label: 'My Subjects & Syllabi', icon: BookOpen },
     { id: 'homework', label: 'AI Homework Helper', icon: FileText },
@@ -122,22 +131,48 @@ export default function MobileDrawerNav({
           </div>
 
           {/* Student Profile & Quick Actions */}
-          <div className="p-3 bg-indigo-50/50 border-b border-indigo-100/60 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl select-none">{studentAvatar}</span>
-              <div>
-                <div className="text-xs font-bold text-slate-800">{studentName}</div>
-                <div className="text-[10px] text-indigo-700 font-semibold font-mono">{academicXP} Study XP</div>
+          {isGuest ? (
+            <div className="p-3 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-b border-indigo-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                  🎓
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-800">Guest Explorer</div>
+                  <div className="text-[10px] text-slate-500 font-medium">Free Access Mode</div>
+                </div>
               </div>
+              {onOpenLogin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenLogin();
+                  }}
+                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+                >
+                  Log In
+                </button>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => handleSelectTab('profile')}
-              className="px-2.5 py-1 bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors"
-            >
-              Profile
-            </button>
-          </div>
+          ) : (
+            <div className="p-3 bg-indigo-50/50 border-b border-indigo-100/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl select-none">{studentAvatar}</span>
+                <div>
+                  <div className="text-xs font-bold text-slate-800">{studentName}</div>
+                  <div className="text-[10px] text-indigo-700 font-semibold font-mono">{academicXP} Study XP</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSelectTab('profile')}
+                className="px-2.5 py-1 bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors"
+              >
+                Profile
+              </button>
+            </div>
+          )}
 
           {/* Grade Level Quick Selector */}
           <div className="p-3 border-b border-slate-100">
@@ -176,6 +211,11 @@ export default function MobileDrawerNav({
                   <div className="flex items-center gap-2.5">
                     <Icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-400'} />
                     <span>{item.label}</span>
+                    {item.id === 'ar_lab' && (
+                      <span className="text-[9px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
+                        AR
+                      </span>
+                    )}
                     {item.id === 'study_tools' && (
                       <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-mono">
                         All 25+
@@ -222,6 +262,23 @@ export default function MobileDrawerNav({
             </span>
           </button>
 
+          {onOpenWidgets && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenWidgets();
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100/70 border border-indigo-200/60 text-left transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Smartphone size={16} className="text-indigo-600" />
+                <span>Phone Widgets & Alarms</span>
+              </div>
+              <span className="text-[10px] font-bold bg-indigo-600 text-white px-1.5 py-0.2 rounded-full">New</span>
+            </button>
+          )}
+
           <button
             onClick={() => handleSelectTab('settings')}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left ${
@@ -243,7 +300,20 @@ export default function MobileDrawerNav({
             <span>COPPA Privacy & Safety</span>
           </button>
 
-          {onLogout && (
+          {isGuest && onOpenLogin && (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenLogin();
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-left cursor-pointer transition-colors shadow-2xs"
+            >
+              <User size={16} />
+              <span>Login / My Account</span>
+            </button>
+          )}
+
+          {!isGuest && onLogout && (
             <button
               onClick={() => {
                 onLogout();

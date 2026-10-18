@@ -45,13 +45,16 @@ import { buildThreeDAssembly, BuiltModelResult } from '../../lib/threeDStudio/th
 import { STRUCTURAL_CATALOG } from '../../lib/threeDStudio/offlineStructuralCatalog';
 import { offlineDb } from '../../lib/offlineDatabase';
 import AnatomyLabView from './AnatomyLabView';
+import ARViewMode from './ARViewMode';
 
 export interface ThreeDModelGeneratorProps {
   initialStudioMode?: 'anatomy' | 'engineering';
+  initialAROpen?: boolean;
 }
 
-export default function ThreeDModelGenerator({ initialStudioMode = 'anatomy' }: ThreeDModelGeneratorProps = {}) {
+export default function ThreeDModelGenerator({ initialStudioMode = 'anatomy', initialAROpen = false }: ThreeDModelGeneratorProps = {}) {
   const [studioMode, setStudioMode] = useState<'anatomy' | 'engineering'>(initialStudioMode);
+  const [isAROpen, setIsAROpen] = useState(initialAROpen);
   const mountRef = useRef<HTMLDivElement | null>(null);
   
   // Model state
@@ -474,7 +477,7 @@ export default function ThreeDModelGenerator({ initialStudioMode = 'anatomy' }: 
       
       {/* 0. TOP UNIFIED 3D STUDIO MODE SWITCHER */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-3xl p-2.5 shadow-xl backdrop-blur-md">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setStudioMode('anatomy')}
@@ -502,15 +505,41 @@ export default function ThreeDModelGenerator({ initialStudioMode = 'anatomy' }: 
             <span>3D Engineering & Machine Creator</span>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/20 text-white">PBR Physics</span>
           </button>
+
+          {/* AR VIEW MODE BUTTON */}
+          <button
+            type="button"
+            onClick={() => setIsAROpen(true)}
+            className="px-4 py-2 rounded-2xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-cyan-600 via-sky-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white shadow-lg shadow-cyan-600/25 hover:scale-102"
+            title="Project 3D Models into your real-world environment using your device camera (AR)"
+          >
+            <Camera size={16} className="text-cyan-200 animate-pulse" />
+            <span>Project in AR</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/20 text-white">Live Camera</span>
+          </button>
         </div>
 
-        <div className="text-xs text-slate-400 pr-2 hidden md:block">
+        <div className="text-xs text-slate-400 pr-2 hidden xl:block">
           {studioMode === 'anatomy' ? "Gray's Anatomy verified human organs & cross-sections" : 'Physics-accurate vehicles, aircraft & mechanical assemblies'}
         </div>
       </div>
 
+      {/* AR View Mode Overlay */}
+      {isAROpen && (
+        <ARViewMode
+          initialModelType={studioMode}
+          initialAnatomyModelId="heart"
+          initialEngineeringPlan={activePlan}
+          onClose={() => setIsAROpen(false)}
+          onSwitchToStudio={() => setIsAROpen(false)}
+        />
+      )}
+
       {studioMode === 'anatomy' ? (
-        <AnatomyLabView onSwitchToEngineering={() => setStudioMode('engineering')} />
+        <AnatomyLabView 
+          onSwitchToEngineering={() => setStudioMode('engineering')} 
+          onOpenAR={() => setIsAROpen(true)}
+        />
       ) : (
         <>
           {/* 1. TOP HEADER & PROMPT INPUT */}

@@ -15,13 +15,15 @@ import {
   Type,
   LogOut,
   Mic,
-  LayoutGrid
+  LayoutGrid,
+  Smartphone
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
 import { PlanTier, PLANS } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
 
 interface EduHeaderProps {
+  onOpenWidgets?: () => void;
   currentGrade: string;
   onGradeChange: (grade: string) => void;
   currentSubject: string;
@@ -43,6 +45,8 @@ interface EduHeaderProps {
   onCycleFontScale?: () => void;
   onOpenHelpGuide?: () => void;
   onLogout?: () => void;
+  isGuest?: boolean;
+  onOpenLogin?: () => void;
 }
 
 export default function EduHeader({
@@ -66,7 +70,10 @@ export default function EduHeader({
   fontScale = 'standard',
   onCycleFontScale,
   onOpenHelpGuide,
-  onLogout
+  onLogout,
+  isGuest = false,
+  onOpenLogin,
+  onOpenWidgets
 }: EduHeaderProps) {
   const [gradeDropdownOpen, setGradeDropdownOpen] = useState(false);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
@@ -360,6 +367,19 @@ export default function EduHeader({
           <span className="hidden sm:inline">Scan</span>
         </button>
 
+        {/* Phone Home Screen Widgets & Study Reminders Button */}
+        {onOpenWidgets && (
+          <button
+            type="button"
+            onClick={onOpenWidgets}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            title="Phone Home Screen Widgets & Daily Study Reminders"
+          >
+            <Smartphone size={14} className="text-indigo-600 shrink-0" />
+            <span className="hidden sm:inline">Widgets</span>
+          </button>
+        )}
+
         {/* Search button on smaller screens */}
         <button
           type="button"
@@ -435,26 +455,39 @@ export default function EduHeader({
           </button>
         )}
 
-        {/* Profile Avatar & Info */}
-        <button
-          type="button"
-          onClick={onOpenProfile}
-          className="flex items-center gap-1.5 sm:gap-2 pl-1.5 pr-2 sm:pr-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-colors cursor-pointer shadow-2xs shrink-0"
-          title="Student Profile & Academic Settings"
-        >
-          <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs select-none">
-            {studentAvatar || '🎓'}
-          </div>
-          <span className="text-xs font-bold text-slate-800 hidden sm:inline max-w-[80px] sm:max-w-[110px] truncate">
-            {studentName || 'Student'}
-          </span>
-          <span className="text-[10px] text-slate-500 hidden md:inline">
-            {currentGrade ? currentGrade.replace('Grade ', 'Gr.') : 'Gr.8'}
-          </span>
-        </button>
+        {/* Profile Avatar & Info or Guest Login */}
+        {isGuest ? (
+          <button
+            type="button"
+            onClick={onOpenLogin}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full transition-all cursor-pointer shadow-xs text-xs font-semibold shrink-0 active:scale-98"
+            title="Log in or create a NeoNova account"
+          >
+            <User size={14} className="text-white" />
+            <span className="hidden sm:inline">Login / My Account</span>
+            <span className="sm:hidden font-bold">Log In</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className="flex items-center gap-1.5 sm:gap-2 pl-1.5 pr-2 sm:pr-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-colors cursor-pointer shadow-2xs shrink-0"
+            title="Student Profile & Academic Settings"
+          >
+            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs select-none">
+              {studentAvatar || '🎓'}
+            </div>
+            <span className="text-xs font-bold text-slate-800 hidden sm:inline max-w-[80px] sm:max-w-[110px] truncate">
+              {studentName || 'Student'}
+            </span>
+            <span className="text-[10px] text-slate-500 hidden md:inline">
+              {currentGrade ? currentGrade.replace('Grade ', 'Gr.') : 'Gr.8'}
+            </span>
+          </button>
+        )}
 
-        {/* Quick Log Out Button */}
-        {onLogout && (
+        {/* Quick Log Out Button (Only for logged-in users) */}
+        {!isGuest && onLogout && (
           <button
             type="button"
             onClick={onLogout}

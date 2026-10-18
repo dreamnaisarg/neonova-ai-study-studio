@@ -21,7 +21,9 @@ import {
   Search,
   Wrench,
   Bot,
-  Trophy
+  Trophy,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { SUBJECTS } from '../../types';
@@ -40,6 +42,8 @@ interface HomePageProps {
   currentTier?: PlanTier;
   onFeatureLocked?: (name: string, tier: PlanTier, desc?: string) => void;
   onOpenPlans?: () => void;
+  onOpenWidgets?: () => void;
+  onOpenARLab?: () => void;
 }
 
 type FeatureCategory = 'all' | 'testing' | 'homework' | 'science' | 'memory' | 'companion';
@@ -55,7 +59,9 @@ export default function HomePage({
   onOpenStudyTool,
   currentTier = 'starter',
   onFeatureLocked,
-  onOpenPlans
+  onOpenPlans,
+  onOpenWidgets,
+  onOpenARLab
 }: HomePageProps) {
   const [quickInput, setQuickInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<FeatureCategory>('all');
@@ -254,6 +260,34 @@ export default function HomePage({
           onFeatureLocked?.('Kinetic Animation Lab', access.requiredTier, 'Interactive physics simulations and kinetic laboratory experiments.');
         } else {
           launchToolOrNavigate('animation_lab');
+        }
+      }
+    },
+    {
+      id: 'ar_lab_home',
+      category: 'science' as FeatureCategory,
+      title: 'AR Science Lab (Live Camera)',
+      description: 'Project 3D anatomical organs, physics models, and real-time scientific gear onto your desk or floor.',
+      badge: 'AR CAMERA',
+      badgeColor: 'bg-blue-100 text-blue-800',
+      icon: Eye,
+      iconColor: 'text-blue-600 bg-blue-50 border-blue-100',
+      action: () => {
+        onNavigateTab('ar_lab');
+      }
+    },
+    {
+      id: 'phone_widgets_home',
+      category: 'companion' as FeatureCategory,
+      title: 'Phone Home Screen Widgets & Alarms',
+      description: 'Setup interactive home screen widgets: study streak, STEM formula flashcard, and daily study reminder alarms.',
+      badge: 'WIDGETS & ALARMS',
+      badgeColor: 'bg-indigo-100 text-indigo-800',
+      icon: Smartphone,
+      iconColor: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+      action: () => {
+        if (onOpenWidgets) {
+          onOpenWidgets();
         }
       }
     },

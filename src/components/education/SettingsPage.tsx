@@ -60,6 +60,8 @@ interface SettingsPageProps {
   };
   onLogout?: () => void;
   onReplaySplash?: () => void;
+  isGuest?: boolean;
+  onOpenLogin?: () => void;
 }
 
 export default function SettingsPage({
@@ -84,7 +86,9 @@ export default function SettingsPage({
   onLogout,
   subscriptionState,
   onUpdateSubscription,
-  onReplaySplash
+  onReplaySplash,
+  isGuest = false,
+  onOpenLogin
 }: SettingsPageProps) {
   const [board, setBoard] = useState('CBSE / National Curriculum');
   const [language, setLanguage] = useState('English');
@@ -675,59 +679,93 @@ export default function SettingsPage({
             )}
           </form>
 
-          {/* Active Verified User Account Section */}
-          {currentUser && (
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-900">Registered Student Account</span>
-                  {currentUser.isEmailVerified ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <CheckCircle2 size={11} className="text-emerald-600" />
-                      <span>Email Verified</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                      <span>Unverified</span>
-                    </span>
-                  )}
+          {/* User Account Section (Guest vs Registered) */}
+          {isGuest ? (
+            <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/70 to-purple-50/80 border border-blue-200/90 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+                    <User size={15} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-900">Student Account</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                        Guest Mode
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      You are using NeoNova without an account. Log in or sign up to link your profile and purchase subscriptions.
+                    </p>
+                  </div>
                 </div>
 
-                {onLogout && (
+                {onOpenLogin && (
                   <button
                     type="button"
-                    onClick={onLogout}
-                    className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    onClick={onOpenLogin}
+                    className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0 shadow-2xs"
                   >
-                    <LogOut size={12} />
-                    <span>Sign Out</span>
+                    <User size={13} />
+                    <span>Login / My Account</span>
                   </button>
                 )}
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200/70">
-                  <User size={14} className="text-indigo-600 shrink-0" />
-                  <div className="truncate">
-                    <span className="text-[10px] text-slate-400 block">Username (Unique)</span>
-                    <span className="font-mono font-bold text-slate-800">{currentUser.username}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200/70">
-                  <Mail size={14} className="text-indigo-600 shrink-0" />
-                  <div className="truncate">
-                    <span className="text-[10px] text-slate-400 block">Registered Email</span>
-                    <span className="font-mono font-medium text-slate-800">{currentUser.email}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 pt-1">
-                <Lock size={12} className="text-emerald-600 shrink-0" />
-                <span>Password protected with salted 64-byte Scrypt cryptographic hash.</span>
-              </div>
             </div>
+          ) : (
+            currentUser && (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900">Registered Student Account</span>
+                    {currentUser.isEmailVerified ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <CheckCircle2 size={11} className="text-emerald-600" />
+                        <span>Email Verified</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        <span>Unverified</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {onLogout && (
+                    <button
+                      type="button"
+                      onClick={onLogout}
+                      className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <LogOut size={12} />
+                      <span>Sign Out</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200/70">
+                    <User size={14} className="text-indigo-600 shrink-0" />
+                    <div className="truncate">
+                      <span className="text-[10px] text-slate-400 block">Username (Unique)</span>
+                      <span className="font-mono font-bold text-slate-800">{currentUser.username}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-slate-200/70">
+                    <Mail size={14} className="text-indigo-600 shrink-0" />
+                    <div className="truncate">
+                      <span className="text-[10px] text-slate-400 block">Registered Email</span>
+                      <span className="font-mono font-medium text-slate-800">{currentUser.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 pt-1">
+                  <Lock size={12} className="text-emerald-600 shrink-0" />
+                  <span>Password protected with salted 64-byte Scrypt cryptographic hash.</span>
+                </div>
+              </div>
+            )
           )}
 
           <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">

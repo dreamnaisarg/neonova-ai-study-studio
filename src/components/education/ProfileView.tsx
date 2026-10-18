@@ -30,6 +30,8 @@ interface ProfileViewProps {
   onLogout?: () => void;
   onOpenSettings: () => void;
   onOpenPrivacyPolicy: () => void;
+  isGuest?: boolean;
+  onOpenLogin?: () => void;
 }
 
 export default function ProfileView({
@@ -45,7 +47,9 @@ export default function ProfileView({
   subscriptionState,
   onLogout,
   onOpenSettings,
-  onOpenPrivacyPolicy
+  onOpenPrivacyPolicy,
+  isGuest = false,
+  onOpenLogin
 }: ProfileViewProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
@@ -146,55 +150,84 @@ export default function ProfileView({
           </div>
         </div>
 
-        {/* Real User Account Details */}
+        {/* User Account Details (Guest vs Registered) */}
         <div className="pt-6 mt-6 border-t border-slate-100">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900">Verified User Account</span>
-                {isEmailVerified ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 size={11} className="text-emerald-600" />
-                    <span>Email Verified</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                    <span>Unverified</span>
-                  </span>
+          {isGuest ? (
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/70 via-indigo-50/50 to-violet-50/70 border border-blue-200/80 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-2xs">
+                    <User size={16} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-slate-900 block">Guest Explorer Account</span>
+                    <span className="text-xs text-slate-500">Free access mode • Progress saved locally</span>
+                  </div>
+                </div>
+                {onOpenLogin && (
+                  <button
+                    type="button"
+                    onClick={onOpenLogin}
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-98"
+                  >
+                    <Sparkles size={14} />
+                    <span>Login / Create Account</span>
+                  </button>
                 )}
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
-                  currentTier === 'pro'
-                    ? 'bg-purple-100 text-purple-800'
-                    : currentTier === 'plus'
-                    ? 'bg-indigo-100 text-indigo-800'
-                    : 'bg-slate-200 text-slate-700'
-                }`}>
-                  {PLANS[currentTier]?.badge || 'STARTER'}
-                </span>
               </div>
-              <p className="text-xs text-slate-600">
-                Username: <strong className="text-slate-800 font-mono font-bold">{username || studentName}</strong> • Email: <strong className="text-slate-800 font-mono">{userEmail || 'registered student'}</strong>
-              </p>
-              {currentTier !== 'starter' && subscriptionState?.expiryTime && (
-                <p className="text-[11px] font-medium text-indigo-700">
-                  {subscriptionState.billingCycle === 'yearly' ? '📅 Yearly Plan (365 days)' : '📅 Monthly Plan (30 days)'} • Valid until {new Date(subscriptionState.expiryTime).toLocaleDateString()}
-                </p>
-              )}
-              <p className="text-[11px] text-slate-400">
-                Protected by cryptographic scrypt password hashing & unique credential verification.
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Log in or create a student account to permanently synchronize your XP, save test certificates, and unlock verified Plus or Pro subscriptions.
               </p>
             </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-900">Verified User Account</span>
+                  {isEmailVerified ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 size={11} className="text-emerald-600" />
+                      <span>Email Verified</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                      <span>Unverified</span>
+                    </span>
+                  )}
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                    currentTier === 'pro'
+                      ? 'bg-purple-100 text-purple-800'
+                      : currentTier === 'plus'
+                      ? 'bg-indigo-100 text-indigo-800'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {PLANS[currentTier]?.badge || 'STARTER'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Username: <strong className="text-slate-800 font-mono font-bold">{username || studentName}</strong> • Email: <strong className="text-slate-800 font-mono">{userEmail || 'registered student'}</strong>
+                </p>
+                {currentTier !== 'starter' && subscriptionState?.expiryTime && (
+                  <p className="text-[11px] font-medium text-indigo-700">
+                    {subscriptionState.billingCycle === 'yearly' ? '📅 Yearly Plan (365 days)' : '📅 Monthly Plan (30 days)'} • Valid until {new Date(subscriptionState.expiryTime).toLocaleDateString()}
+                  </p>
+                )}
+                <p className="text-[11px] text-slate-400">
+                  Protected by cryptographic scrypt password hashing & unique credential verification.
+                </p>
+              </div>
 
-            {onLogout && (
-              <button
-                type="button"
-                onClick={onLogout}
-                className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-600 hover:text-red-700 border border-slate-200 hover:border-red-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0 self-start sm:self-auto"
-              >
-                Log Out
-              </button>
-            )}
-          </div>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-600 hover:text-red-700 border border-slate-200 hover:border-red-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0 self-start sm:self-auto"
+                >
+                  Log Out
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

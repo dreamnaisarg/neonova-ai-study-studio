@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, Loader2, X, ArrowLeft, Sparkles, ShieldCheck, Lock } from 'lucide-react';
 import NeoNovaLogo from '../common/NeoNovaLogo';
 import { saveActiveSubscriptionPlan } from '../../lib/billing';
 
@@ -19,14 +19,33 @@ export interface AuthenticatedUser {
   createdAt: string;
 }
 
+export type AuthMode = 'login' | 'register' | 'forgot_password' | 'reset_password';
+
 interface NeoNovaAuthScreenProps {
   onAuthSuccess: (user: AuthenticatedUser, token: string) => void;
+  onClose?: () => void;
+  promptMessage?: string;
+  initialMode?: AuthMode;
+  targetPlanContext?: {
+    tier: 'plus' | 'pro';
+    billingCycle?: 'monthly' | 'yearly';
+  };
 }
 
-type AuthMode = 'login' | 'register' | 'forgot_password' | 'reset_password';
+export default function NeoNovaAuthScreen({ 
+  onAuthSuccess,
+  onClose,
+  promptMessage,
+  initialMode = 'login',
+  targetPlanContext
+}: NeoNovaAuthScreenProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
 
-export default function NeoNovaAuthScreen({ onAuthSuccess }: NeoNovaAuthScreenProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -314,7 +333,29 @@ export default function NeoNovaAuthScreen({ onAuthSuccess }: NeoNovaAuthScreenPr
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans antialiased">
+    <div className="min-h-screen sm:min-h-0 bg-white text-slate-900 flex flex-col justify-center py-8 sm:py-10 px-4 sm:px-6 lg:px-8 font-sans antialiased relative">
+      {/* Top Header Navigation when used as Modal / Overlay */}
+      {onClose && (
+        <div className="w-full max-w-md mx-auto flex items-center justify-between pb-4 mb-2 border-b border-slate-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={14} />
+            <span>Continue as Guest</span>
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         {/* Creative NeoNova Logo & Welcome Header */}
         <div className="inline-flex items-center justify-center mb-3">
@@ -334,8 +375,37 @@ export default function NeoNovaAuthScreen({ onAuthSuccess }: NeoNovaAuthScreenPr
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 border border-slate-200 rounded-lg sm:px-10">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
+        {/* Subscription Requirement Banner (when purchasing a plan as guest) */}
+        {promptMessage && (
+          <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 shadow-xs">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                <Sparkles size={16} />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded">
+                    Account Required for Checkout
+                  </span>
+                  {targetPlanContext && (
+                    <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded uppercase">
+                      {targetPlanContext.tier === 'pro' ? 'Pro Plan 👑' : 'Plus Plan ⭐'} ({targetPlanContext.billingCycle === 'yearly' ? 'Yearly' : 'Monthly'})
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-800 leading-snug">
+                  {promptMessage}
+                </p>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  You will not be charged upon login. You'll review checkout details on the next step.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white py-8 px-6 border border-slate-200 rounded-lg sm:px-10 shadow-xs">
           
           {/* Messages */}
           {errorMessage && (

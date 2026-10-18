@@ -22,13 +22,16 @@ import {
   AlertTriangle,
   User,
   Box,
-  LayoutGrid
+  LayoutGrid,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 import { PlanTier, PLANS } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
 
 export type EduTab = 
   | 'home' 
+  | 'ar_lab'
   | 'stages'
   | 'mission7'
   | 'subjects' 
@@ -62,6 +65,9 @@ interface EduSidebarProps {
   currentGrade?: string;
   currentTier?: PlanTier;
   onOpenHelpGuide?: () => void;
+  isGuest?: boolean;
+  onOpenLogin?: () => void;
+  onOpenWidgets?: () => void;
 }
 
 const SIDEBAR_COLLAPSE_KEY = 'neonova_sidebar_collapsed';
@@ -73,7 +79,10 @@ export default function EduSidebar({
   academicXP = 0,
   currentGrade = 'Grade 8',
   currentTier = 'starter',
-  onOpenHelpGuide
+  onOpenHelpGuide,
+  isGuest = false,
+  onOpenLogin,
+  onOpenWidgets
 }: EduSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     try {
@@ -95,6 +104,7 @@ export default function EduSidebar({
 
   const primaryNavItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: 'Home', icon: Home },
+    { id: 'ar_lab', label: 'AR Science Lab', icon: Eye },
     { id: 'stages', label: '4-Stage Mastery', icon: Award },
     { id: 'mission7', label: 'Mission 7', icon: Trophy },
     { id: 'study_tools', label: 'All Features', icon: LayoutGrid },
@@ -165,6 +175,11 @@ export default function EduSidebar({
                   {!isCollapsed && (
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="truncate">{item.label}</span>
+                      {item.id === 'ar_lab' && (
+                        <span className="text-[9px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
+                          AR
+                        </span>
+                      )}
                       {item.id === 'study_tools' && (
                         <span className="text-[9px] font-bold bg-indigo-100/90 text-indigo-700 px-1.5 py-0.2 rounded-full font-mono">
                           25+
@@ -232,6 +247,32 @@ export default function EduSidebar({
             </div>
             <span className="font-bold text-indigo-800 font-mono">{academicXP} XP</span>
           </div>
+        )}
+
+        {/* Guest Login Option */}
+        {isGuest && onOpenLogin && (
+          <button
+            type="button"
+            onClick={onOpenLogin}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-2.5 px-3'} py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-indigo-700 border border-indigo-200/90 transition-all cursor-pointer text-left shadow-2xs`}
+            title="Log in or create a NeoNova account"
+          >
+            <User size={18} className="text-indigo-600 shrink-0" />
+            {!isCollapsed && <span>Login / My Account</span>}
+          </button>
+        )}
+
+        {/* Phone Home Screen Widgets & Alarms */}
+        {onOpenWidgets && (
+          <button
+            type="button"
+            onClick={onOpenWidgets}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-xl text-xs font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition-colors cursor-pointer text-left`}
+            title="Phone Home Screen Widgets & Daily Study Alarms"
+          >
+            <Smartphone size={18} className="text-indigo-600 shrink-0" />
+            {!isCollapsed && <span>Phone Widgets & Alarms</span>}
+          </button>
         )}
 
         <button

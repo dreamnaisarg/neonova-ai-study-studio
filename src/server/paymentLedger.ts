@@ -212,7 +212,11 @@ export function verifyTransactionAuthoritative(params: {
   }
 
   const forbiddenPatterns = [
-    /^(fake|dummy|test|bypass|free|mock|none|nil|null|undefined)$/i
+    /^(fake|dummy|test|bypass|free|mock|none|nil|null|undefined)$/i,
+    /fake/i,
+    /dummy/i,
+    /bypass/i,
+    /mock/i
   ];
   if (forbiddenPatterns.some(rx => rx.test(idToUse))) {
     return {

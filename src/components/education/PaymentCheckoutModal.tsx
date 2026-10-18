@@ -251,7 +251,8 @@ export default function PaymentCheckoutModal({
         tier,
         billingCycle,
         studentName,
-        studentEmail
+        studentEmail,
+        token: (typeof window !== 'undefined' ? localStorage.getItem('neonova_auth_token') || undefined : undefined)
       });
 
       if (verifyRes.verified && verifyRes.verifiedState) {
@@ -497,19 +498,19 @@ export default function PaymentCheckoutModal({
                     onClick={() => { setPaymentMethod('card'); setVerificationError(null); }}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
                       paymentMethod === 'card'
-                        ? 'border-indigo-600 bg-indigo-50/70 shadow-xs ring-2 ring-indigo-600/20'
+                        ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-2 ring-amber-500/20'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <CreditCard size={20} className={paymentMethod === 'card' ? 'text-indigo-600' : 'text-slate-600'} />
-                      <span className="text-[9px] font-black tracking-wider text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full uppercase">
-                        SECURE • ACTIVE
+                      <CreditCard size={20} className={paymentMethod === 'card' ? 'text-amber-600' : 'text-slate-600'} />
+                      <span className="text-[9px] font-black tracking-wider text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full uppercase">
+                        TEMPORARILY UNAVAILABLE
                       </span>
                     </div>
                     <div>
                       <div className="text-xs font-bold text-slate-900 leading-tight">Pay by Credit Card</div>
-                      <div className="text-[10px] text-slate-500">RuPay, Visa, Mastercard</div>
+                      <div className="text-[10px] text-amber-700 font-medium">Gateway Maintenance • Use UPI</div>
                     </div>
                   </button>
 
@@ -849,19 +850,79 @@ export default function PaymentCheckoutModal({
                   </div>
                 )}
 
-                {/* 3. SECURE CREDIT CARD PAYMENT METHOD */}
+                {/* 3. CREDIT CARD PAYMENT METHOD - TEMPORARILY UNAVAILABLE */}
                 {paymentMethod === 'card' && (
-                  <CreditCardPaymentView
-                    planTier={tier}
-                    billingCycle={billingCycle}
-                    studentName={studentName}
-                    studentEmail={studentEmail}
-                    onBackToMethods={() => setPaymentMethod('upi')}
-                    onPaymentSuccess={(receipt) => {
-                      setVerifiedReceipt(receipt);
-                      onPaymentSuccess(receipt);
-                    }}
-                  />
+                  <div className="p-5 sm:p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-5 animate-in fade-in duration-150">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-3 shadow-2xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 font-bold text-amber-900 text-sm">
+                          <AlertCircle size={18} className="text-amber-600 shrink-0" />
+                          <span className="uppercase tracking-wider font-extrabold">Credit Card Option: Temporarily Unavailable</span>
+                        </div>
+                        <span className="text-[10px] bg-amber-200 text-amber-950 font-black px-2.5 py-0.5 rounded-full uppercase border border-amber-300">
+                          GATEWAY MAINTENANCE
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-amber-900/90 leading-relaxed">
+                        Our credit and debit card acquiring gateway (Visa, Mastercard, RuPay, Amex) is temporarily offline while our banking partners complete scheduled infrastructure security upgrades and mandatory RBI tokenization compliance maintenance.
+                      </p>
+
+                      <div className="p-3 bg-white/80 rounded-xl border border-amber-200/60 space-y-1.5 text-xs">
+                        <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                          <CheckCircle2 size={14} className="text-emerald-600" />
+                          <span>Recommended Alternative: Instant UPI / PhonePe (100% Active)</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600">
+                          Subscriptions activated via Official PhonePe QR or Dynamic UPI are processed instantly with 0-second approval, verified directly to our merchant account, and incur ₹0 gateway convenience fees.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentMethod('upi');
+                            setUpiSubTab('phonepe');
+                          }}
+                          className="w-full sm:flex-1 py-3 px-4 bg-[#5f259f] hover:bg-[#4d1d82] text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Smartphone size={15} />
+                          <span>Pay with Instant PhonePe / UPI (Recommended)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('google_play')}
+                          className="w-full sm:w-auto py-3 px-4 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <QrCode size={14} className="text-amber-600" />
+                          <span>Play Store Option</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Collapsible / Read-Only Inspection for Transparent Merchant Verification */}
+                    <div className="border border-slate-200 rounded-2xl bg-white p-4 space-y-3">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                        <div className="flex items-center gap-2">
+                          <CreditCard size={16} className="text-slate-400" />
+                          <span>Card Gateway Diagnostics & Settlement Reference</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono">STATUS: OFFLINE (MAINTENANCE)</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 space-y-1">
+                        <p>
+                          • <strong>Merchant:</strong> Naisarg Ramdatti (NeoNova Academic Studio)
+                        </p>
+                        <p>
+                          • <strong>Bank Settlement:</strong> Bank of Baroda (A/C: ...5536, IFSC: BARB0KHERAL)
+                        </p>
+                        <p>
+                          • <strong>Direct Support:</strong> If you need corporate or international invoicing, please contact <code>dreamnaisarg@gmail.com</code>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* 4. NET BANKING METHOD (TEMPORARILY UNAVAILABLE - REPLACED WITH QR) */}
