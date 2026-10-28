@@ -105,7 +105,7 @@ export default function PlansPage({
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-1">
           <Sparkles size={13} className="text-indigo-600" />
-          <span>Google Play Verified Subscriptions</span>
+          <span>Razorpay Verified Subscriptions</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
           Choose Your NeoNova Plan
@@ -395,16 +395,16 @@ export default function PlansPage({
         </div>
       </section>
 
-      {/* Google Play Billing Management Footer */}
+      {/* Razorpay Standard Checkout Integrity Footer */}
       <section className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <ShieldCheck size={20} className="text-indigo-600 shrink-0" />
           <div className="text-xs">
             <h4 className="font-bold text-slate-900">
-              Google Play In-App Purchase Integrity
+              Razorpay Standard Checkout &amp; Banking Integrity
             </h4>
             <p className="text-slate-500 mt-0.5">
-              Subscriptions are managed securely via Google Play. You can cancel or modify your plan anytime in the Play Store.
+              Subscriptions are securely processed via Razorpay Standard Checkout (UPI, Cards, 50+ NetBanking, Wallets). 256-bit SSL encrypted.
             </p>
           </div>
         </div>
@@ -419,15 +419,17 @@ export default function PlansPage({
             <span>Restore Purchases</span>
           </button>
           {currentTier !== 'starter' && (
-            <a
-              href={getPlayStoreSubscriptionUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => {
+                setCheckoutTargetTier(currentTier as 'plus' | 'pro');
+                setIsCheckoutOpen(true);
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
               <span>Manage Subscription</span>
               <ExternalLink size={12} />
-            </a>
+            </button>
           )}
         </div>
       </section>

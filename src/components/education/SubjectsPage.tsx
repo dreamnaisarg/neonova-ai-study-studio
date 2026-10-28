@@ -435,6 +435,50 @@ const CURRICULUM_DATA: Record<string, SubjectDetail> = {
         ]
       }
     ]
+  },
+  'French': {
+    id: 'french',
+    name: 'French',
+    icon: '🇫🇷',
+    currentChapterTitle: 'Chapitre 1: Conjugaison et Grammaire Essentielle',
+    progressPercentage: 70,
+    chapters: [
+      {
+        id: 'fr-ch1',
+        number: 1,
+        title: 'Verbes au Présent (Être, Avoir, Premier Groupe)',
+        description: 'Les terminaisons du présent de l\'indicatif pour les verbes en -er et les auxiliaires fondamentaux.',
+        topicsCount: 3,
+        completedTopicsCount: 2,
+        topics: [
+          { id: 'fr1.1', number: '1.1', title: 'Auxiliaires être et avoir', completed: true, duration: '15 min' },
+          { id: 'fr1.2', number: '1.2', title: 'Verbes réguliers en -er (parler, aimer)', completed: true, duration: '16 min' },
+          { id: 'fr1.3', number: '1.3', title: 'Négation avec ne... pas', completed: false, duration: '14 min' }
+        ]
+      }
+    ]
+  },
+  'Finnish': {
+    id: 'finnish',
+    name: 'Finnish',
+    icon: '🇫🇮',
+    currentChapterTitle: 'Luku 1: Suomen kielen perussijamuodot & astevaihtelu',
+    progressPercentage: 68,
+    chapters: [
+      {
+        id: 'fi-ch1',
+        number: 1,
+        title: 'Paikallissijat & Vokaalisointu (Local Cases & Vowel Harmony)',
+        description: 'Sisäpaikallissijat (inessiivi -ssa/-ssä, elatiivi -sta/-stä, illatiivi -on/-än) ja vokaalisointusäännöt.',
+        topicsCount: 3,
+        completedTopicsCount: 2,
+        topics: [
+          { id: 'fi1.1', number: '1.1', title: 'Inessiivi & Elatiivi (-ssa/-ssä, -sta/-stä)', completed: true, duration: '15 min' },
+          { id: 'fi1.2', number: '1.2', title: 'Ulkopaikallissijat: Adessiivi (-lla/-llä)', completed: true, duration: '14 min' },
+          { id: 'fi1.3', number: '1.3', title: 'Astevaihtelu (k-p-t: kk→k, pp→p, tt→t)', completed: false, duration: '18 min' }
+        ]
+      }
+    ]
   }
 };
 

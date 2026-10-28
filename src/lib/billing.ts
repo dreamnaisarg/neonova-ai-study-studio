@@ -342,6 +342,14 @@ export async function createServerPaymentOrder(
   };
 }
 
+export type PaymentVerificationStatus = 
+  | 'PENDING'
+  | 'REVIEW_REQUIRED'
+  | 'VERIFIED'
+  | 'FAILED'
+  | 'REFUNDED'
+  | 'REVERSED';
+
 export async function verifyPaymentOnServer(payload: {
   orderId: string;
   paymentMethod: 'google_play' | 'upi' | 'card' | 'netbanking';
@@ -349,14 +357,19 @@ export async function verifyPaymentOnServer(payload: {
   purchaseToken?: string;
   tier: 'plus' | 'pro';
   billingCycle: 'monthly' | 'yearly';
+  expectedAmount?: number;
   studentName?: string;
   studentEmail?: string;
   token?: string;
+  directActivation?: boolean;
 }): Promise<{
   verified: boolean;
-  message?: string;
+  status: PaymentVerificationStatus;
+  message: string;
+  reason?: string;
   verifiedState?: VerifiedSubscriptionState;
   error?: string;
+  transaction?: any;
 }> {
   const refString = (payload.transactionRef || payload.purchaseToken || "").toString().trim();
 
@@ -368,7 +381,10 @@ export async function verifyPaymentOnServer(payload: {
   if (!refString || refString.length < 5 || forbiddenPatterns.some(rx => rx.test(refString))) {
     return {
       verified: false,
-      error: "Payment verification failed. Invalid transaction reference. Please provide an authentic bank UTR, card transaction ID, or UPI transaction number."
+      status: 'FAILED',
+      reason: 'INVALID_REFERENCE',
+      message: "We couldn't verify this payment. Premium access has not been activated.",
+      error: "We couldn't verify this payment. Premium access has not been activated."
     };
   }
 
@@ -376,7 +392,10 @@ export async function verifyPaymentOnServer(payload: {
   if (cleanUtr.length < 5 || cleanUtr.length > 40) {
     return {
       verified: false,
-      error: "Invalid transaction reference. Please enter the authentic transaction ID or UTR number from your payment receipt (at least 6 characters)."
+      status: 'FAILED',
+      reason: 'INVALID_FORMAT',
+      message: "We couldn't verify this payment. Premium access has not been activated.",
+      error: "Please enter a valid PhonePe transaction reference or UPI UTR number (at least 6 characters)."
     };
   }
 
@@ -387,7 +406,10 @@ export async function verifyPaymentOnServer(payload: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        ...payload,
+        directActivation: false
+      })
     });
     
     const rawText = await res.text();
@@ -404,26 +426,92 @@ export async function verifyPaymentOnServer(payload: {
         saveVerifiedSubscription(data.verifiedState);
         return {
           verified: true,
-          message: data.message || `Payment verified successfully. NeoNova ${payload.tier === 'plus' ? 'Plus' : 'Pro'} is now active!`,
-          verifiedState: data.verifiedState
+          status: 'VERIFIED',
+          reason: data.reason,
+          message: data.message || "Payment verified. Your subscription is now active.",
+          verifiedState: data.verifiedState,
+          transaction: data.transaction
         };
       } else {
+        const returnedStatus: PaymentVerificationStatus = data.status || 'PENDING';
         return {
           verified: false,
-          error: data.error || "We couldn't verify this transaction yet. Your paid features will remain locked until the payment is successfully verified."
+          status: returnedStatus,
+          reason: data.reason,
+          message: data.message || (
+            returnedStatus === 'PENDING'
+              ? "Payment submitted. Waiting for verification."
+              : returnedStatus === 'REVIEW_REQUIRED'
+              ? "Payment reference is being reviewed by administrator."
+              : "We couldn't verify this payment. Premium access has not been activated."
+          ),
+          error: data.error || data.message || "We couldn't verify this payment. Premium access has not been activated.",
+          transaction: data.transaction
         };
       }
     }
 
     return {
       verified: false,
-      error: "Payment verification failed. Please check your transaction ID or wait for the payment provider to confirm the transaction."
+      status: 'PENDING',
+      message: "Verification is temporarily unavailable. Your payment request remains pending.",
+      error: "Verification is temporarily unavailable. Your payment request remains pending."
     };
   } catch (networkErr: any) {
     console.warn("Backend /api/verify-payment call failed:", networkErr);
     return {
       verified: false,
-      error: "We couldn't verify this transaction yet. Your paid features will remain locked until the payment is successfully verified."
+      status: 'PENDING',
+      message: "Verification is temporarily unavailable. Your payment request remains pending.",
+      error: "Verification is temporarily unavailable. Your payment request remains pending."
+    };
+  }
+}
+
+/**
+ * Check payment status for an order or transaction ID
+ */
+export async function checkPaymentStatusOnServer(params: {
+  transactionId?: string;
+  orderId?: string;
+  accountId?: string;
+}): Promise<{
+  found: boolean;
+  status: PaymentVerificationStatus;
+  verified: boolean;
+  message: string;
+  verifiedState?: VerifiedSubscriptionState;
+  transaction?: any;
+}> {
+  try {
+    const res = await fetch('/api/payment/check-status', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(params)
+    });
+    const data = await res.json();
+    if (data?.verified && data?.verifiedState) {
+      saveVerifiedSubscription(data.verifiedState);
+    }
+    return {
+      found: !!data?.found,
+      status: (data?.status as PaymentVerificationStatus) || 'PENDING',
+      verified: !!data?.verified,
+      message: data?.message || (data?.status === 'VERIFIED'
+        ? "Payment verified. Your subscription is now active."
+        : "Payment submitted. Waiting for verification."),
+      verifiedState: data?.verifiedState,
+      transaction: data?.transaction
+    };
+  } catch {
+    return {
+      found: false,
+      status: 'PENDING',
+      verified: false,
+      message: "Verification is temporarily unavailable. Your payment request remains pending."
     };
   }
 }

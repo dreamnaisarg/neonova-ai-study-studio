@@ -10,9 +10,11 @@ import {
   RefreshCw, 
   HelpCircle, 
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  Globe
 } from 'lucide-react';
 import NeoNovaLogo from '../common/NeoNovaLogo';
+import { useTranslation, SupportedLanguage } from '../../lib/i18n';
 
 interface VoiceMessage {
   id: string;
@@ -38,18 +40,15 @@ export default function RealtimeVoiceModal({
   curriculumBoard = 'CBSE',
   initialContext = ''
 }: RealtimeVoiceModalProps) {
+  const { lang: globalLang, isFinnish: globalIsFinnish } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(globalLang || 'en');
+  const isFinnish = selectedLanguage === 'fi';
+
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimText, setInterimText] = useState('');
-  const [messages, setMessages] = useState<VoiceMessage[]>([
-    {
-      id: 'init-1',
-      sender: 'neonova',
-      text: `Hello! I'm your NeoNova AI Tutor for ${currentSubject} (${currentGrade}, ${curriculumBoard.toUpperCase()}). Tap the microphone to speak, ask questions, or interrupt me anytime.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [voiceAvailable, setVoiceAvailable] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -58,6 +57,22 @@ export default function RealtimeVoiceModal({
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  // Sync initial language greeting
+  useEffect(() => {
+    const greetingText = isFinnish
+      ? `Hei! Olen NeoNova-tekoälytuutorisi aiheessa ${currentSubject} (${currentGrade}). Napauta mikrofonia ja puhu suomeksi kysyäksesi kotitehtävistä, kaavoista tai ongelmanratkaisusta!`
+      : `Hello! I'm your NeoNova AI Tutor for ${currentSubject} (${currentGrade}, ${curriculumBoard.toUpperCase()}). Tap the microphone to speak, ask questions, or interrupt me anytime.`;
+
+    setMessages([
+      {
+        id: 'init-1',
+        sender: 'neonova',
+        text: greetingText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  }, [isOpen, currentSubject, currentGrade, curriculumBoard, isFinnish]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -74,7 +89,11 @@ export default function RealtimeVoiceModal({
 
       if (!SpeechRecognition) {
         setVoiceAvailable(false);
-        setErrorMessage('Speech recognition is not supported in this browser. You can type your questions in AI Homework mode.');
+        setErrorMessage(
+          isFinnish 
+            ? 'Puheentunnistus ei ole tuettu tässä selaimessa. Voit kirjoittaa kysymyksesi tekoälykotitehtävätilassa.' 
+            : 'Speech recognition is not supported in this browser. You can type your questions in AI Homework mode.'
+        );
         return;
       }
 
@@ -82,7 +101,7 @@ export default function RealtimeVoiceModal({
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        recognition.lang = isFinnish ? 'fi-FI' : 'en-US';
 
         recognition.onstart = () => {
           setIsListening(true);
@@ -117,12 +136,20 @@ export default function RealtimeVoiceModal({
         recognition.onerror = (event: any) => {
           console.warn('Speech recognition error:', event.error);
           if (event.error === 'not-allowed') {
-            setErrorMessage('Microphone access was denied. Please allow microphone permissions in your browser.');
+            setErrorMessage(
+              isFinnish
+                ? 'Mikrofonin käyttö estetty. Salli mikrofoni selaimen asetuksissa.'
+                : 'Microphone access was denied. Please allow microphone permissions in your browser.'
+            );
             setIsListening(false);
           } else if (event.error === 'no-speech') {
             // Keep listening
           } else {
-            setErrorMessage(`Voice mode error: ${event.error}. You can retry or type your query.`);
+            setErrorMessage(
+              isFinnish
+                ? `Äänitilan virhe: ${event.error}. Voit yrittää uudelleen tai kirjoittaa kysymyksen.`
+                : `Voice mode error: ${event.error}. You can retry or type your query.`
+            );
             setIsListening(false);
           }
         };
@@ -141,7 +168,7 @@ export default function RealtimeVoiceModal({
         recognitionRef.current = recognition;
       } catch (err) {
         setVoiceAvailable(false);
-        setErrorMessage('Voice engine could not be initialized.');
+        setErrorMessage(isFinnish ? 'Äänimoottoria ei voitu alustaa.' : 'Voice engine could not be initialized.');
       }
     }
 
@@ -149,12 +176,19 @@ export default function RealtimeVoiceModal({
       stopSpeaking();
       stopListening();
     };
-  }, [isOpen]);
+  }, [isOpen, isFinnish]);
+
+  const handleLanguageSwitch = (newLang: SupportedLanguage) => {
+    stopSpeaking();
+    stopListening();
+    setSelectedLanguage(newLang);
+  };
 
   const startListening = () => {
     stopSpeaking();
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.lang = isFinnish ? 'fi-FI' : 'en-US';
         recognitionRef.current.start();
         setIsListening(true);
         setErrorMessage(null);
@@ -185,22 +219,58 @@ export default function RealtimeVoiceModal({
     stopSpeaking();
 
     // Clean markdown symbols for natural speech
-    const cleanSpeech = text
+    let cleanSpeech = text
       .replace(/[*_~`#]/g, '')
-      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1 over $2')
-      .replace(/\\cdot/g, 'times')
-      .replace(/\\pm/g, 'plus or minus')
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, isFinnish ? '$1 jaettuna $2' : '$1 over $2')
+      .replace(/\\times/g, isFinnish ? ' kertaa ' : ' times ')
+      .replace(/\\cdot/g, isFinnish ? ' kertaa ' : ' times ')
+      .replace(/\\div/g, isFinnish ? ' jaettuna ' : ' divided by ')
+      .replace(/\\pm/g, isFinnish ? ' plus miinus ' : ' plus or minus ')
       .trim();
 
-    const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.05;
+    if (isFinnish) {
+      // Finnish phonetic pronunciation adjustments for formulas & symbols
+      cleanSpeech = cleanSpeech
+        .replace(/\bH2O\b/g, 'H 2 O, vesi')
+        .replace(/\bCO2\b/g, 'C O 2, hiilidioksidi')
+        .replace(/\bNaCl\b/g, 'natriumkloridi, ruokasuola')
+        .replace(/\bHCl\b/g, 'suolahappo')
+        .replace(/²/g, ' toiseen ')
+        .replace(/³/g, ' kolmanteen ')
+        .replace(/\+/g, ' plus ')
+        .replace(/=/g, ' on yhtä kuin ')
+        .replace(/°C/g, ' celsiusastetta ')
+        .replace(/%/g, ' prosenttia ')
+        .replace(/√\(([^)]+)\)/g, 'neliöjuuri luvusta $1')
+        .replace(/√/g, 'neliöjuuri ');
+    }
 
-    // Pick best English voice if available
+    const utterance = new SpeechSynthesisUtterance(cleanSpeech);
+    utterance.rate = isFinnish ? 0.95 : 1.0;
+    utterance.pitch = isFinnish ? 1.02 : 1.05;
+    utterance.lang = isFinnish ? 'fi-FI' : 'en-US';
+
+    // Pick best voice matching language
     const voices = synthRef.current.getVoices();
-    const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
+    if (isFinnish) {
+      const finnishVoice = voices.find(v => 
+        v.lang.toLowerCase().startsWith('fi') || 
+        v.name.toLowerCase().includes('suomi') || 
+        v.name.toLowerCase().includes('satu') || 
+        v.name.toLowerCase().includes('onni') ||
+        v.name.toLowerCase().includes('finnish')
+      );
+      if (finnishVoice) {
+        utterance.voice = finnishVoice;
+      }
+    } else {
+      const naturalVoice = voices.find(v => 
+        v.lang.startsWith('en') && 
+        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Jenny'))
+      );
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
+      }
     }
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -230,6 +300,7 @@ export default function RealtimeVoiceModal({
           subject: currentSubject,
           grade: currentGrade,
           curriculumBoard,
+          language: isFinnish ? 'Finnish' : 'English',
           context: initialContext || (messages.length > 0 ? messages[messages.length - 1].text : '')
         })
       });
@@ -239,7 +310,10 @@ export default function RealtimeVoiceModal({
       }
 
       const data = await response.json();
-      const reply = data.reply || "I've analyzed your question. Would you like me to break down any specific step?";
+      const fallbackReply = isFinnish
+        ? 'Olen analysoinut kysymyksesi. Haluatko, että käymme jonkin tietyn vaiheen tarkemmin läpi?'
+        : "I've analyzed your question. Would you like me to break down any specific step?";
+      const reply = data.reply || fallbackReply;
 
       const aiMsg: VoiceMessage = {
         id: `ai_${Date.now()}`,
@@ -253,7 +327,9 @@ export default function RealtimeVoiceModal({
       const errorMsg: VoiceMessage = {
         id: `err_${Date.now()}`,
         sender: 'neonova',
-        text: "Voice mode is temporarily unable to connect to the educational server. You can ask again or switch to written mode.",
+        text: isFinnish
+          ? 'Äänitila ei juuri nyt saanut yhteyttä opetuspalvelimeen. Voit kysyä uudelleen tai vaihtaa kirjoitustilaan.'
+          : 'Voice mode is temporarily unable to connect to the educational server. You can ask again or switch to written mode.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -277,8 +353,10 @@ export default function RealtimeVoiceModal({
           <div className="flex items-center gap-3">
             <NeoNovaLogo size={32} glow />
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900">Real-Time Voice AI Tutor</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-slate-900">
+                  {isFinnish ? 'Reaaliaikainen Puhe-AI Tuutori' : 'Real-Time Voice AI Tutor'}
+                </h3>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase">
                   {curriculumBoard}
                 </span>
@@ -287,17 +365,43 @@ export default function RealtimeVoiceModal({
                 </span>
               </div>
               <p className="text-[11px] text-slate-500">
-                Natural educational conversation with instant interruption support
+                {isFinnish 
+                  ? 'Luonnollinen puhekeskustelu ja suora ongelmanratkaisu suomeksi'
+                  : 'Natural educational conversation with instant interruption support'}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-slate-200/80 p-0.5 rounded-xl border border-slate-300">
+              <button
+                type="button"
+                onClick={() => handleLanguageSwitch('en')}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  !isFinnish ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Switch to English"
+              >
+                🇬🇧 EN
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageSwitch('fi')}
+                className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  isFinnish ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Vaihda suomeksi"
+              >
+                🇫🇮 FI
+              </button>
+            </div>
+
             {isSpeaking && (
               <button
                 onClick={stopSpeaking}
                 className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors cursor-pointer"
-                title="Mute voice"
+                title={isFinnish ? 'Hiljennä ääni' : 'Mute voice'}
               >
                 <VolumeX size={18} />
               </button>
@@ -363,7 +467,11 @@ export default function RealtimeVoiceModal({
           {isProcessing && (
             <div className="flex items-center gap-2 text-xs text-indigo-600 font-medium">
               <RefreshCw size={14} className="animate-spin" />
-              <span>NeoNova is verifying reasoning and preparing spoken reply...</span>
+              <span>
+                {isFinnish 
+                  ? 'NeoNova tarkistaa laskutoimitusta ja valmistelee puhevastausta...'
+                  : 'NeoNova is verifying reasoning and preparing spoken reply...'}
+              </span>
             </div>
           )}
         </div>
@@ -372,32 +480,63 @@ export default function RealtimeVoiceModal({
         <div className="px-4 py-2 bg-slate-50/60 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-[11px] scrollbar-none">
           <span className="text-slate-400 font-medium shrink-0 flex items-center gap-1">
             <CornerDownRight size={12} />
-            Quick follow-up:
+            {isFinnish ? 'Jatkokysymys:' : 'Quick follow-up:'}
           </span>
-          <button
-            onClick={() => handleQuickFollowUp('Why is that formula used?')}
-            className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
-          >
-            Why?
-          </button>
-          <button
-            onClick={() => handleQuickFollowUp('How did you get from step two to step three?')}
-            className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
-          >
-            How did you get that?
-          </button>
-          <button
-            onClick={() => handleQuickFollowUp('Can you repeat the last calculation step?')}
-            className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
-          >
-            Repeat step
-          </button>
-          <button
-            onClick={() => handleQuickFollowUp('Can you explain that more simply?')}
-            className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
-          >
-            Explain more simply
-          </button>
+          {isFinnish ? (
+            <>
+              <button
+                onClick={() => handleQuickFollowUp('Miksi juuri tätä kaavaa käytetään tässä tehtävässä?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Miksi tämä kaava?
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('Miten pääsit vaiheesta yksi vaiheeseen kaksi?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Miten päädyit tähän?
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('Voitko toistaa edellisen laskuvaiheen selkeästi?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Toista laskuvaihe
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('Selittäisitkö tämän vielä yksinkertaisemmin arjen esimerkillä?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Selitä yksinkertaisemmin
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => handleQuickFollowUp('Why is that formula used?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Why?
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('How did you get from step two to step three?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                How did you get that?
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('Can you repeat the last calculation step?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Repeat step
+              </button>
+              <button
+                onClick={() => handleQuickFollowUp('Can you explain that more simply?')}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shrink-0 transition-colors cursor-pointer"
+              >
+                Explain more simply
+              </button>
+            </>
+          )}
         </div>
 
         {/* Active Controls Footer */}
@@ -413,10 +552,16 @@ export default function RealtimeVoiceModal({
               }`}
             >
               {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-              <span>{isListening ? 'Stop Listening' : 'Tap to Speak'}</span>
+              <span>
+                {isListening 
+                  ? (isFinnish ? 'Lopeta kuuntelu' : 'Stop Listening') 
+                  : (isFinnish ? 'Puhu suomeksi' : 'Tap to Speak')}
+              </span>
             </button>
             <span className="text-[11px] text-slate-500 hidden sm:inline">
-              {isListening ? 'Listening... Speak clearly or interrupt anytime' : 'Tap microphone to start talking'}
+              {isListening 
+                ? (isFinnish ? 'Kuunnellaan suomeksi... Puhu vapaasti tai keskeytä milloin vain' : 'Listening... Speak clearly or interrupt anytime') 
+                : (isFinnish ? 'Napauta mikrofonia ja puhu suomeksi' : 'Tap microphone to start talking')}
             </span>
           </div>
 
@@ -424,7 +569,7 @@ export default function RealtimeVoiceModal({
             {isSpeaking && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-medium">
                 <Volume2 size={14} className="animate-bounce" />
-                <span>Speaking...</span>
+                <span>{isFinnish ? 'Puhutaan...' : 'Speaking...'}</span>
               </div>
             )}
             <button
@@ -435,7 +580,7 @@ export default function RealtimeVoiceModal({
               }}
               className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              Done
+              {isFinnish ? 'Valmis' : 'Done'}
             </button>
           </div>
         </div>

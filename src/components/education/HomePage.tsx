@@ -266,12 +266,12 @@ export default function HomePage({
     {
       id: 'ar_lab_home',
       category: 'science' as FeatureCategory,
-      title: 'AR Science Lab (Live Camera)',
-      description: 'Project 3D anatomical organs, physics models, and real-time scientific gear onto your desk or floor.',
-      badge: 'AR CAMERA',
-      badgeColor: 'bg-blue-100 text-blue-800',
-      icon: Eye,
-      iconColor: 'text-blue-600 bg-blue-50 border-blue-100',
+      title: '3D Science Lab (Walkable Simulation)',
+      description: 'Explore a realistic 3D science laboratory with PPE safety gear, functional equipment, and experiments.',
+      badge: '3D VIRTUAL LAB',
+      badgeColor: 'bg-indigo-100 text-indigo-800',
+      icon: FlaskConical,
+      iconColor: 'text-indigo-600 bg-indigo-50 border-indigo-100',
       action: () => {
         onNavigateTab('ar_lab');
       }

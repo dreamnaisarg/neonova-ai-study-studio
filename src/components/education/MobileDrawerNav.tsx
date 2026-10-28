@@ -25,7 +25,8 @@ import {
   Box,
   Trophy,
   Smartphone,
-  Eye
+  Eye,
+  FlaskConical
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS } from '../../lib/billing';
@@ -76,7 +77,7 @@ export default function MobileDrawerNav({
 
   const navItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: 'Home Dashboard', icon: Home },
-    { id: 'ar_lab', label: 'AR Science Lab (Live Camera)', icon: Eye },
+    { id: 'ar_lab', label: '3D Science Lab', icon: FlaskConical },
     { id: 'study_tools', label: 'All Features & Tools', icon: LayoutGrid },
     { id: 'subjects', label: 'My Subjects & Syllabi', icon: BookOpen },
     { id: 'homework', label: 'AI Homework Helper', icon: FileText },
@@ -212,8 +213,8 @@ export default function MobileDrawerNav({
                     <Icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-400'} />
                     <span>{item.label}</span>
                     {item.id === 'ar_lab' && (
-                      <span className="text-[9px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
-                        AR
+                      <span className="text-[9px] font-extrabold bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
+                        3D
                       </span>
                     )}
                     {item.id === 'study_tools' && (

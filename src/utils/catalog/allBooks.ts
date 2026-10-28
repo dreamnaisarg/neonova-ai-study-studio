@@ -1,7 +1,8 @@
-// AUTO-GENERATED GLOBAL CLASSIC CATALOG (100+ Public Domain Masterpieces)
+// AUTO-GENERATED GLOBAL CLASSIC CATALOG (400+ Public Domain Masterpieces)
 import { ClassicBook } from './types';
+import { ADDITIONAL_GLOBAL_BOOKS } from './additionalBooks';
 
-export const GLOBAL_CLASSIC_BOOKS: ClassicBook[] = [
+const BASE_CLASSIC_BOOKS: ClassicBook[] = [
   {
     "id": "gitanjali-tagore",
     "title": "Gitanjali (Song Offerings)",
@@ -8098,4 +8099,9 @@ export const GLOBAL_CLASSIC_BOOKS: ClassicBook[] = [
       }
     ]
   }
+];
+
+export const GLOBAL_CLASSIC_BOOKS: ClassicBook[] = [
+  ...BASE_CLASSIC_BOOKS,
+  ...ADDITIONAL_GLOBAL_BOOKS
 ];

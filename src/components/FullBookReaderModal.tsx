@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ClassicBook, Chapter } from '../utils/classicsCatalog';
 import { ParsedChapter, BookContentResult } from '../server/bookContentService';
+import { naturalVoiceEngine } from '../lib/naturalVoiceEngine';
 
 interface FullBookReaderModalProps {
   book: ClassicBook | null;
@@ -216,9 +217,7 @@ export default function FullBookReaderModal({
     loadContent();
 
     return () => {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      naturalVoiceEngine.stop();
       setIsSpeaking(false);
     };
   }, [book, isOpen]);
@@ -497,26 +496,21 @@ export default function FullBookReaderModal({
     setTimeout(() => setCopiedChapter(false), 2000);
   };
 
-  // 5. TEXT TO SPEECH
+  // 5. NATURAL HUMAN VOICE TEXT TO SPEECH
   const handleToggleSpeech = () => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      naturalVoiceEngine.stop();
       setIsSpeaking(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const textToRead = currentChapter.fullText.replace(/[#*>-]/g, '').slice(0, 2000);
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    utterance.rate = speechRate;
-    utterance.pitch = 1.05;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    utteranceRef.current = utterance;
+    const textToRead = currentChapter.fullText.replace(/[#*>-]/g, '').slice(0, 3000);
     setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    naturalVoiceEngine.speak(textToRead, {
+      targetLang: book?.languageCode || 'en',
+      rateOverride: speechRate,
+      onEnd: () => setIsSpeaking(false)
+    });
     if (adjustXP) adjustXP(15);
   };
 

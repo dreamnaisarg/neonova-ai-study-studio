@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx tests/auth-and-deployment.test.ts && tsx tests/mastery-and-mission7.test.ts && tsx tests/guest-access-and-subscription-auth.test.ts"
+    "test": "tsx tests/auth-and-deployment.test.ts && tsx tests/mastery-and-mission7.test.ts && tsx tests/guest-access-and-subscription-auth.test.ts && tsx tests/phonepe-payment-security.test.ts && tsx tests/instant-payment-verification.test.ts && tsx tests/razorpay-standard-checkout.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -27,6 +27,7 @@
     "mathjs": "^15.2.0",
     "motion": "^12.23.24",
     "qrcode": "^1.5.4",
+    "razorpay": "^2.9.8",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "three": "^0.186.1",

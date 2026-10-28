@@ -24,10 +24,12 @@ import {
   Box,
   LayoutGrid,
   Smartphone,
-  Eye
+  Eye,
+  Globe
 } from 'lucide-react';
 import { PlanTier, PLANS } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
+import { useTranslation } from '../../lib/i18n';
 
 export type EduTab = 
   | 'home' 
@@ -84,6 +86,7 @@ export default function EduSidebar({
   onOpenLogin,
   onOpenWidgets
 }: EduSidebarProps) {
+  const { t, toggleLanguage, isFinnish } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === 'true';
@@ -103,19 +106,19 @@ export default function EduSidebar({
   };
 
   const primaryNavItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'ar_lab', label: 'AR Science Lab', icon: Eye },
-    { id: 'stages', label: '4-Stage Mastery', icon: Award },
+    { id: 'home', label: t.home, icon: Home },
+    { id: 'ar_lab', label: t.threeDLab, icon: FlaskConical },
+    { id: 'stages', label: t.stages, icon: Award },
     { id: 'mission7', label: 'Mission 7', icon: Trophy },
-    { id: 'study_tools', label: 'All Features', icon: LayoutGrid },
-    { id: 'subjects', label: 'Subjects', icon: BookOpen },
-    { id: 'homework', label: 'AI Homework', icon: FileText },
-    { id: 'practice', label: 'Practice', icon: Target },
-    { id: 'mistakes', label: 'Mistakes', icon: AlertTriangle },
-    { id: 'progress', label: 'Progress', icon: TrendingUp },
-    { id: 'library', label: 'Classic Hub', icon: Library },
+    { id: 'study_tools', label: t.tools, icon: LayoutGrid },
+    { id: 'subjects', label: t.subjects, icon: BookOpen },
+    { id: 'homework', label: t.homework, icon: FileText },
+    { id: 'practice', label: isFinnish ? 'Harjoittelu' : 'Practice', icon: Target },
+    { id: 'mistakes', label: isFinnish ? 'Virhekatsaus' : 'Mistakes', icon: AlertTriangle },
+    { id: 'progress', label: t.progress, icon: TrendingUp },
+    { id: 'library', label: isFinnish ? 'Kirjasto' : 'Classic Hub', icon: Library },
     { id: 'neovision_hub', label: 'NeoVision', icon: Box },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'profile', label: isFinnish ? 'Profiili' : 'Profile', icon: User },
   ];
 
   return (
@@ -176,8 +179,8 @@ export default function EduSidebar({
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="truncate">{item.label}</span>
                       {item.id === 'ar_lab' && (
-                        <span className="text-[9px] font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
-                          AR
+                        <span className="text-[9px] font-extrabold bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-1.5 py-0.2 rounded-full font-mono shadow-2xs">
+                          3D
                         </span>
                       )}
                       {item.id === 'study_tools' && (
@@ -275,6 +278,24 @@ export default function EduSidebar({
           </button>
         )}
 
+        {/* Bilingual Language Switcher (EN / FI) */}
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          title={isFinnish ? 'Vaihda kieleksi englanti (Switch to English)' : 'Vaihda suomeksi (Switch to Finnish)'}
+          className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-xl text-xs font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 transition-colors cursor-pointer text-left`}
+        >
+          <Globe size={18} className="text-indigo-600 shrink-0" />
+          {!isCollapsed && (
+            <div className="flex items-center justify-between flex-1">
+              <span>{isFinnish ? 'Kieli: Suomi' : 'Language: English'}</span>
+              <span className="text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">
+                {isFinnish ? '🇫🇮 FI' : '🇬🇧 EN'}
+              </span>
+            </div>
+          )}
+        </button>
+
         <button
           onClick={() => onTabChange('settings')}
           title="Settings & Preferences"
@@ -285,7 +306,7 @@ export default function EduSidebar({
           }`}
         >
           <Settings size={18} className={activeTab === 'settings' ? 'text-indigo-600' : 'text-slate-400'} />
-          {!isCollapsed && <span>Settings</span>}
+          {!isCollapsed && <span>{t.settings}</span>}
         </button>
 
         <button

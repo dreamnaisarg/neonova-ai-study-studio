@@ -45,6 +45,7 @@ const CATEGORIES = [
   'Science',
   'Philosophy',
   'History',
+  'Folktales',
   'Mystery',
   'Fantasy',
   'World Literature',
@@ -55,20 +56,25 @@ const CATEGORIES = [
 const LANGUAGES = [
   'All',
   'English',
+  'Hindi & English',
+  'Gujarati & English',
   'Sanskrit & English',
   'Bengali & English',
-  'Gujarati & English',
   'Tamil & English',
-  'Chinese & English',
-  'Japanese & English',
-  'Persian & English',
-  'Arabic & English',
-  'Ancient Egyptian & English',
-  'Ancient Greek & English',
-  'Latin & English',
+  'Telugu & English',
+  'Marathi & English',
+  'Urdu & English',
   'French & English',
   'Spanish & English',
-  'Russian & English'
+  'German & English',
+  'Russian & English',
+  'Chinese & English',
+  'Japanese & English',
+  'Korean & English',
+  'Arabic & English',
+  'Persian & English',
+  'Ancient Greek & English',
+  'Latin & English'
 ];
 
 const GRADE_LEVELS = [
@@ -216,7 +222,7 @@ export default function ClassicsLibrary({
         const matchesLanguage = book.language.toLowerCase().includes(q);
         const matchesCategory = book.category.toLowerCase().includes(q);
         const matchesThemes = book.themes.some(t => t.toLowerCase().includes(q));
-        const matchesDesc = book.description.toLowerCase().includes(q);
+        const matchesDesc = (book.description || '').toLowerCase().includes(q);
         if (!matchesTitle && !matchesAuthor && !matchesCountry && !matchesLanguage && !matchesCategory && !matchesThemes && !matchesDesc) {
           return false;
         }
@@ -239,7 +245,7 @@ export default function ClassicsLibrary({
 
       // 5. Grade Filter
       if (selectedGrade !== 'All') {
-        if (!book.recommendedGrades.includes(selectedGrade)) {
+        if (book.recommendedGrades && !book.recommendedGrades.includes(selectedGrade)) {
           return false;
         }
       }
@@ -251,8 +257,9 @@ export default function ClassicsLibrary({
 
       // 7. Reading Length
       if (selectedLength !== 'All') {
-        const isQuick = book.estimatedReadTime.includes('min') || book.estimatedReadTime.includes('1 hour') || book.estimatedReadTime.includes('1.5 hour');
-        const isMedium = book.estimatedReadTime.includes('2 hour') || book.estimatedReadTime.includes('2.5 hour') || book.estimatedReadTime.includes('3 hour') || book.estimatedReadTime.includes('3.5 hour') || book.estimatedReadTime.includes('4 hour');
+        const readTime = book.estimatedReadTime || '';
+        const isQuick = readTime.includes('min') || readTime.includes('1 hour') || readTime.includes('1.5 hour');
+        const isMedium = readTime.includes('2 hour') || readTime.includes('2.5 hour') || readTime.includes('3 hour') || readTime.includes('3.5 hour') || readTime.includes('4 hour');
         if (selectedLength === 'Quick' && !isQuick) return false;
         if (selectedLength === 'Medium' && !isMedium) return false;
         if (selectedLength === 'In-Depth' && (isQuick || isMedium)) return false;
@@ -282,7 +289,7 @@ export default function ClassicsLibrary({
   }, [recentBookIds, allBooks]);
 
   const recommendedForCurrentGrade = useMemo(() => {
-    return allBooks.filter(b => b.recommendedGrades.includes(currentGrade)).slice(0, 6);
+    return allBooks.filter(b => !b.recommendedGrades || b.recommendedGrades.includes(currentGrade)).slice(0, 6);
   }, [allBooks, currentGrade]);
 
   const worldLiteratureHighlights = useMemo(() => {
@@ -380,7 +387,7 @@ export default function ClassicsLibrary({
                 className="group relative p-3 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-400/80 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div>
-                  <div className={`w-full aspect-3/4 rounded-xl bg-gradient-to-br ${book.coverGradient} p-2 text-white flex flex-col justify-between relative shadow-xs overflow-hidden mb-2 group-hover:scale-[1.02] transition-transform`}>
+                  <div className={`w-full aspect-3/4 rounded-xl bg-gradient-to-br ${book.coverGradient || 'from-slate-800 to-indigo-950'} p-2 text-white flex flex-col justify-between relative shadow-xs overflow-hidden mb-2 group-hover:scale-[1.02] transition-transform`}>
                     <div className="flex justify-between items-start text-xs">
                       <span>{book.icon}</span>
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/40 backdrop-blur-xs">{book.country}</span>
@@ -660,7 +667,7 @@ export default function ClassicsLibrary({
                 onClick={() => handleBookSelection(book)}
                 className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-400/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex gap-3.5 items-start group"
               >
-                <div className={`w-16 h-24 rounded-xl bg-gradient-to-br ${book.coverGradient} p-2 text-white flex flex-col justify-between shrink-0 shadow-xs relative overflow-hidden group-hover:scale-105 transition-transform`}>
+                <div className={`w-16 h-24 rounded-xl bg-gradient-to-br ${book.coverGradient || 'from-slate-800 to-indigo-950'} p-2 text-white flex flex-col justify-between shrink-0 shadow-xs relative overflow-hidden group-hover:scale-105 transition-transform`}>
                   <span className="text-base">{book.icon}</span>
                   <span className="text-[9px] font-bold font-serif line-clamp-2 leading-tight">{book.title}</span>
                 </div>
@@ -770,7 +777,7 @@ export default function ClassicsLibrary({
                       <div className="relative w-full aspect-3/4 flex items-end justify-center perspective-500">
                         {/* 3D Book Cover Card */}
                         <div
-                          className={`w-[90%] h-[95%] rounded-r-xl rounded-l-xs p-3 text-white flex flex-col justify-between relative shadow-lg transition-all duration-300 bg-gradient-to-br ${book.coverGradient} border-l-4 border-l-black/40 border-r border-t border-b border-white/20 ${
+                          className={`w-[90%] h-[95%] rounded-r-xl rounded-l-xs p-3 text-white flex flex-col justify-between relative shadow-lg transition-all duration-300 bg-gradient-to-br ${book.coverGradient || 'from-slate-800 to-indigo-950'} border-l-4 border-l-black/40 border-r border-t border-b border-white/20 ${
                             isAnimating
                               ? 'scale-110 -translate-y-4 shadow-2xl ring-4 ring-indigo-400 z-30'
                               : isSelected
@@ -782,7 +789,7 @@ export default function ClassicsLibrary({
                           <div className="flex justify-between items-start">
                             <span className="text-xl filter drop-shadow-xs">{book.icon}</span>
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-xs border border-white/10 uppercase">
-                              {book.languageCode}
+                              {book.languageCode || 'EN'}
                             </span>
                           </div>
 
@@ -1166,7 +1173,7 @@ export default function ClassicsLibrary({
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-0.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Estimated Length</span>
-                  <p className="font-semibold text-slate-800">{infoModalBook.estimatedReadTime} (~{infoModalBook.wordCount.toLocaleString()} words)</p>
+                  <p className="font-semibold text-slate-800">{infoModalBook.estimatedReadTime || 'Standard'} (~{(infoModalBook.wordCount || 0).toLocaleString()} words)</p>
                 </div>
               </div>
 

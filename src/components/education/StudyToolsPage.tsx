@@ -266,10 +266,10 @@ export default function StudyToolsPage({
     {
       id: 'ar_science_lab',
       category: 'science',
-      title: 'AR Science Lab (Live Camera)',
-      description: 'Project 3D organs, physics models, and anatomy right into your room with your device camera.',
-      icon: Eye,
-      tag: 'Augmented Reality',
+      title: '3D Science Lab (Walkable Simulation)',
+      description: 'Walk through an explorable 3D laboratory, wear PPE gear, handle beakers, microscopes, and conduct interactive science experiments.',
+      icon: FlaskConical,
+      tag: '3D Virtual Lab',
       action: () => {
         onNavigateTab('ar_lab');
       }

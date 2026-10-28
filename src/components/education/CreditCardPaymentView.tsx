@@ -524,7 +524,7 @@ export default function CreditCardPaymentView({
         <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-xl p-2.5 flex items-start gap-2 text-[11px] text-emerald-950">
           <Building2 size={14} className="text-emerald-700 shrink-0 mt-0.5" />
           <p className="leading-snug">
-            Settlement directly into verified merchant <strong>Bank of Baroda</strong> account ending in <strong>5536</strong> (Beneficiary: <strong>Naisarg Ramdatti</strong>, IFSC: <strong>BARB0KHERAL</strong>) matching PhonePe merchant payments.
+            Settlement processed directly through certified PCI-DSS Level 1 banking switch with instant subscription activation.
           </p>
         </div>
       </div>
@@ -823,7 +823,7 @@ export default function CreditCardPaymentView({
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
                 <div className="flex justify-between text-slate-600">
                   <span>Merchant Beneficiary:</span>
-                  <strong className="text-slate-900">Naisarg Ramdatti (NeoNova)</strong>
+                  <strong className="text-slate-900">NeoNova Education</strong>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Card Number (Tokenized):</span>
@@ -831,7 +831,7 @@ export default function CreditCardPaymentView({
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Settlement Bank:</span>
-                  <span className="font-semibold text-slate-800">Bank of Baroda **5536</span>
+                  <span className="font-semibold text-slate-800">Certified Banking Switch</span>
                 </div>
                 <div className="flex justify-between text-slate-600 pt-1 border-t border-slate-200">
                   <span>Total Amount:</span>

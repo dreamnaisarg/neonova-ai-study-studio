@@ -149,9 +149,9 @@ export async function fetchMerchantSettlementInfo(): Promise<MerchantInfo> {
   }
 
   return {
-    merchantName: 'Naisarg Ramdatti',
+    merchantName: 'NeoNova Education',
     brandName: 'NeoNova AI Homework Helper',
-    settlementBank: 'Bank of Baroda',
+    settlementBank: 'Certified Commercial Banking Partner',
     accountNumberMasked: '•••• •••• •••• 5536',
     ifsc: 'BARB0KHERAL',
     primaryUpiId: '9898074424@axl',

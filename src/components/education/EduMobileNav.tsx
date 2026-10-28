@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, BookOpen, Award, FileText, LayoutGrid, User } from 'lucide-react';
 import { EduTab } from './EduSidebar';
+import { useTranslation } from '../../lib/i18n';
 
 interface EduMobileNavProps {
   activeTab: EduTab;
@@ -13,6 +14,7 @@ export default function EduMobileNav({
   onTabChange,
   onOpenProfile
 }: EduMobileNavProps) {
+  const { t, isFinnish } = useTranslation();
   return (
     <nav 
       className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-1 pt-1.5 z-40 flex items-center justify-around shadow-sm select-none"
@@ -28,7 +30,7 @@ export default function EduMobileNav({
         aria-label="Home Dashboard"
       >
         <Home size={20} />
-        <span className="text-[10px] mt-0.5">Home</span>
+        <span className="text-[10px] mt-0.5">{t.home}</span>
       </button>
 
       <button
@@ -40,7 +42,7 @@ export default function EduMobileNav({
         aria-label="Subjects and Syllabus"
       >
         <BookOpen size={20} />
-        <span className="text-[10px] mt-0.5">Subjects</span>
+        <span className="text-[10px] mt-0.5">{t.subjects}</span>
       </button>
 
       <button
@@ -52,7 +54,7 @@ export default function EduMobileNav({
         aria-label="4-Stage Testing System"
       >
         <Award size={20} className={activeTab === 'stages' ? 'text-purple-600' : ''} />
-        <span className="text-[10px] mt-0.5">4-Stage</span>
+        <span className="text-[10px] mt-0.5">{isFinnish ? '4-Vaihe' : '4-Stage'}</span>
         <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500" />
       </button>
 
@@ -67,7 +69,7 @@ export default function EduMobileNav({
         <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center -mt-3.5 shadow-md">
           <FileText size={17} />
         </div>
-        <span className="text-[10px] mt-0.5 font-bold">AI Solve</span>
+        <span className="text-[10px] mt-0.5 font-bold">{isFinnish ? 'Tekoäly' : 'AI Solve'}</span>
       </button>
 
       <button
@@ -81,7 +83,7 @@ export default function EduMobileNav({
         aria-label="Access All Features"
       >
         <LayoutGrid size={20} />
-        <span className="text-[10px] mt-0.5 whitespace-nowrap">All Features</span>
+        <span className="text-[10px] mt-0.5 whitespace-nowrap">{isFinnish ? 'Työkalut' : 'All Features'}</span>
       </button>
 
       <button
@@ -93,7 +95,7 @@ export default function EduMobileNav({
         aria-label="Student Profile"
       >
         <User size={20} />
-        <span className="text-[10px] mt-0.5">Profile</span>
+        <span className="text-[10px] mt-0.5">{isFinnish ? 'Profiili' : 'Profile'}</span>
       </button>
     </nav>
   );

@@ -149,7 +149,8 @@ export default function SettingsPage({
     'Chemistry',
     'Biology',
     'Computer Science',
-    'French'
+    'French',
+    'Finnish'
   ];
 
   const handleSaveProfileName = (e: React.FormEvent) => {
@@ -237,6 +238,7 @@ export default function SettingsPage({
                 <option value="Hindi">Hindi (हिंदी)</option>
                 <option value="Gujarati">Gujarati (ગુજરાતી)</option>
                 <option value="French">French (Français)</option>
+                <option value="Finnish">Finnish (Suomi)</option>
                 <option value="Spanish">Spanish (Español)</option>
               </select>
             </div>

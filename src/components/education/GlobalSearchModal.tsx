@@ -153,11 +153,11 @@ export default function GlobalSearchModal({
       }
     },
     {
-      id: 'tool-ar-lab',
-      title: 'AR Science Lab (Live Camera Augmented Reality & Real World)',
+      id: 'tool-3d-science-lab',
+      title: '3D Science Lab (Walkable 3D Laboratory, PPE & Experiments)',
       category: 'Science Simulation',
       type: 'tool',
-      icon: Eye,
+      icon: FlaskConical,
       action: () => {
         onNavigateTab('ar_lab');
         onClose();

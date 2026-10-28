@@ -163,6 +163,7 @@ export default function AIHomeworkSolverView({
     { id: 'hindi', name: 'Hindi', icon: '🇮🇳', engine: 'हिंदी व्याकरण संधि एवं समास सत्यापक' },
     { id: 'gujarati', name: 'Gujarati', icon: '🦁', engine: 'ગુજરાતી વ્યાકરણ સંધિ & સમાસ એન્જિન' },
     { id: 'french', name: 'French', icon: '🇫🇷', engine: 'French Conjugation & Grammar Engine' },
+    { id: 'finnish', name: 'Finnish', icon: '🇫🇮', engine: 'Suomen kielen kielioppi & sijamuodot (Finnish Grammar & Cases Engine)' },
     { id: 'computer', name: 'Computer Science', icon: '💻', engine: 'CS Number System & Logic Gate Engine' },
     { id: 'ai', name: 'Artificial Intelligence', icon: '🤖', engine: 'AI Concepts & Machine Learning Engine' },
     { id: 'gk', name: 'General Knowledge', icon: '🧠', engine: 'Authoritative Facts Registry' },
@@ -627,6 +628,13 @@ export default function AIHomeworkSolverView({
               <button type="button" onClick={() => setQuestionInput('conjugate etre with nous')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">être (nous)</button>
               <button type="button" onClick={() => setQuestionInput('conjugate avoir with tu')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">avoir (tu)</button>
               <button type="button" onClick={() => setQuestionInput('conjugate parler au present')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">parler au présent</button>
+            </>
+          )}
+          {activeSubject === 'Finnish' && (
+            <>
+              <button type="button" onClick={() => setQuestionInput('taivuta talo inessiivi')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">talo (inessiivi: talossa)</button>
+              <button type="button" onClick={() => setQuestionInput('astevaihtelu kukka')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">astevaihtelu kukka → kukan</button>
+              <button type="button" onClick={() => setQuestionInput('vokaalisointu talo')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-mono cursor-pointer">vokaalisointu (a/o/u vs ä/ö/y)</button>
             </>
           )}
           {activeSubject === 'Artificial Intelligence' && (

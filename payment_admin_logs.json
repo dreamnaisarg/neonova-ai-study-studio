@@ -1,0 +1,1955 @@
+[
+  {
+    "timestamp": "2026-10-20T04:18:01.187Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "984729184029",
+    "details": "Pending verification for Test Student (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.195Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNRECEIVED_1792469881193",
+    "details": "Pending verification for Student (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.198Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNRECEIVED_1792469881193",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.201Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_MISMATCH_1792469881199",
+    "details": "Pending verification for Student (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.203Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "UTR_DUP_1792469881201",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.209Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_ORD_MIS_1792469881207",
+    "details": "Pending verification for Student (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.211Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_TARGET_1792469881210",
+    "details": "Pending verification for Student (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.212Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "UTR_TARGET_1792469881210",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.213Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "629184019482",
+    "details": "Pending verification for Cadet Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:01.215Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "629184019482",
+    "details": "Approved pro (₹1799) for Cadet Two"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.947Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNRECEIVED_1792469917945",
+    "details": "Pending verification for Student (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.949Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNRECEIVED_1792469917945",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.951Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_MISMATCH_1792469917950",
+    "details": "Pending verification for Student (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.953Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "UTR_DUP_1792469917952",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.957Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_ORD_MIS_1792469917956",
+    "details": "Pending verification for Student (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.959Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_TARGET_1792469917958",
+    "details": "Pending verification for Student (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.960Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "UTR_TARGET_1792469917958",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-20T04:18:37.962Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "629184019482",
+    "details": "Approved pro (₹1799) for Cadet Two"
+  },
+  {
+    "timestamp": "2026-10-20T04:19:42.543Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "7771792469982496",
+    "details": "Pending verification for Test Sec (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:19:42.546Z",
+    "admin": "Admin",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "7771792469982496",
+    "details": "Approved pro (₹1799) for Test Sec"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.384Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "984019366843",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.389Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792470023198_1113",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.391Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792470023198_1113",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.393Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792470023198_1113",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.395Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792470023198_1113",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.401Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792470023198_1113",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.403Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792470023198_1113",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.404Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792470023198_1113",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.405Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792470023198_1113",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:23.407Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792470023198_1113",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:51.978Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "986885981370",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:51.985Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792470051773_1759",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:51.989Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792470051773_1759",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:51.994Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792470051773_1759",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:51.997Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792470051773_1759",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:52.004Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792470051773_1759",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:52.007Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792470051773_1759",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:52.009Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792470051773_1759",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:52.013Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792470051773_1759",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:20:52.022Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792470051773_1759",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.332Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "982024144372",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.338Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792470072125_9196",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.341Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792470072125_9196",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.344Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792470072125_9196",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.346Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792470072125_9196",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.352Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792470072125_9196",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.355Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792470072125_9196",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.356Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792470072125_9196",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.360Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792470072125_9196",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-20T04:21:12.362Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792470072125_9196",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.640Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "988510738411",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.645Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792578124405_3505",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.648Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792578124405_3505",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.651Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792578124405_3505",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.654Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792578124405_3505",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.668Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792578124405_3505",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.674Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792578124405_3505",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.677Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792578124405_3505",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.680Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792578124405_3505",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:22:04.686Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792578124405_3505",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.001Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "985110073008",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.007Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792579158791_1020",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.011Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792579158791_1020",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.014Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792579158791_1020",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.017Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792579158791_1020",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.027Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792579158791_1020",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.030Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792579158791_1020",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.032Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792579158791_1020",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.044Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792579158791_1020",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:39:19.048Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792579158791_1020",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.887Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "985877391839",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.894Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792579669628_2767",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.898Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792579669628_2767",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.902Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792579669628_2767",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.905Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792579669628_2767",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.913Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792579669628_2767",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.917Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792579669628_2767",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.918Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792579669628_2767",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.921Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792579669628_2767",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:47:49.938Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792579669628_2767",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.537Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "982461164156",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.544Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792579928324_8254",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.548Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792579928324_8254",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.552Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792579928324_8254",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.555Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792579928324_8254",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.563Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792579928324_8254",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.567Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792579928324_8254",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.568Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792579928324_8254",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.571Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792579928324_8254",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-21T10:52:08.574Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792579928324_8254",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.194Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "981561417357",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.201Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792663677924_3983",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.205Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792663677924_3983",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.209Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792663677924_3983",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.212Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792663677924_3983",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.221Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792663677924_3983",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.225Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792663677924_3983",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.226Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792663677924_3983",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.229Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792663677924_3983",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:07:58.232Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792663677924_3983",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.759Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "981058155228",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.766Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792664089542_868",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.770Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792664089542_868",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.774Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792664089542_868",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.778Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792664089542_868",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.786Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792664089542_868",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.791Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792664089542_868",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.792Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792664089542_868",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.795Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792664089542_868",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:49.799Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792664089542_868",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:52.702Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792664092460_9161",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:52.709Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792664092460_9161_811929",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:14:52.713Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792664092460_9161",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.240Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "984170584752",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.247Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792664188029_6429",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.251Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792664188029_6429",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.255Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792664188029_6429",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.260Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792664188029_6429",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.271Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792664188029_6429",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.276Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792664188029_6429",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.277Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792664188029_6429",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.280Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792664188029_6429",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:28.284Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792664188029_6429",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:31.230Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792664190988_1729",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:31.237Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792664190988_1729_217846",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:16:31.241Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792664190988_1729",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.624Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "982457042634",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.632Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792664544397_5597",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.636Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792664544397_5597",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.640Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792664544397_5597",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.644Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792664544397_5597",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.654Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792664544397_5597",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.659Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792664544397_5597",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.660Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792664544397_5597",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.663Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792664544397_5597",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:24.667Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792664544397_5597",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:27.335Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792664547149_3425",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:27.342Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792664547149_3425_172255",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:22:27.347Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792664547149_3425",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.019Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "988431382407",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.029Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_TRANSACTION_APPROVED",
+    "targetTransactionId": "UNREC_1792665533741_2239",
+    "details": "Instantly approved PRO for Student One"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.036Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792665533741_2239",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.043Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792665533741_2239",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.048Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792665533741_2239",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.063Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_TRANSACTION_APPROVED",
+    "targetTransactionId": "ORD_MIS_1792665533741_2239",
+    "details": "Instantly approved PLUS for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.073Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_TRANSACTION_APPROVED",
+    "targetTransactionId": "TARGET_1792665533741_2239",
+    "details": "Instantly approved PRO for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.077Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792665533741_2239",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.084Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_TRANSACTION_APPROVED",
+    "targetTransactionId": "GENUINE_1792665533741_2239",
+    "details": "Instantly approved PRO for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:38:54.092Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792665533741_2239",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.142Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "988744069567",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.153Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792665588920_4595",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.159Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792665588920_4595",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.165Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792665588920_4595",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.175Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792665588920_4595",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.191Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792665588920_4595",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.199Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792665588920_4595",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.201Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792665588920_4595",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.206Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792665588920_4595",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:49.212Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792665588920_4595",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:52.088Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792665591865_6152",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:52.105Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792665591865_6152_973125",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-22T10:39:52.124Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792665591865_6152",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.530Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "983727473721",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.540Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792751584373_1203",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.549Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792751584373_1203",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.581Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792751584373_1203",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.592Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792751584373_1203",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.623Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792751584373_1203",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.633Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792751584373_1203",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.639Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792751584373_1203",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.646Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792751584373_1203",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:04.653Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792751584373_1203",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:07.596Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792751587409_8498",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:07.605Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792751587409_8498_549215",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:33:07.616Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792751587409_8498",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:56:16.734Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "878658768",
+    "details": "Instantly activated PLUS"
+  },
+  {
+    "timestamp": "2026-10-23T10:56:27.000Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "0700970709089]",
+    "details": "Instantly activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.921Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "987825397433",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.930Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792753049772_9976",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.937Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792753049772_9976",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.942Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792753049772_9976",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.948Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792753049772_9976",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.963Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792753049772_9976",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.972Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792753049772_9976",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.973Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792753049772_9976",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.980Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792753049772_9976",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:29.994Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792753049772_9976",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:32.627Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792753052414_4994",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:32.635Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792753052414_4994_765489",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:32.639Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792753052414_4994",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:57:33.134Z",
+    "admin": "SECURITY_SWITCH",
+    "action": "SIGNATURE_MISMATCH",
+    "targetTransactionId": "order_card_1792753053129-IPXVGT",
+    "details": "HMAC SHA256 validation failed"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.653Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "982944443132",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.663Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792753199498_5942",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.680Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792753199498_5942",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.686Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792753199498_5942",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.694Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792753199498_5942",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.711Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792753199498_5942",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.722Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792753199498_5942",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.724Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792753199498_5942",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.730Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792753199498_5942",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T10:59:59.738Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792753199498_5942",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T11:00:02.627Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792753202396_3135",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T11:00:02.636Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792753202396_3135_164918",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:00:02.642Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792753202396_3135",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.894Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "988929759134",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.903Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792753323726_7680",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.910Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792753323726_7680",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.916Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792753323726_7680",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.922Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792753323726_7680",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.939Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792753323726_7680",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.947Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792753323726_7680",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.949Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792753323726_7680",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.959Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792753323726_7680",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:03.965Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792753323726_7680",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:06.780Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792753326600_5419",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:06.788Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792753326600_5419_368396",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:02:06.793Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792753326600_5419",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.518Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "983843284959",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.536Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792753440300_2852",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.546Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792753440300_2852",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.552Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792753440300_2852",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.560Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792753440300_2852",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.580Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792753440300_2852",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.589Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792753440300_2852",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.591Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792753440300_2852",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.600Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792753440300_2852",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:00.608Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792753440300_2852",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:03.641Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792753443419_4944",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:03.651Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792753443419_4944_667584",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:04:03.661Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792753443419_4944",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.620Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "989098519694",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.633Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792753868415_3428",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.640Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792753868415_3428",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.648Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792753868415_3428",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.654Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792753868415_3428",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.688Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792753868415_3428",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.697Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792753868415_3428",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.699Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792753868415_3428",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.705Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792753868415_3428",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:08.711Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792753868415_3428",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:11.618Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792753871386_2565",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:11.627Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792753871386_2565_382885",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-23T11:11:11.634Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792753871386_2565",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.667Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "982689649228",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.714Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792832208390_4225",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.731Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792832208390_4225",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.746Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792832208390_4225",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.755Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792832208390_4225",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.793Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792832208390_4225",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.823Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792832208390_4225",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.827Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792832208390_4225",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.834Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792832208390_4225",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:48.846Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792832208390_4225",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:54.148Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792832213771_4671",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:54.179Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792832213771_4671_771177",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T08:56:54.197Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792832213771_4671",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.884Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "986193441740",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.897Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792833213697_2743",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.906Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792833213697_2743",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.913Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792833213697_2743",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.920Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792833213697_2743",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.941Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792833213697_2743",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.951Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792833213697_2743",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.953Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792833213697_2743",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.960Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792833213697_2743",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:33.969Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792833213697_2743",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:36.897Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1792833216694_8393",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:36.908Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1792833216694_8393_255199",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-10-24T09:13:36.918Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1792833216694_8393",
+    "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.351Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "988006389043",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.369Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1792919186130_305",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.383Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1792919186130_305",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.392Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1792919186130_305",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.400Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1792919186130_305",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.432Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1792919186130_305",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.450Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1792919186130_305",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.453Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1792919186130_305",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.461Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1792919186130_305",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-10-25T09:06:26.473Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1792919186130_305",
+    "details": "Approved pro (₹1799) for Student Two"
+  }
+]

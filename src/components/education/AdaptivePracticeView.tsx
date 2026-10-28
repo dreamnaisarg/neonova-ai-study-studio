@@ -512,6 +512,38 @@ const QUESTION_BANK: { [subject: string]: PracticeQuestion[] } = {
       explanation: 'Design Thinking begins with student/user Empathy, defining the core problem statement, ideating creative solutions, building rapid prototypes, and testing.',
       commonMistakeCategory: 'reading_misinterpretation'
     }
+  ],
+  Finnish: [
+    {
+      id: 'q-fi-1',
+      topic: 'Paikallissijat (Inessiivi -ssa / -ssä)',
+      difficulty: 'Easy',
+      question: 'Mikä on sanan "talo" inessiivimuoto (sisäpaikallissija "sisällä")?',
+      options: ['talossa', 'talosta', 'taloon', 'talolla'],
+      correctIndex: 0,
+      explanation: 'Inessiivin pääte on -ssa/-ssä (vokaalisoinnun mukaan takavokaaleille -ssa). Talo + ssa = talossa (in the house).',
+      commonMistakeCategory: 'formula_misapplication'
+    },
+    {
+      id: 'q-fi-2',
+      topic: 'Astevaihtelu (K-P-T vaihtelu)',
+      difficulty: 'Medium',
+      question: 'Mikä on sanan "kukka" genetiivimuoto oikealla astevaihtelulla (kk → k)?',
+      options: ['kukan', 'kukkan', 'kukkasen', 'kukkain'],
+      correctIndex: 0,
+      explanation: 'K-P-T astevaihtelussa vahva aste "kk" heikkenee heikoksi asteeksi "k" suljetussa tavussa: kukka → kukan.',
+      commonMistakeCategory: 'conceptual_misunderstanding'
+    },
+    {
+      id: 'q-fi-3',
+      topic: 'Vokaalisointu (Vowel Harmony)',
+      difficulty: 'Hard',
+      question: 'Minkä päätteen sana "tyttö" saa adessiivissa vokaalisoinnun mukaisesti?',
+      options: ['tytöllä (-llä etuvokaaleille y, ö)', 'tytölla (-lla)', 'tytöllen', 'tyttössa'],
+      correctIndex: 0,
+      explanation: 'Sana "tyttö" sisältää etuvokaalit (y, ö), joten päätteeksi valitaan etuvokaalinen muoto -llä (sekä astevaihtelu tt → t): tytöllä.',
+      commonMistakeCategory: 'conceptual_misunderstanding'
+    }
   ]
 };
 
@@ -544,6 +576,7 @@ export default function AdaptivePracticeView({
     { name: 'Hindi', icon: '🇮🇳' },
     { name: 'Gujarati', icon: '🦁' },
     { name: 'French', icon: '🇫🇷' },
+    { name: 'Finnish', icon: '🇫🇮' },
     { name: 'Computer', icon: '💻' },
     { name: 'Artificial Intelligence', icon: '🤖' },
     { name: 'General Knowledge', icon: '🧠' },

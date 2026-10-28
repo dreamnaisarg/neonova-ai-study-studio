@@ -16,11 +16,14 @@ import {
   LogOut,
   Mic,
   LayoutGrid,
-  Smartphone
+  Smartphone,
+  Sliders,
+  Volume2
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
 import { PlanTier, PLANS } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
+import { useTranslation } from '../../lib/i18n';
 
 interface EduHeaderProps {
   onOpenWidgets?: () => void;
@@ -31,6 +34,7 @@ interface EduHeaderProps {
   curriculumBoard?: string;
   onCurriculumBoardChange?: (board: string) => void;
   onOpenVoiceTutor?: () => void;
+  onOpenVoiceSettings?: () => void;
   onOpenAllFeatures?: () => void;
   studentName: string;
   studentAvatar: string;
@@ -57,6 +61,7 @@ export default function EduHeader({
   curriculumBoard = 'cbse',
   onCurriculumBoardChange,
   onOpenVoiceTutor,
+  onOpenVoiceSettings,
   onOpenAllFeatures,
   studentName,
   studentAvatar,
@@ -75,6 +80,7 @@ export default function EduHeader({
   onOpenLogin,
   onOpenWidgets
 }: EduHeaderProps) {
+  const { t, lang, toggleLanguage, isFinnish } = useTranslation();
   const [gradeDropdownOpen, setGradeDropdownOpen] = useState(false);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
   const [curriculumDropdownOpen, setCurriculumDropdownOpen] = useState(false);
@@ -156,7 +162,7 @@ export default function EduHeader({
           title="Search all subjects, topics, and study tools (Ctrl+K)"
         >
           <Search size={14} className="text-slate-400 shrink-0" />
-          <span className="flex-1 text-left truncate">Search subjects & topics...</span>
+          <span className="flex-1 text-left truncate">{t.searchPlaceholder}</span>
           <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white text-slate-500 border border-slate-200 rounded shadow-2xs">
             ⌘K
           </kbd>
@@ -315,6 +321,18 @@ export default function EduHeader({
 
       {/* Right: Accessibility Controls, Scanner, Voice, Search, Profile */}
       <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Bilingual Language Switcher (EN / FI - Real Finnish translation) */}
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 hover:border-indigo-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+          title={isFinnish ? 'Vaihda kieleksi englanti (Switch to English)' : 'Vaihda suomeksi (Switch to Finnish)'}
+          aria-label="Toggle language between English and Finnish"
+        >
+          <Globe size={13} className="text-indigo-600 shrink-0" />
+          <span className="font-mono text-[11px] font-bold">{isFinnish ? '🇫🇮 FI' : '🇬🇧 EN'}</span>
+        </button>
+
         {/* All Features Quick Launcher */}
         {onOpenAllFeatures && (
           <button
@@ -324,21 +342,36 @@ export default function EduHeader({
             title="Access All Features & Study Tools Hub"
           >
             <LayoutGrid size={14} className="text-indigo-600 shrink-0" />
-            <span className="hidden xs:inline sm:inline">All Features</span>
+            <span className="hidden xs:inline sm:inline">{t.allFeatures}</span>
           </button>
         )}
 
-        {/* Realtime Voice AI Button */}
+        {/* Realtime Voice AI & Natural Voice Settings Button */}
         {onOpenVoiceTutor && (
-          <button
-            type="button"
-            onClick={onOpenVoiceTutor}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-            title="Real-Time Voice AI Tutor (Interrupt anytime)"
-          >
-            <Mic size={14} />
-            <span className="hidden sm:inline">Voice AI</span>
-          </button>
+          <div className="flex items-center shadow-xs">
+            <button
+              type="button"
+              onClick={onOpenVoiceTutor}
+              className={`flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white ${
+                onOpenVoiceSettings ? 'rounded-l-xl' : 'rounded-xl'
+              } text-xs font-bold transition-all cursor-pointer`}
+              title="Real-Time Voice AI Tutor (Interrupt anytime)"
+            >
+              <Mic size={14} />
+              <span className="hidden sm:inline">{t.voiceAi}</span>
+            </button>
+            {onOpenVoiceSettings && (
+              <button
+                type="button"
+                onClick={onOpenVoiceSettings}
+                className="px-2 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-r-xl border-l border-indigo-500/40 text-xs font-bold transition-all cursor-pointer"
+                title="Natural Human Voice Settings (Language, Voice Selection, Pacing, Formulas)"
+                aria-label="Open Natural Voice Settings"
+              >
+                <Sliders size={13} />
+              </button>
+            )}
+          </div>
         )}
         {/* Quick Accessibility Text-Size Scaling */}
         {onCycleFontScale && (
@@ -364,7 +397,7 @@ export default function EduHeader({
           title="Scan Homework Worksheet with Camera (Works Online & Offline)"
         >
           <Camera size={14} className="text-indigo-600 shrink-0" />
-          <span className="hidden sm:inline">Scan</span>
+          <span className="hidden sm:inline">{t.scan}</span>
         </button>
 
         {/* Phone Home Screen Widgets & Study Reminders Button */}

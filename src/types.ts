@@ -49,6 +49,7 @@ export const SUBJECTS = [
   { id: 'gujarati', name: 'Gujarati', icon: '📖', color: 'from-teal-400 to-emerald-500', bg: 'bg-teal-50' },
   { id: 'social', name: 'Social Science', icon: '🌍', color: 'from-rose-400 to-red-500', bg: 'bg-rose-50' },
   { id: 'french', name: 'French', icon: '🇫🇷', color: 'from-indigo-400 to-blue-500', bg: 'bg-indigo-50' },
+  { id: 'finnish', name: 'Finnish', icon: '🇫🇮', color: 'from-blue-400 to-cyan-500', bg: 'bg-blue-50' },
   { id: 'computer', name: 'Computer', icon: '💻', color: 'from-purple-400 to-fuchsia-500', bg: 'bg-purple-50' },
   { id: 'gk', name: 'General Knowledge (GK)', icon: '💡', color: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-50' },
   { id: 'physics', name: 'Physics', icon: '⚛️', color: 'from-indigo-400 to-violet-500', bg: 'bg-indigo-50' },

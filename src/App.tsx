@@ -47,6 +47,8 @@ import ThreeDModelGenerator from './components/education/ThreeDModelGenerator';
 import StudyAlertsPage from './components/education/StudyAlertsPage';
 import ARViewMode from './components/education/ARViewMode';
 import ARScienceLabView from './components/education/ARScienceLabView';
+import ThreeDScienceLabView from './components/education/ThreeDScienceLabView';
+import NaturalVoiceSettingsModal from './components/voice/NaturalVoiceSettingsModal';
 import HomeScreenWidgetsHub from './components/widgets/HomeScreenWidgetsHub';
 import { stripAllSymbolsForPlaintext } from './utils';
 
@@ -237,6 +239,7 @@ export default function App() {
 
   // Real-Time Voice Modal State
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
 
   // Help Me Understand Modal
   const [helpMeUnderstandData, setHelpMeUnderstandData] = useState<{
@@ -901,6 +904,7 @@ export default function App() {
           curriculumBoard={curriculumBoard}
           onCurriculumBoardChange={handleCurriculumBoardChange}
           onOpenVoiceTutor={() => setIsVoiceModalOpen(true)}
+          onOpenVoiceSettings={() => setIsVoiceSettingsOpen(true)}
           onOpenAllFeatures={() => setActiveTab('study_tools')}
           studentName={studentName}
           studentAvatar={studentAvatar}
@@ -1223,7 +1227,7 @@ export default function App() {
           {activeTab === 'career' && <FutureCareerMatch />}
 
           {activeTab === 'ar_lab' && (
-            <ARScienceLabView
+            <ThreeDScienceLabView
               currentGrade={currentGrade}
               onNavigateTab={(tab) => {
                 setActiveTab(tab as EduTab);
@@ -1446,6 +1450,12 @@ export default function App() {
         currentSubject={currentSubject}
         currentGrade={currentGrade}
         curriculumBoard={curriculumBoard}
+      />
+
+      {/* Natural Human Voice Configuration & Language Selection Modal */}
+      <NaturalVoiceSettingsModal
+        isOpen={isVoiceSettingsOpen}
+        onClose={() => setIsVoiceSettingsOpen(false)}
       />
 
       {/* Administrator Ledger & Verification Portal (Naisarg Ramdatti) */}
