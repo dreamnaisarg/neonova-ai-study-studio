@@ -1,0 +1,63 @@
+{
+  "id": "com.neonova.app",
+  "name": "NeoNova AI Study Studio",
+  "short_name": "neonova",
+  "author": "Naisarg Ramdatti",
+  "developer": {
+    "name": "Naisarg Ramdatti"
+  },
+  "description": "Interactive AI homework helper, math solver, 3D science labs, and progress mastery tracker for students from 1st to 12th grade.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#070b19",
+  "theme_color": "#070b19",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Scan Homework",
+      "short_name": "Scan",
+      "description": "Scan or attach worksheet problems directly with camera.",
+      "url": "/?action=scan_homework"
+    },
+    {
+      "name": "3D AR Model Lab",
+      "short_name": "3D AR Lab",
+      "description": "Project 3D anatomical and scientific models into real world.",
+      "url": "/?ar=true&tab=three_d_lab"
+    },
+    {
+      "name": "Phone Study Widgets",
+      "short_name": "Widgets",
+      "description": "Daily study reminder alarms, flashcards, and streak widgets.",
+      "url": "/?modal=widgets"
+    },
+    {
+      "name": "AI Homework Solver",
+      "short_name": "AI Solver",
+      "description": "Instant step-by-step problem explanations tailored to your grade.",
+      "url": "/?tab=homework"
+    }
+  ]
+}

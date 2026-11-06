@@ -50,6 +50,9 @@ import ARScienceLabView from './components/education/ARScienceLabView';
 import ThreeDScienceLabView from './components/education/ThreeDScienceLabView';
 import NaturalVoiceSettingsModal from './components/voice/NaturalVoiceSettingsModal';
 import HomeScreenWidgetsHub from './components/widgets/HomeScreenWidgetsHub';
+import ReportContentModal, { ReportItemDetails } from './components/common/ReportContentModal';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import { stripAllSymbolsForPlaintext } from './utils';
 
 import { 
@@ -93,8 +96,14 @@ const INITIAL_NOTEBOOK: Notebook = {
 };
 
 export default function App() {
-  // Splash Screen State (Always displays luxurious 2.2s splash on cold start)
-  const [hasBooted, setHasBooted] = useState<boolean>(false);
+  // Splash Screen State (Instant load if already booted in session, or fast cold-start)
+  const [hasBooted, setHasBooted] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('neonova_has_booted') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // User Authentication State (Mandatory Account System - Persists until explicitly logged out)
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(() => {
@@ -237,9 +246,39 @@ export default function App() {
     } catch {}
   };
 
+  // AI Tutor Navigation & History Controls
+  const [aiTutorOpenHistory, setAiTutorOpenHistory] = useState<boolean>(false);
+  const [aiTutorNewChatTrigger, setAiTutorNewChatTrigger] = useState<number>(0);
+
+  const handleStartNewChat = () => {
+    setActiveTab('ai_tutor');
+    setAiTutorOpenHistory(false);
+    setAiTutorNewChatTrigger(prev => prev + 1);
+    window.dispatchEvent(new CustomEvent('neonova_new_chat'));
+  };
+
+  const handleOpenChatHistory = () => {
+    setActiveTab('ai_tutor');
+    setAiTutorOpenHistory(true);
+    window.dispatchEvent(new CustomEvent('neonova_open_chat_history'));
+  };
+
   // Real-Time Voice Modal State
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
+
+  // Content Safety & UGC Reporting Modal State (Google Play Policy Compliance)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportItemDetails, setReportItemDetails] = useState<ReportItemDetails | null>(null);
+
+  const handleOpenReport = (details?: ReportItemDetails) => {
+    setReportItemDetails(details || { type: 'general_content' });
+    setIsReportModalOpen(true);
+  };
+
+  useEffect(() => {
+    (window as any).openReportContentModal = handleOpenReport;
+  }, []);
 
   // Help Me Understand Modal
   const [helpMeUnderstandData, setHelpMeUnderstandData] = useState<{
@@ -521,6 +560,75 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Android System Hardware/Gesture Back Button Handling (Google Play Navigation Stability)
+  useEffect(() => {
+    let handle: { remove: () => Promise<void> } | null = null;
+    let isSubscribed = true;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        CapacitorApp.addListener('backButton', () => {
+          if (isReportModalOpen) { setIsReportModalOpen(false); return; }
+          if (isSearchOpen) { setIsSearchOpen(false); return; }
+          if (isScannerOpen) { setIsScannerOpen(false); return; }
+          if (isWidgetsHubOpen) { setIsWidgetsHubOpen(false); return; }
+          if (isARModalOpen) { setIsARModalOpen(false); return; }
+          if (isDrawingCanvasOpen) { setIsDrawingCanvasOpen(false); return; }
+          if (isProfileModalOpen) { setIsProfileModalOpen(false); return; }
+          if (isTrustFooterOpen) { setIsTrustFooterOpen(false); return; }
+          if (isPremiumLockOpen) { setIsPremiumLockOpen(false); return; }
+          if (isPaymentCheckoutOpen) { setIsPaymentCheckoutOpen(false); return; }
+          if (isAuthModalOpen) { setIsAuthModalOpen(false); return; }
+          if (isMobileDrawerOpen) { setIsMobileDrawerOpen(false); return; }
+          if (isHelpGuideOpen) { setIsHelpGuideOpen(false); return; }
+          if (isAdminPortalOpen) { setIsAdminPortalOpen(false); return; }
+          if (isVoiceModalOpen) { setIsVoiceModalOpen(false); return; }
+          if (isVoiceSettingsOpen) { setIsVoiceSettingsOpen(false); return; }
+          if (helpMeUnderstandData.isOpen) {
+            setHelpMeUnderstandData(prev => ({ ...prev, isOpen: false }));
+            return;
+          }
+          if (isPrivacyRoute) { setIsPrivacyRoute(false); return; }
+          if (isDeleteAccountRoute) { setIsDeleteAccountRoute(false); return; }
+          if (activeTab !== 'home') {
+            setActiveTab('home');
+            return;
+          }
+          CapacitorApp.exitApp();
+        }).then(h => {
+          if (isSubscribed) {
+            handle = h;
+          } else {
+            try {
+              if (h && typeof h.remove === 'function') {
+                h.remove();
+              }
+            } catch {}
+          }
+        }).catch(() => {
+          // Inactive listener caught safely
+        });
+      } catch {
+        // Native Capacitor listeners inactive in web browser environment
+      }
+    }
+
+    return () => {
+      isSubscribed = false;
+      try {
+        if (handle && typeof handle.remove === 'function') {
+          handle.remove();
+        }
+      } catch {}
+    };
+  }, [
+    isReportModalOpen, isSearchOpen, isScannerOpen, isWidgetsHubOpen, isARModalOpen,
+    isDrawingCanvasOpen, isProfileModalOpen, isTrustFooterOpen, isPremiumLockOpen,
+    isPaymentCheckoutOpen, isAuthModalOpen, isMobileDrawerOpen, isHelpGuideOpen,
+    isAdminPortalOpen, isVoiceModalOpen, isVoiceSettingsOpen, helpMeUnderstandData.isOpen,
+    isPrivacyRoute, isDeleteAccountRoute, activeTab
+  ]);
 
   const cycleFontScale = () => {
     setFontScale(prev => {
@@ -891,6 +999,8 @@ export default function App() {
         isGuest={!currentUser}
         onOpenLogin={() => handleOpenLogin()}
         onOpenWidgets={() => setIsWidgetsHubOpen(true)}
+        onNewChat={handleStartNewChat}
+        onOpenChatHistory={handleOpenChatHistory}
       />
 
       {/* Main Content Area */}
@@ -922,6 +1032,8 @@ export default function App() {
           onLogout={handleLogout}
           isGuest={!currentUser}
           onOpenLogin={() => handleOpenLogin()}
+          onNewChat={handleStartNewChat}
+          onOpenChatHistory={handleOpenChatHistory}
         />
 
         {/* Tab View Router */}
@@ -1078,7 +1190,15 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'ai_tutor' && <NeoNovaAITutorTab />}
+          {activeTab === 'ai_tutor' && (
+            <NeoNovaAITutorTab
+              initialOpenHistory={aiTutorOpenHistory}
+              newChatTrigger={aiTutorNewChatTrigger}
+              initialSubject={currentSubject}
+              initialGrade={currentGrade}
+              onNavigateTab={setActiveTab}
+            />
+          )}
 
           {activeTab === 'study_tools' && (
             <StudyToolsPage
@@ -1274,6 +1394,8 @@ export default function App() {
           window.scrollTo(0, 0);
         }}
         onOpenProfile={() => setIsProfileModalOpen(true)}
+        onNewChat={handleStartNewChat}
+        onOpenChatHistory={handleOpenChatHistory}
       />
 
       {/* Global Search Modal */}
@@ -1431,6 +1553,8 @@ export default function App() {
         isGuest={!currentUser}
         onOpenLogin={() => handleOpenLogin()}
         onOpenWidgets={() => setIsWidgetsHubOpen(true)}
+        onNewChat={handleStartNewChat}
+        onOpenChatHistory={handleOpenChatHistory}
       />
 
       {/* How to Use & Accessibility Help Modal */}
@@ -1486,6 +1610,13 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Google Play Content Safety & UGC Reporting Modal */}
+      <ReportContentModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        itemDetails={reportItemDetails}
+      />
     </div>
   );
 }

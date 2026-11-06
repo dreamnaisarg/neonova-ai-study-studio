@@ -1,0 +1,4 @@
+# Google AdSense Authorized Digital Sellers for NeoNova
+# Publisher ID: pub-2809682199317733
+# AdSense Account: ca-pub-2809682199317733
+google.com, pub-2809682199317733, DIRECT, f08c47fec0942fa0

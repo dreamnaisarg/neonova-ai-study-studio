@@ -22,7 +22,8 @@ import {
   CheckCircle2,
   Copy,
   Server,
-  Wifi
+  Wifi,
+  ShieldAlert
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
 import { PlanTier, PLANS, getPlayStoreSubscriptionUrl, VerifiedSubscriptionState, saveActiveSubscriptionPlan } from '../../lib/billing';
@@ -779,7 +780,19 @@ export default function SettingsPage({
               <span>View Official Privacy Policy (neonovastudy.com/privacy-policy)</span>
               <ExternalLink size={12} />
             </button>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof (window as any).openReportContentModal === 'function') {
+                    (window as any).openReportContentModal({ type: 'general_content' });
+                  }
+                }}
+                className="flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-colors"
+              >
+                <ShieldAlert size={13} className="text-amber-600" />
+                <span>Safety & Content Report</span>
+              </button>
               {onOpenAdminPortal && (
                 <button
                   type="button"

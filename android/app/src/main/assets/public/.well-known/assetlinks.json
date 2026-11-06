@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "studio.ai.neonova_ai_homework_helper_2007.twa",
+      "sha256_cert_fingerprints": [
+        "24:AB:07:FF:6B:49:F3:AA:59:61:2D:BE:1C:4A:39:44:12:0D:3C:D5:96:30:DD:51:E5:1B:99:6D:56:83:20:E8"
+      ]
+    }
+  }
+]

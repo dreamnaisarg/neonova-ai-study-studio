@@ -13,41 +13,41 @@ export default function SplashScreen({ onBootComplete }: SplashScreenProps) {
   const auraGradId = useId();
 
   useEffect(() => {
-    // Total duration planned: ~2.3 - 2.5 seconds
-    // Stage 1: Entrance at 120ms (Logo fades in & scales 96% -> 100%)
+    // Fast and snappy splash animation (~600ms total)
+    // Stage 1: Entrance at 40ms
     const t1 = setTimeout(() => {
       setStage('entering');
-    }, 120);
+    }, 40);
 
-    // Stage 2: Light tech ring appears at 450ms
+    // Stage 2: Light tech ring appears at 120ms
     const t2 = setTimeout(() => {
       setStage('ring');
-    }, 450);
+    }, 120);
 
-    // Stage 3: Light sweep glides across the wordmark at 950ms
+    // Stage 3: Light sweep glides across the wordmark at 220ms
     const t3 = setTimeout(() => {
       setStage('sweep');
-    }, 950);
+    }, 220);
 
-    // Stage 4: Taglines smoothly reveal at 1250ms
+    // Stage 4: Taglines smoothly reveal at 320ms
     const t4 = setTimeout(() => {
       setStage('tagline');
-    }, 1250);
+    }, 320);
 
-    // Stage 5: Final tranquil hold on pure clean background at 1900ms
+    // Stage 5: Final hold at 420ms
     const t5 = setTimeout(() => {
       setStage('hold');
-    }, 1900);
+    }, 420);
 
-    // Stage 6: Smooth fade-out transition into dashboard at 2250ms
+    // Stage 6: Quick fade-out transition at 520ms
     const t6 = setTimeout(() => {
       setIsFadingOut(true);
-    }, 2250);
+    }, 520);
 
-    // Stage 7: Complete at 2500ms
+    // Stage 7: Complete at 600ms
     const t7 = setTimeout(() => {
       onBootComplete();
-    }, 2520);
+    }, 600);
 
     return () => {
       clearTimeout(t1);
@@ -66,7 +66,7 @@ export default function SplashScreen({ onBootComplete }: SplashScreenProps) {
       setIsFadingOut(true);
       setTimeout(() => {
         onBootComplete();
-      }, 200);
+      }, 40);
     }
   };
 

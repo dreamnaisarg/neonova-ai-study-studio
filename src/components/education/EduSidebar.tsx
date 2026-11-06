@@ -25,7 +25,10 @@ import {
   LayoutGrid,
   Smartphone,
   Eye,
-  Globe
+  Globe,
+  Plus,
+  Clock,
+  MessageSquare
 } from 'lucide-react';
 import { PlanTier, PLANS } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
@@ -70,6 +73,8 @@ interface EduSidebarProps {
   isGuest?: boolean;
   onOpenLogin?: () => void;
   onOpenWidgets?: () => void;
+  onNewChat?: () => void;
+  onOpenChatHistory?: () => void;
 }
 
 const SIDEBAR_COLLAPSE_KEY = 'neonova_sidebar_collapsed';
@@ -84,7 +89,9 @@ export default function EduSidebar({
   onOpenHelpGuide,
   isGuest = false,
   onOpenLogin,
-  onOpenWidgets
+  onOpenWidgets,
+  onNewChat,
+  onOpenChatHistory
 }: EduSidebarProps) {
   const { t, toggleLanguage, isFinnish } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
@@ -105,8 +112,21 @@ export default function EduSidebar({
     });
   };
 
+  const handleStartNewChat = () => {
+    onTabChange('ai_tutor');
+    if (onNewChat) onNewChat();
+    window.dispatchEvent(new CustomEvent('neonova_new_chat'));
+  };
+
+  const handleViewChatHistory = () => {
+    onTabChange('ai_tutor');
+    if (onOpenChatHistory) onOpenChatHistory();
+    window.dispatchEvent(new CustomEvent('neonova_open_chat_history'));
+  };
+
   const primaryNavItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: t.home, icon: Home },
+    { id: 'ai_tutor', label: isFinnish ? 'Tekoäly-tuutori' : 'AI Tutor Chat', icon: Bot },
     { id: 'ar_lab', label: t.threeDLab, icon: FlaskConical },
     { id: 'stages', label: t.stages, icon: Award },
     { id: 'mission7', label: 'Mission 7', icon: Trophy },
@@ -151,6 +171,62 @@ export default function EduSidebar({
             {isCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>
         </div>
+
+        {/* AI Chat Quick Actions: + New Chat & Chat History */}
+        {!isCollapsed ? (
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              onClick={handleStartNewChat}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 hover:from-indigo-500 hover:to-violet-600 text-white font-bold text-xs shadow-xs hover:shadow transition-all cursor-pointer group"
+              title={isFinnish ? 'Aloita uusi keskustelu' : 'Start a new AI Tutor chat session'}
+              aria-label="Start New Chat"
+            >
+              <Plus size={15} className="group-hover:rotate-90 transition-transform duration-200" />
+              <span>{isFinnish ? '+ Uusi keskustelu' : '+ New Chat'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleViewChatHistory}
+              className={`w-full flex items-center justify-between py-1.5 px-3 rounded-xl text-xs font-medium transition-colors cursor-pointer border ${
+                activeTab === 'ai_tutor'
+                  ? 'bg-indigo-50/90 text-indigo-700 border-indigo-200 font-bold'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/70 hover:border-slate-300'
+              }`}
+              title={isFinnish ? 'Avaa keskusteluhistoria' : 'View past AI study chats and saved sessions'}
+              aria-label="Open Chat History"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Clock size={13} className="text-indigo-600 shrink-0" />
+                <span className="truncate">{isFinnish ? 'Keskusteluhistoria' : 'Chat History'}</span>
+              </div>
+              <span className="text-[9px] font-mono font-bold bg-white/80 border border-slate-200/60 text-slate-500 px-1 rounded shrink-0">
+                Saved
+              </span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleStartNewChat}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs hover:shadow cursor-pointer transition-transform hover:scale-105"
+              title={isFinnish ? '+ Uusi keskustelu' : '+ New Chat'}
+              aria-label="New Chat"
+            >
+              <Plus size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={handleViewChatHistory}
+              className="w-10 h-8 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200 cursor-pointer transition-colors"
+              title={isFinnish ? 'Keskusteluhistoria' : 'Chat History'}
+              aria-label="Chat History"
+            >
+              <Clock size={15} />
+            </button>
+          </div>
+        )}
 
         {/* Primary Navigation Menu */}
         <nav className="space-y-1" aria-label="Main Navigation">

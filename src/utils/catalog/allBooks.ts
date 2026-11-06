@@ -1,6 +1,8 @@
-// AUTO-GENERATED GLOBAL CLASSIC CATALOG (400+ Public Domain Masterpieces)
+// AUTO-GENERATED GLOBAL CLASSIC CATALOG (1,000+ Public Domain Masterpieces)
 import { ClassicBook } from './types';
 import { ADDITIONAL_GLOBAL_BOOKS } from './additionalBooks';
+import { INTERNATIONAL_EXPANSION_BOOKS_PART1 } from './internationalExpansion1';
+import { INTERNATIONAL_EXPANSION_BOOKS_PART2 } from './internationalExpansion2';
 
 const BASE_CLASSIC_BOOKS: ClassicBook[] = [
   {
@@ -8103,5 +8105,8 @@ const BASE_CLASSIC_BOOKS: ClassicBook[] = [
 
 export const GLOBAL_CLASSIC_BOOKS: ClassicBook[] = [
   ...BASE_CLASSIC_BOOKS,
-  ...ADDITIONAL_GLOBAL_BOOKS
+  ...ADDITIONAL_GLOBAL_BOOKS,
+  ...INTERNATIONAL_EXPANSION_BOOKS_PART1,
+  ...INTERNATIONAL_EXPANSION_BOOKS_PART2
 ];
+

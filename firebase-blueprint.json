@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and educational preferences for NeoNova AI Study Studio",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID matching auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "Student display name" },
+        "grade": { "type": "string", "description": "Enrolled school grade level (1-12)" },
+        "planTier": { "type": "string", "description": "Subscription tier (starter, plus, pro)" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of account creation" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
+      },
+      "required": ["id", "email", "displayName", "planTier", "createdAt"]
+    },
+    "BioscienceExperiment": {
+      "title": "BioscienceExperiment",
+      "description": "Lab simulation and molecular/organelle experiment completed by the student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique experiment run ID" },
+        "userId": { "type": "string", "description": "Owning student UID" },
+        "title": { "type": "string", "description": "Experiment title" },
+        "category": { "type": "string", "description": "Domain: cell_biology, genetics, biochemistry, molecular_structures" },
+        "structureId": { "type": "string", "description": "Key identifier of 3D biological model explored" },
+        "observations": { "type": "string", "description": "Experimental observations and notes" },
+        "quizScore": { "type": "number", "description": "Post-lab mastery quiz score percentage" },
+        "masteryLevel": { "type": "string", "description": "Proficiency level attained" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of experiment" }
+      },
+      "required": ["id", "userId", "title", "category", "structureId", "createdAt"]
+    },
+    "StudySession": {
+      "title": "StudySession",
+      "description": "Student learning session, quiz, or topic mastery log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Session ID" },
+        "userId": { "type": "string", "description": "Student UID" },
+        "subject": { "type": "string", "description": "Curriculum subject" },
+        "topic": { "type": "string", "description": "Specific topic studied" },
+        "notes": { "type": "string", "description": "Summary notes or questions asked" },
+        "score": { "type": "number", "description": "Mastery or quiz score achieved" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of session" }
+      },
+      "required": ["id", "userId", "subject", "topic", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Root user profile document"
+    },
+    "/users/{userId}/bioscience_experiments/{experimentId}": {
+      "schema": { "$ref": "#/entities/BioscienceExperiment" },
+      "description": "Subcollection of bioscience 3D lab experiments conducted by the student"
+    },
+    "/users/{userId}/study_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/StudySession" },
+      "description": "Subcollection of study sessions, notes, and mastery metrics"
+    }
+  }
+}

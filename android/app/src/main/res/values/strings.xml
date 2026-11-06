@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NeoNova</string>
+    <string name="title_activity_main">NeoNova</string>
+    <string name="package_name">com.firstlightstudios.neonova</string>
+    <string name="custom_url_scheme">com.firstlightstudios.neonova</string>
+</resources>

@@ -38,43 +38,87 @@ const REGIONS: { id: string; label: string; flag: string }[] = [
 
 const CATEGORIES = [
   'All',
-  "Children's Books",
-  'Ancient Texts',
-  'Poetry',
-  'Classics',
-  'Science',
-  'Philosophy',
-  'History',
-  'Folktales',
-  'Mystery',
-  'Fantasy',
+  'International Classics',
   'World Literature',
-  'Science Fiction',
-  'Educational'
+  'Science & Discovery',
+  'Mathematics & Logic',
+  'Philosophy & Psychology',
+  'History & Civilizations',
+  'Geography & Exploration',
+  'Technology & Innovation',
+  'Fiction & Fantasy',
+  'Mystery & Adventure',
+  'Poetry & Drama',
+  "Children's Literature",
+  'Biographies & Autobiographies',
+  'Foreign Language Learning',
+  'Academic & Educational Books'
 ];
 
 const LANGUAGES = [
   'All',
   'English',
-  'Hindi & English',
-  'Gujarati & English',
-  'Sanskrit & English',
-  'Bengali & English',
-  'Tamil & English',
-  'Telugu & English',
-  'Marathi & English',
-  'Urdu & English',
-  'French & English',
-  'Spanish & English',
-  'German & English',
-  'Russian & English',
-  'Chinese & English',
-  'Japanese & English',
-  'Korean & English',
-  'Arabic & English',
-  'Persian & English',
-  'Ancient Greek & English',
-  'Latin & English'
+  'French',
+  'German',
+  'Spanish',
+  'Japanese',
+  'Chinese',
+  'Korean',
+  'Russian',
+  'Italian',
+  'Portuguese',
+  'Arabic',
+  'Ancient Greek',
+  'Latin',
+  'Hindi',
+  'Sanskrit',
+  'Gujarati',
+  'Bengali',
+  'Tamil',
+  'Telugu',
+  'Marathi',
+  'Urdu',
+  'Persian'
+];
+
+const ERAS = [
+  'All',
+  'Ancient',
+  'Classical',
+  'Medieval',
+  'Renaissance',
+  'Enlightenment',
+  '19th Century',
+  'Early 20th Century'
+];
+
+const FEATURED_COUNTRIES = [
+  { name: 'All', flag: '🌐' },
+  { name: 'United States', flag: '🇺🇸' },
+  { name: 'United Kingdom', flag: '🇬🇧' },
+  { name: 'France', flag: '🇫🇷' },
+  { name: 'Germany', flag: '🇩🇪' },
+  { name: 'Japan', flag: '🇯🇵' },
+  { name: 'China', flag: '🇨🇳' },
+  { name: 'South Korea', flag: '🇰🇷' },
+  { name: 'Russia', flag: '🇷🇺' },
+  { name: 'Italy', flag: '🇮🇹' },
+  { name: 'Spain', flag: '🇪🇸' },
+  { name: 'Canada', flag: '🇨🇦' },
+  { name: 'Australia', flag: '🇦🇺' },
+  { name: 'New Zealand', flag: '🇳🇿' },
+  { name: 'Brazil', flag: '🇧🇷' },
+  { name: 'Egypt', flag: '🇪🇬' },
+  { name: 'South Africa', flag: '🇿🇦' },
+  { name: 'Greece', flag: '🇬🇷' },
+  { name: 'Norway', flag: '🇳🇴' },
+  { name: 'Sweden', flag: '🇸🇪' },
+  { name: 'Poland', flag: '🇵🇱' },
+  { name: 'Czech Republic', flag: '🇨🇿' },
+  { name: 'Switzerland', flag: '🇨🇭' },
+  { name: 'Portugal', flag: '🇵🇹' },
+  { name: 'Mexico', flag: '🇲🇽' },
+  { name: 'India', flag: '🇮🇳' }
 ];
 
 const GRADE_LEVELS = [
@@ -99,19 +143,23 @@ export default function ClassicsLibrary({
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('All');
+  const [selectedCountry, setSelectedCountry] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLanguage, setSelectedLanguage] = useState('All');
+  const [selectedEra, setSelectedEra] = useState('All');
   const [selectedGrade, setSelectedGrade] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedLength, setSelectedLength] = useState('All');
   const [showOfflineOnly, setShowOfflineOnly] = useState(false);
   const [showFiltersDrawer, setShowFiltersDrawer] = useState(false);
+  const [discoveryTab, setDiscoveryTab] = useState<'curriculum' | 'international' | 'popular' | 'recent'>('curriculum');
 
   // View & Presentation State
   const [viewMode, setViewMode] = useState<'shelf' | 'catalog' | 'table'>('shelf');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBook, setSelectedBook] = useState<ClassicBook | null>(allBooks[0]);
   const [animatingBookId, setAnimatingBookId] = useState<string | null>(null);
+
 
   // Modals & Storage
   const [isFullBookReaderOpen, setIsFullBookReaderOpen] = useState(false);
@@ -233,29 +281,63 @@ export default function ClassicsLibrary({
         return false;
       }
 
-      // 3. Category Filter
-      if (selectedCategory !== 'All' && book.category !== selectedCategory) {
+      // 3. Country of Origin Filter
+      if (selectedCountry !== 'All' && !book.country.toLowerCase().includes(selectedCountry.toLowerCase())) {
         return false;
       }
 
-      // 4. Language Filter
-      if (selectedLanguage !== 'All' && !book.language.includes(selectedLanguage.split('&')[0].trim())) {
+      // 4. Category Filter with full legacy & international mapping
+      if (selectedCategory !== 'All') {
+        const matchesCat = book.category === selectedCategory ||
+          (selectedCategory === 'International Classics' && (book.category === 'Classics' || book.category === 'International Classics')) ||
+          (selectedCategory === 'World Literature' && book.category === 'World Literature') ||
+          (selectedCategory === 'Science & Discovery' && (book.category === 'Science' || book.category === 'Science & Discovery' || book.category === 'Space')) ||
+          (selectedCategory === 'Mathematics & Logic' && (book.category === 'Mathematics' || book.category === 'Mathematics & Logic')) ||
+          (selectedCategory === 'Philosophy & Psychology' && (book.category === 'Philosophy' || book.category === 'Philosophy & Psychology')) ||
+          (selectedCategory === 'History & Civilizations' && (book.category === 'History' || book.category === 'History & Civilizations' || book.category === 'Ancient Texts')) ||
+          (selectedCategory === 'Geography & Exploration' && (book.category === 'Geography' || book.category === 'Geography & Exploration')) ||
+          (selectedCategory === 'Technology & Innovation' && book.category === 'Technology & Innovation') ||
+          (selectedCategory === 'Fiction & Fantasy' && (book.category === 'Fiction' || book.category === 'Fantasy' || book.category === 'Science Fiction' || book.category === 'Fiction & Fantasy')) ||
+          (selectedCategory === 'Mystery & Adventure' && (book.category === 'Mystery' || book.category === 'Mystery & Adventure')) ||
+          (selectedCategory === 'Poetry & Drama' && (book.category === 'Poetry' || book.category === 'Poetry & Drama')) ||
+          (selectedCategory === "Children's Literature" && (book.category === "Children's Books" || book.category === "Children's Literature" || book.category === 'Folktales')) ||
+          (selectedCategory === 'Biographies & Autobiographies' && book.category === 'Biographies & Autobiographies') ||
+          (selectedCategory === 'Foreign Language Learning' && book.category === 'Foreign Language Learning') ||
+          (selectedCategory === 'Academic & Educational Books' && (book.category === 'Educational' || book.category === 'Academic & Educational Books'));
+
+        if (!matchesCat) {
+          return false;
+        }
+      }
+
+      // 5. Language Filter
+      if (selectedLanguage !== 'All') {
+        const qLang = selectedLanguage.toLowerCase();
+        const bLang = (book.language || '').toLowerCase();
+        const bCode = (book.languageCode || '').toLowerCase();
+        if (!bLang.includes(qLang) && !bCode.includes(qLang.slice(0, 2))) {
+          return false;
+        }
+      }
+
+      // 6. Era Filter
+      if (selectedEra !== 'All' && book.period !== selectedEra) {
         return false;
       }
 
-      // 5. Grade Filter
+      // 7. Grade Filter
       if (selectedGrade !== 'All') {
         if (book.recommendedGrades && !book.recommendedGrades.includes(selectedGrade)) {
           return false;
         }
       }
 
-      // 6. Difficulty Filter
+      // 8. Difficulty Filter
       if (selectedDifficulty !== 'All' && book.difficulty !== selectedDifficulty) {
         return false;
       }
 
-      // 7. Reading Length
+      // 9. Reading Length
       if (selectedLength !== 'All') {
         const readTime = book.estimatedReadTime || '';
         const isQuick = readTime.includes('min') || readTime.includes('1 hour') || readTime.includes('1.5 hour');
@@ -265,14 +347,14 @@ export default function ClassicsLibrary({
         if (selectedLength === 'In-Depth' && (isQuick || isMedium)) return false;
       }
 
-      // 8. Offline Only
+      // 10. Offline Only
       if (showOfflineOnly && !offlineBookIds.includes(book.id)) {
         return false;
       }
 
       return true;
     });
-  }, [allBooks, searchQuery, selectedRegion, selectedCategory, selectedLanguage, selectedGrade, selectedDifficulty, selectedLength, showOfflineOnly, offlineBookIds]);
+  }, [allBooks, searchQuery, selectedRegion, selectedCountry, selectedCategory, selectedLanguage, selectedEra, selectedGrade, selectedDifficulty, selectedLength, showOfflineOnly, offlineBookIds]);
 
   const paginatedBooks = useMemo(() => {
     const start = (currentPage - 1) * booksPerPage;
@@ -293,20 +375,31 @@ export default function ClassicsLibrary({
   }, [allBooks, currentGrade]);
 
   const worldLiteratureHighlights = useMemo(() => {
-    return allBooks.filter(b => b.isWorldLiterature).slice(0, 6);
+    return allBooks.filter(b => b.isWorldLiterature).slice(0, 8);
+  }, [allBooks]);
+
+  const mostReadInternationalBooks = useMemo(() => {
+    return allBooks.filter(b => b.country !== 'India' && (b.isPopular || (b.gutenbergId && b.gutenbergId < 5000))).slice(0, 8);
+  }, [allBooks]);
+
+  const recentlyAddedInternationalBooks = useMemo(() => {
+    return allBooks.filter(b => b.country !== 'India' && (b.id.includes('-intl-') || (b.gutenbergId && b.gutenbergId > 50000) || b.isWorldLiterature)).slice(0, 8);
   }, [allBooks]);
 
   const resetAllFilters = () => {
     setSearchQuery('');
     setSelectedRegion('All');
+    setSelectedCountry('All');
     setSelectedCategory('All');
     setSelectedLanguage('All');
+    setSelectedEra('All');
     setSelectedGrade('All');
     setSelectedDifficulty('All');
     setSelectedLength('All');
     setShowOfflineOnly(false);
     setCurrentPage(1);
   };
+
 
   return (
     <div className="space-y-7 font-sans text-slate-800 pb-16">
@@ -541,9 +634,38 @@ export default function ClassicsLibrary({
           })}
         </div>
 
+        {/* FEATURED COUNTRY QUICK BADGES */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-slate-100">
+          <span className="text-[10px] font-bold uppercase text-slate-400 shrink-0 mr-1 flex items-center gap-1">
+            <Globe size={11} />
+            <span>Country:</span>
+          </span>
+          {FEATURED_COUNTRIES.map((ctry) => {
+            const isSelected = selectedCountry === ctry.name;
+            return (
+              <button
+                key={ctry.name}
+                type="button"
+                onClick={() => {
+                  setSelectedCountry(ctry.name);
+                  setCurrentPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium shrink-0 transition-all cursor-pointer flex items-center gap-1 border ${
+                  isSelected
+                    ? 'bg-indigo-50 text-indigo-700 border-indigo-300 font-bold'
+                    : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'
+                }`}
+              >
+                <span>{ctry.flag}</span>
+                <span>{ctry.name}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* EXPANDABLE MULTI-FILTER DRAWER */}
         {showFiltersDrawer && (
-          <div className="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in duration-150">
+          <div className="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 animate-in fade-in duration-150">
             {/* Category Filter */}
             <div>
               <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
@@ -563,6 +685,25 @@ export default function ClassicsLibrary({
               </select>
             </div>
 
+            {/* Country of Origin Filter */}
+            <div>
+              <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
+                Country of Origin
+              </label>
+              <select
+                value={selectedCountry}
+                onChange={(e) => {
+                  setSelectedCountry(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                {FEATURED_COUNTRIES.map(ctry => (
+                  <option key={ctry.name} value={ctry.name}>{ctry.flag} {ctry.name}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Language Filter */}
             <div>
               <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
@@ -578,6 +719,25 @@ export default function ClassicsLibrary({
               >
                 {LANGUAGES.map(lang => (
                   <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Historical Era / Period Filter */}
+            <div>
+              <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
+                Historical Era
+              </label>
+              <select
+                value={selectedEra}
+                onChange={(e) => {
+                  setSelectedEra(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                {ERAS.map(er => (
+                  <option key={er} value={er}>{er === 'All' ? 'All Eras' : er}</option>
                 ))}
               </select>
             </div>
@@ -622,9 +782,9 @@ export default function ClassicsLibrary({
             </div>
 
             {/* Active Filters Reset */}
-            <div className="sm:col-span-2 md:col-span-4 flex items-center justify-between pt-1">
+            <div className="sm:col-span-2 md:col-span-3 lg:col-span-6 flex items-center justify-between pt-1">
               <span className="text-[11px] text-slate-500 font-medium">
-                Found <strong className="text-slate-900">{filteredBooks.length}</strong> matching volumes
+                Found <strong className="text-slate-900">{filteredBooks.length}</strong> matching volumes across {allBooks.length} titles
               </span>
               <button
                 type="button"
@@ -638,30 +798,77 @@ export default function ClassicsLibrary({
         )}
       </div>
 
-      {/* 4. CURATED HIGHLIGHTS: RECOMMENDED FOR YOUR GRADE (When not actively filtering) */}
-      {!searchQuery && selectedRegion === 'All' && selectedCategory === 'All' && currentPage === 1 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+
+      {/* 4. CURATED INTERNATIONAL DISCOVERY SECTIONS (When not actively filtering) */}
+      {!searchQuery && selectedRegion === 'All' && selectedCountry === 'All' && selectedCategory === 'All' && currentPage === 1 && (
+        <div className="space-y-3.5 bg-slate-50/70 border border-slate-200/80 rounded-3xl p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-200">
             <div className="flex items-center gap-2">
-              <GraduationCap size={18} className="text-indigo-600" />
+              <Sparkles size={18} className="text-amber-500" />
               <h2 className="text-sm font-bold text-slate-900">
-                Recommended for {currentGrade}
+                International Discovery & Highlights
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                Curriculum Aligned
-              </span>
             </div>
-            <button
-              type="button"
-              onClick={() => setSelectedGrade(currentGrade)}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
-            >
-              View All {currentGrade} Books →
-            </button>
+            
+            {/* Discovery Tabs */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs font-semibold overflow-x-auto scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setDiscoveryTab('curriculum')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                  discoveryTab === 'curriculum'
+                    ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                🎓 For {currentGrade}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDiscoveryTab('international')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                  discoveryTab === 'international'
+                    ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                🌍 World Literature
+              </button>
+              <button
+                type="button"
+                onClick={() => setDiscoveryTab('popular')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                  discoveryTab === 'popular'
+                    ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                🔥 Most-Read International
+              </button>
+              <button
+                type="button"
+                onClick={() => setDiscoveryTab('recent')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                  discoveryTab === 'recent'
+                    ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                ✨ Recently Added
+              </button>
+            </div>
           </div>
 
+          {/* Active Highlight Books */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {recommendedForCurrentGrade.map((book) => (
+            {(discoveryTab === 'curriculum'
+              ? recommendedForCurrentGrade
+              : discoveryTab === 'international'
+              ? worldLiteratureHighlights
+              : discoveryTab === 'popular'
+              ? mostReadInternationalBooks
+              : recentlyAddedInternationalBooks
+            ).slice(0, 6).map((book) => (
               <div
                 key={book.id}
                 onClick={() => handleBookSelection(book)}
@@ -672,29 +879,34 @@ export default function ClassicsLibrary({
                   <span className="text-[9px] font-bold font-serif line-clamp-2 leading-tight">{book.title}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
                       {book.category}
                     </span>
                     <span className="text-[10px] text-slate-400 font-semibold">• {book.country}</span>
+                    {book.languageCode && (
+                      <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-indigo-50 text-indigo-700">
+                        {book.languageCode}
+                      </span>
+                    )}
                   </div>
                   <h3 className="text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
                     {book.title}
                   </h3>
                   <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                    {book.author}
+                    {book.author} ({book.year})
                   </p>
                   <p className="text-xs text-slate-600 line-clamp-2 mt-1.5 leading-relaxed">
                     {book.description}
                   </p>
-                  <div className="mt-2 flex items-center justify-between text-xs pt-1">
+                  <div className="mt-2 flex items-center justify-between text-xs pt-1 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleBookSelection(book, true);
                       }}
-                      className="text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1"
+                      className="text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <span>Read Online</span>
                       <ArrowRight size={12} />
@@ -705,10 +917,10 @@ export default function ClassicsLibrary({
                         e.stopPropagation();
                         setInfoModalBook(book);
                       }}
-                      className="text-slate-400 hover:text-slate-700 text-[11px] flex items-center gap-0.5"
+                      className="text-slate-400 hover:text-slate-700 text-[11px] flex items-center gap-0.5 cursor-pointer"
                     >
                       <Info size={12} />
-                      <span>Source</span>
+                      <span>{book.source.split('#')[0].trim()}</span>
                     </button>
                   </div>
                 </div>
@@ -717,6 +929,7 @@ export default function ClassicsLibrary({
           </div>
         </div>
       )}
+
 
       {/* 5. MAIN BOOK PRESENTATION (BOOKSHELVES, CATALOG GRID, OR TABLE) */}
       <div className="space-y-4">

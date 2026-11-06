@@ -26,7 +26,10 @@ import {
   Trophy,
   Smartphone,
   Eye,
-  FlaskConical
+  FlaskConical,
+  Plus,
+  Clock,
+  MessageSquare
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { PlanTier, PLANS } from '../../lib/billing';
@@ -51,6 +54,8 @@ interface MobileDrawerNavProps {
   isGuest?: boolean;
   onOpenLogin?: () => void;
   onOpenWidgets?: () => void;
+  onNewChat?: () => void;
+  onOpenChatHistory?: () => void;
 }
 
 export default function MobileDrawerNav({
@@ -71,12 +76,29 @@ export default function MobileDrawerNav({
   onLogout,
   isGuest = false,
   onOpenLogin,
-  onOpenWidgets
+  onOpenWidgets,
+  onNewChat,
+  onOpenChatHistory
 }: MobileDrawerNavProps) {
   if (!isOpen) return null;
 
+  const handleStartNewChat = () => {
+    onTabChange('ai_tutor');
+    if (onNewChat) onNewChat();
+    window.dispatchEvent(new CustomEvent('neonova_new_chat'));
+    onClose();
+  };
+
+  const handleViewChatHistory = () => {
+    onTabChange('ai_tutor');
+    if (onOpenChatHistory) onOpenChatHistory();
+    window.dispatchEvent(new CustomEvent('neonova_open_chat_history'));
+    onClose();
+  };
+
   const navItems: { id: EduTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
     { id: 'home', label: 'Home Dashboard', icon: Home },
+    { id: 'ai_tutor', label: 'AI Tutor Chat', icon: Bot },
     { id: 'ar_lab', label: '3D Science Lab', icon: FlaskConical },
     { id: 'study_tools', label: 'All Features & Tools', icon: LayoutGrid },
     { id: 'subjects', label: 'My Subjects & Syllabi', icon: BookOpen },
@@ -189,6 +211,30 @@ export default function MobileDrawerNav({
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>
+          </div>
+
+          {/* AI Tutor Chat Quick Action Buttons */}
+          <div className="p-3 border-b border-slate-100 bg-slate-50/50">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleStartNewChat}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 hover:from-indigo-500 hover:to-violet-600 text-white font-bold rounded-xl text-xs shadow-xs cursor-pointer active:scale-95 transition-transform"
+                title="Start a fresh AI Tutor conversation"
+              >
+                <Plus size={15} />
+                <span>+ New Chat</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleViewChatHistory}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 cursor-pointer active:scale-95 transition-transform"
+                title="Open saved AI chat history"
+              >
+                <Clock size={15} className="text-indigo-600" />
+                <span>Chat History</span>
+              </button>
+            </div>
           </div>
 
           {/* Main Navigation Links */}

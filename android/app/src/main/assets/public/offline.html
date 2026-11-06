@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - NEONOVA AI Homework Helper</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: #070b19;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: #0d152d;
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      padding: 36px 28px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">⚡</div>
+    <h1>You are Currently Offline</h1>
+    <p>NEONOVA is waiting for an active internet connection to synchronize with the AI Homework Tutor models.</p>
+    <button class="btn" onclick="checkAndReturn()">Retry Connection</button>
+  </div>
+  <script>
+    async function checkAndReturn() {
+      try {
+        const res = await fetch('/api/health', { method: 'GET', cache: 'no-store' });
+        if (res.ok) {
+          window.location.replace('/');
+          return;
+        }
+      } catch (e) {}
+      window.location.replace('/');
+    }
+
+    // Auto check connectivity every 1.5s and return to app as soon as reachable
+    setInterval(async () => {
+      try {
+        const res = await fetch('/api/health', { method: 'GET', cache: 'no-store' });
+        if (res.ok) {
+          window.location.replace('/');
+        }
+      } catch (e) {}
+    }, 1500);
+
+    window.addEventListener('online', () => {
+      window.location.replace('/');
+    });
+  </script>
+</body>
+</html>

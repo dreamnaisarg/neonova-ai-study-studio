@@ -18,7 +18,10 @@ import {
   LayoutGrid,
   Smartphone,
   Sliders,
-  Volume2
+  Volume2,
+  Plus,
+  Clock,
+  Bot
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
 import { PlanTier, PLANS } from '../../lib/billing';
@@ -51,6 +54,8 @@ interface EduHeaderProps {
   onLogout?: () => void;
   isGuest?: boolean;
   onOpenLogin?: () => void;
+  onNewChat?: () => void;
+  onOpenChatHistory?: () => void;
 }
 
 export default function EduHeader({
@@ -78,7 +83,9 @@ export default function EduHeader({
   onLogout,
   isGuest = false,
   onOpenLogin,
-  onOpenWidgets
+  onOpenWidgets,
+  onNewChat,
+  onOpenChatHistory
 }: EduHeaderProps) {
   const { t, lang, toggleLanguage, isFinnish } = useTranslation();
   const [gradeDropdownOpen, setGradeDropdownOpen] = useState(false);
@@ -332,6 +339,34 @@ export default function EduHeader({
           <Globe size={13} className="text-indigo-600 shrink-0" />
           <span className="font-mono text-[11px] font-bold">{isFinnish ? '🇫🇮 FI' : '🇬🇧 EN'}</span>
         </button>
+
+        {/* Quick + New Chat Action Button */}
+        {onNewChat && (
+          <button
+            type="button"
+            onClick={onNewChat}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 hover:from-indigo-500 hover:to-violet-600 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs hover:shadow"
+            title={isFinnish ? 'Aloita uusi tekoälykeskustelu' : 'Start new AI Tutor chat session'}
+            aria-label="Start New Chat"
+          >
+            <Plus size={14} className="shrink-0" />
+            <span className="hidden sm:inline">{isFinnish ? 'Uusi keskustelu' : 'New Chat'}</span>
+          </button>
+        )}
+
+        {/* Quick Chat History Action Button */}
+        {onOpenChatHistory && (
+          <button
+            type="button"
+            onClick={onOpenChatHistory}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 hover:border-indigo-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            title={isFinnish ? 'Avaa keskusteluhistoria' : 'View past AI study chats and saved sessions'}
+            aria-label="Open Chat History"
+          >
+            <Clock size={14} className="text-indigo-600 shrink-0" />
+            <span className="hidden md:inline">{isFinnish ? 'Historia' : 'History'}</span>
+          </button>
+        )}
 
         {/* All Features Quick Launcher */}
         {onOpenAllFeatures && (

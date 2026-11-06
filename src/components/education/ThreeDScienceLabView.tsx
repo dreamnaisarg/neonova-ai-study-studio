@@ -45,7 +45,8 @@ import {
   Target,
   Thermometer,
   Gauge,
-  Move
+  Move,
+  Dna
 } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n';
 import { 
@@ -63,6 +64,9 @@ import {
 } from '../../lib/scienceLab/threeDLabRoomBuilder';
 import { naturalVoiceEngine } from '../../lib/naturalVoiceEngine';
 import { PlanTier } from '../../lib/billing';
+import { addAcademicXP } from '../../lib/progressStorage';
+import VirtualChemistryMixingLab from './VirtualChemistryMixingLab';
+import BioscienceVirtualLab from './BioscienceVirtualLab';
 
 export interface ThreeDScienceLabViewProps {
   currentGrade?: string;
@@ -77,8 +81,8 @@ export default function ThreeDScienceLabView({
   currentTier = 'starter',
   onOpenPlans
 }: ThreeDScienceLabViewProps) {
-  // Mode: 'free_roam' | 'station_workbench'
-  const [labMode, setLabMode] = useState<'free_roam' | 'station_workbench'>('free_roam');
+  // Mode: 'free_roam' | 'station_workbench' | 'chemistry_mixing_lab' | 'bioscience_lab'
+  const [labMode, setLabMode] = useState<'free_roam' | 'station_workbench' | 'chemistry_mixing_lab' | 'bioscience_lab'>('free_roam');
   const [activeStationId, setActiveStationId] = useState<string>('chemistry_bench');
   const { isFinnish } = useTranslation();
   const [isMobile3DFullscreen, setIsMobile3DFullscreen] = useState(false);
@@ -863,6 +867,30 @@ export default function ThreeDScienceLabView({
               <FlaskConical size={14} />
               <span>{isFinnish ? 'Työpiste ja kokeet' : 'Workbench & Experiments'}</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setLabMode('chemistry_mixing_lab')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                labMode === 'chemistry_mixing_lab'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sparkles size={14} className="text-cyan-400" />
+              <span>{isFinnish ? 'Kemian sekoitus (3D)' : '3D Chemistry Mixing Lab'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLabMode('bioscience_lab')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                labMode === 'bioscience_lab'
+                  ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Dna size={14} className="text-cyan-400" />
+              <span>{isFinnish ? 'Biotiede 3D' : 'Bioscience 3D Lab'}</span>
+            </button>
           </div>
 
           {/* Voice Narration Button */}
@@ -911,7 +939,47 @@ export default function ThreeDScienceLabView({
       {/* ========================================================= */}
       {/* MAIN VIEWPORT: 3D LAB or WORKBENCH SPLIT */}
       {/* ========================================================= */}
-      <div className="relative flex-1 flex flex-col lg:flex-row overflow-hidden">
+      {labMode === 'chemistry_mixing_lab' && (
+        <div className="relative flex-1 flex flex-col overflow-hidden bg-slate-950">
+          <VirtualChemistryMixingLab
+            currentGrade={currentGrade}
+            onClose={() => setLabMode('station_workbench')}
+            onSendToAiAssistant={(promptText) => {
+              try {
+                sessionStorage.setItem('neonova_ai_study_prefill', promptText);
+              } catch {}
+              if (onNavigateTab) {
+                onNavigateTab('ai_tutor');
+              }
+            }}
+            onAddAcademicXP={(xp) => {
+              addAcademicXP(xp);
+            }}
+          />
+        </div>
+      )}
+
+      {labMode === 'bioscience_lab' && (
+        <div className="relative flex-1 flex flex-col overflow-hidden bg-slate-950 p-2 sm:p-4">
+          <BioscienceVirtualLab
+            currentGrade={currentGrade}
+            onClose={() => setLabMode('station_workbench')}
+            onSendToAiAssistant={(promptText) => {
+              try {
+                sessionStorage.setItem('neonova_ai_study_prefill', promptText);
+              } catch {}
+              if (onNavigateTab) {
+                onNavigateTab('ai_tutor');
+              }
+            }}
+            onAddAcademicXP={(xp) => {
+              addAcademicXP(xp);
+            }}
+          />
+        </div>
+      )}
+
+      <div className={`relative flex-1 flex flex-col lg:flex-row overflow-hidden ${(labMode === 'chemistry_mixing_lab' || labMode === 'bioscience_lab') ? 'hidden' : ''}`}>
         {/* 3D WEBGL EXPLORATION VIEWPORT */}
         <div 
           className={`relative flex-1 bg-black flex flex-col overflow-hidden transition-all duration-300 ${
@@ -1293,6 +1361,33 @@ export default function ThreeDScienceLabView({
               <span className="font-bold text-slate-400">Core Equation:</span>
               <span>{activeExperiment.formula}</span>
             </div>
+
+            {/* Quick Link to 3D Chemistry Mixing Lab */}
+            {activeExperiment.subject === 'chemistry' && (
+              <div className="mt-2.5 p-2.5 bg-gradient-to-r from-purple-950/60 to-indigo-950/60 border border-purple-500/30 rounded-xl flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-purple-500/20 text-purple-300 rounded-lg shrink-0">
+                    <FlaskConical size={16} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>3D Virtual Mixing Lab</span>
+                      <span className="text-[9px] px-1.5 py-0.2 bg-purple-500/30 text-purple-200 rounded font-semibold uppercase">PBR Glass</span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      Pour reagents, watch effervescence & test indicators in real 3D!
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLabMode('chemistry_mixing_lab')}
+                  className="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold shadow transition-all shrink-0 cursor-pointer"
+                >
+                  Open Lab
+                </button>
+              </div>
+            )}
           </div>
 
           {/* STEP-BY-STEP GUIDED LAB PROCEDURE */}
