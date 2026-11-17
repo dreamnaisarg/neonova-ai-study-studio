@@ -20,13 +20,10 @@ import {
   Lock,
   Mail,
   CheckCircle2,
-  Copy,
-  Server,
-  Wifi,
   ShieldAlert
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
-import { PlanTier, PLANS, getPlayStoreSubscriptionUrl, VerifiedSubscriptionState, saveActiveSubscriptionPlan } from '../../lib/billing';
+import { PlanTier, PLANS, getPlayStoreSubscriptionUrl, VerifiedSubscriptionState, saveActiveSubscriptionPlan, isNativeAndroidApp } from '../../lib/billing';
 
 interface SettingsPageProps {
   currentGrade: string;
@@ -99,45 +96,7 @@ export default function SettingsPage({
   const [dailyReminders, setDailyReminders] = useState(true);
   const [nameInput, setNameInput] = useState(studentName);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [domainTesting, setDomainTesting] = useState(false);
-  const [domainTestResult, setDomainTestResult] = useState<{ status: 'online' | 'unreachable' | 'info'; message: string } | null>(null);
-
-  const handleCopy = (text: string, fieldName: string) => {
-    try {
-      navigator.clipboard?.writeText(text);
-      setCopiedField(fieldName);
-      setTimeout(() => setCopiedField(null), 2500);
-    } catch {
-      // Ignored
-    }
-  };
-
-  const handleTestDomain = async () => {
-    setDomainTesting(true);
-    setDomainTestResult(null);
-    try {
-      const res = await fetch('/api/domain/status');
-      if (res.ok) {
-        setDomainTestResult({
-          status: 'online',
-          message: 'Domain configuration is verified and active in NeoNova backend (neonovastudy.com).'
-        });
-      } else {
-        setDomainTestResult({
-          status: 'info',
-          message: 'DNS records may take up to 24-48 hours to propagate globally once added to your domain registrar.'
-        });
-      }
-    } catch {
-      setDomainTestResult({
-        status: 'info',
-        message: 'DNS records may take up to 24-48 hours to propagate globally once added to your domain registrar.'
-      });
-    } finally {
-      setDomainTesting(false);
-    }
-  };
+  const isNativeAndroid = isNativeAndroidApp();
 
   const allAvailableSubjects = [
     'Mathematics',
@@ -395,186 +354,6 @@ export default function SettingsPage({
           </div>
         </section>
 
-        {/* 4. CUSTOM DOMAIN & WEB HOSTING */}
-        <section className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Globe size={18} className="text-indigo-600" />
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Custom Domain: neonovastudy.com
-              </h2>
-            </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
-              <CheckCircle2 size={11} className="text-emerald-600" />
-              <span>Configured in App Architecture</span>
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Your custom domain <strong className="text-indigo-600 font-mono">neonovastudy.com</strong> is configured as NeoNova&apos;s primary production address. All progressive web app (PWA) manifests, canonical SEO tags, Google Search Console ownership tokens, and OpenGraph share cards are set to this domain.
-          </p>
-
-          {/* Domain Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Canonical URL</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy('https://neonovastudy.com/', 'url')}
-                  className="text-slate-400 hover:text-indigo-600 cursor-pointer p-0.5"
-                  title="Copy URL"
-                >
-                  {copiedField === 'url' ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                </button>
-              </div>
-              <a
-                href="https://neonovastudy.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono font-bold text-indigo-600 hover:underline flex items-center gap-1 truncate"
-              >
-                <span>https://neonovastudy.com/</span>
-                <ExternalLink size={11} className="shrink-0" />
-              </a>
-              <span className="text-[10px] text-slate-500 block">Production landing & app gateway</span>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">XML Sitemap</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy('https://neonovastudy.com/sitemap.xml', 'sitemap')}
-                  className="text-slate-400 hover:text-indigo-600 cursor-pointer p-0.5"
-                  title="Copy Sitemap URL"
-                >
-                  {copiedField === 'sitemap' ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                </button>
-              </div>
-              <a
-                href="https://neonovastudy.com/sitemap.xml"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono font-bold text-indigo-600 hover:underline flex items-center gap-1 truncate"
-              >
-                <span>/sitemap.xml</span>
-                <ExternalLink size={11} className="shrink-0" />
-              </a>
-              <span className="text-[10px] text-slate-500 block">Submitted to Google Search Console</span>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Google Ownership</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy('googlea85ef681664803fc.html', 'token')}
-                  className="text-slate-400 hover:text-indigo-600 cursor-pointer p-0.5"
-                  title="Copy Token"
-                >
-                  {copiedField === 'token' ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                </button>
-              </div>
-              <span className="text-xs font-mono font-bold text-slate-800 truncate block">
-                googlea85ef681664803fc.html
-              </span>
-              <span className="text-[10px] text-emerald-600 font-semibold block">HTML verification file active</span>
-            </div>
-          </div>
-
-          {/* DNS Configuration Table */}
-          <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 space-y-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <Server size={14} className="text-indigo-600" />
-                <span className="text-xs font-bold text-slate-900">DNS Records Guide (Add at your Domain Registrar)</span>
-              </div>
-              <span className="text-[11px] text-indigo-700 font-medium">
-                GoDaddy / Namecheap / Cloudflare / Hostinger
-              </span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-indigo-200/60 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="pb-1.5 font-bold">Type</th>
-                    <th className="pb-1.5 font-bold">Host / Name</th>
-                    <th className="pb-1.5 font-bold">Value / Target</th>
-                    <th className="pb-1.5 font-bold text-right">Copy</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-indigo-100 font-mono text-[11px] text-slate-700">
-                  <tr>
-                    <td className="py-2 font-bold text-indigo-700">A</td>
-                    <td className="py-2">@</td>
-                    <td className="py-2 font-medium">Cloudflare Proxy IP or Hosting IP</td>
-                    <td className="py-2 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy('@', 'rec-a')}
-                        className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
-                      >
-                        {copiedField === 'rec-a' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-bold text-indigo-700">CNAME</td>
-                    <td className="py-2">www</td>
-                    <td className="py-2 font-medium">neonovastudy.com</td>
-                    <td className="py-2 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy('neonovastudy.com', 'rec-cname')}
-                        className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
-                      >
-                        {copiedField === 'rec-cname' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-bold text-indigo-700">TXT</td>
-                    <td className="py-2">@</td>
-                    <td className="py-2 font-medium truncate max-w-xs">google-site-verification=googlea85ef681664803fc.html</td>
-                    <td className="py-2 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy('google-site-verification=googlea85ef681664803fc.html', 'rec-txt')}
-                        className="text-indigo-600 hover:text-indigo-800 cursor-pointer"
-                      >
-                        {copiedField === 'rec-txt' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="pt-2 border-t border-indigo-200/50 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <button
-                type="button"
-                onClick={handleTestDomain}
-                disabled={domainTesting}
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
-              >
-                <Wifi size={13} />
-                <span>{domainTesting ? 'Checking...' : 'Check Domain Status'}</span>
-              </button>
-
-              {domainTestResult && (
-                <span className={`text-[11px] font-medium flex items-center gap-1 ${
-                  domainTestResult.status === 'online' ? 'text-emerald-700 font-semibold' : 'text-slate-600'
-                }`}>
-                  {domainTestResult.status === 'online' && <CheckCircle2 size={12} className="text-emerald-600" />}
-                  <span>{domainTestResult.message}</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
-
         {/* 5. ACCOUNT & DATA SAFETY */}
         <section className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
@@ -585,81 +364,102 @@ export default function SettingsPage({
           </div>
 
           {/* NeoNova Plan Information */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-                  Current Plan
-                </span>
-                <div className="flex items-center gap-2 mt-0.5">
+          {isNativeAndroid ? (
+            <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider block">
+                    Android App Edition
+                  </span>
                   <h3 className="text-base font-extrabold text-slate-900">
-                    {PLANS[currentTier]?.name || 'NeoNova Starter'}
+                    Full Student Edition — Included Free on Android
                   </h3>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
-                    currentTier === 'pro'
-                      ? 'bg-purple-100 text-purple-800'
-                      : currentTier === 'plus'
-                      ? 'bg-indigo-100 text-indigo-800'
-                      : 'bg-slate-200 text-slate-700'
-                  }`}>
-                    {PLANS[currentTier]?.badge || 'STARTER'}
-                  </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  {PLANS[currentTier]?.tagline || 'Essential learning assistance for everyday homework'}
-                </p>
+                <span className="px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  FREE • UNLOCKED
+                </span>
               </div>
-
-              <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0">
-                {currentTier !== 'starter' && (
-                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold">
-                    <CheckCircle2 size={12} className="text-emerald-600" />
-                    <span>Active {subscriptionState?.billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}</span>
-                  </span>
-                )}
-                {currentTier !== 'starter' && (
-                  <a
-                    href={getPlayStoreSubscriptionUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-white hover:bg-slate-100 text-indigo-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  >
-                    <span>Manage Subscription</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
-                <button
-                  type="button"
-                  onClick={onNavigateToPlans}
-                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs flex items-center gap-1.5"
-                >
-                  <Sparkles size={12} />
-                  <span>{currentTier === 'starter' ? 'Upgrade Plan' : 'Change Plan'}</span>
-                </button>
-              </div>
+              <p className="text-xs text-slate-600">
+                All AI tutor chat, homework solver tools, 3D science labs, adaptive practice, and classic books are unlocked free of charge inside this Android app.
+              </p>
             </div>
-
-            {/* Active Subscription Expiry & Auto-Save Duration Badge */}
-            {currentTier !== 'starter' && (
-              <div className="p-3 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs flex flex-wrap items-center justify-between gap-2">
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block">Subscription Duration & Status</span>
-                  <p className="text-slate-800 font-semibold text-xs">
-                    {subscriptionState?.billingCycle === 'yearly' ? '📅 Yearly Access Plan (365 days)' : '📅 Monthly Access Plan (30 days)'}
-                    {subscriptionState?.expiryTime && (
-                      <span className="text-slate-500 font-mono text-[11px] block mt-0.5 font-normal">
-                        Active until: {new Date(subscriptionState.expiryTime).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </span>
-                    )}
+          ) : (
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
+                    Current Plan
+                  </span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      {PLANS[currentTier]?.name || 'NeoNova Starter'}
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                      currentTier === 'pro'
+                        ? 'bg-purple-100 text-purple-800'
+                        : currentTier === 'plus'
+                        ? 'bg-indigo-100 text-indigo-800'
+                        : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {PLANS[currentTier]?.badge || 'STARTER'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {PLANS[currentTier]?.tagline || 'Essential learning assistance for everyday homework'}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <Check size={11} className="text-emerald-700" />
-                  <span>Saved to Account (Preserved Across Restarts)</span>
-                </span>
+
+                <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0">
+                  {currentTier !== 'starter' && (
+                    <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold">
+                      <CheckCircle2 size={12} className="text-emerald-600" />
+                      <span>Active {subscriptionState?.billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}</span>
+                    </span>
+                  )}
+                  {currentTier !== 'starter' && (
+                    <a
+                      href={getPlayStoreSubscriptionUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-white hover:bg-slate-100 text-indigo-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      <span>Manage Subscription</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={onNavigateToPlans}
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs flex items-center gap-1.5"
+                  >
+                    <Sparkles size={12} />
+                    <span>{currentTier === 'starter' ? 'Upgrade Plan' : 'Change Plan'}</span>
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
+
+              {/* Active Subscription Expiry & Auto-Save Duration Badge */}
+              {currentTier !== 'starter' && (
+                <div className="p-3 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block">Subscription Duration & Status</span>
+                    <p className="text-slate-800 font-semibold text-xs">
+                      {subscriptionState?.billingCycle === 'yearly' ? '📅 Yearly Access Plan (365 days)' : '📅 Monthly Access Plan (30 days)'}
+                      {subscriptionState?.expiryTime && (
+                        <span className="text-slate-500 font-mono text-[11px] block mt-0.5 font-normal">
+                          Active until: {new Date(subscriptionState.expiryTime).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <Check size={11} className="text-emerald-700" />
+                    <span>Saved to Account (Preserved Across Restarts)</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           <form onSubmit={handleSaveProfileName} className="space-y-3">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -777,7 +577,7 @@ export default function SettingsPage({
               onClick={onOpenPrivacyPolicy}
               className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
             >
-              <span>View Official Privacy Policy (neonovastudy.com/privacy-policy)</span>
+              <span>Official Privacy Policy &amp; COPPA Charter</span>
               <ExternalLink size={12} />
             </button>
             <div className="flex flex-wrap items-center gap-3">
@@ -793,16 +593,6 @@ export default function SettingsPage({
                 <ShieldAlert size={13} className="text-amber-600" />
                 <span>Safety & Content Report</span>
               </button>
-              {onOpenAdminPortal && (
-                <button
-                  type="button"
-                  onClick={onOpenAdminPortal}
-                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-700 font-medium cursor-pointer"
-                >
-                  <ShieldCheck size={13} />
-                  <span>Admin Ledger (Naisarg Ramdatti)</span>
-                </button>
-              )}
               <button
                 type="button"
                 onClick={onOpenDeleteAccount}

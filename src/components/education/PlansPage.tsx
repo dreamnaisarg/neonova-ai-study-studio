@@ -18,7 +18,8 @@ import {
   initiatePlayBillingPurchase, 
   restorePlayPurchases, 
   getPlayStoreSubscriptionUrl,
-  VerifiedSubscriptionState
+  VerifiedSubscriptionState,
+  isNativeAndroidApp
 } from '../../lib/billing';
 import PaymentCheckoutModal from './PaymentCheckoutModal';
 
@@ -37,6 +38,7 @@ export default function PlansPage({
   isGuest = false,
   onSelectPlan
 }: PlansPageProps) {
+  const isNativeAndroid = isNativeAndroidApp();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isProcessing, setIsProcessing] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: 'info' | 'error' | 'success' } | null>(null);
@@ -46,6 +48,7 @@ export default function PlansPage({
   const [checkoutTargetTier, setCheckoutTargetTier] = useState<'plus' | 'pro'>('plus');
 
   const handleSelectPlan = (targetTier: 'plus' | 'pro') => {
+    if (isNativeAndroid) return;
     if (currentTier === targetTier) {
       setFeedbackMessage({
         text: `You are already enrolled in NeoNova ${PLANS[targetTier].name}.`,
@@ -105,45 +108,49 @@ export default function PlansPage({
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 mb-1">
           <Sparkles size={13} className="text-indigo-600" />
-          <span>Razorpay Verified Subscriptions</span>
+          <span>{isNativeAndroid ? 'Full Student Edition — Included Free on Android' : 'Verified Educational Subscriptions'}</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Choose Your NeoNova Plan
+          {isNativeAndroid ? 'All NeoNova Learning Tools Included' : 'Choose Your NeoNova Plan'}
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed">
-          Choose the learning experience that fits you. Designed for students from Grade 1 to 12.
+          {isNativeAndroid
+            ? 'Every AI homework solver, 3D laboratory, flashcard deck, and exam mode is unlocked for students from Grade 1 to 12.'
+            : 'Choose the learning experience that fits you. Designed for students from Grade 1 to 12.'}
         </p>
 
-        {/* Monthly / Yearly Toggle */}
-        <div className="pt-4 flex items-center justify-center">
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                billingCycle === 'monthly'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Monthly Billing
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingCycle('yearly')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
-                billingCycle === 'yearly'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span>Yearly Billing</span>
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-sans font-bold">
-                Save 25%
-              </span>
-            </button>
+        {/* Monthly / Yearly Toggle (Web only) */}
+        {!isNativeAndroid && (
+          <div className="pt-4 flex items-center justify-center">
+            <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  billingCycle === 'monthly'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Monthly Billing
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+                  billingCycle === 'yearly'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Yearly Billing</span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-sans font-bold">
+                  Save 25%
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Feedback Alert Banner */}
@@ -241,7 +248,7 @@ export default function PlansPage({
             <div>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  {billingCycle === 'monthly' ? PLANS.plus.priceMonthly : PLANS.plus.priceYearly}
+                  {isNativeAndroid ? 'FREE' : (billingCycle === 'monthly' ? PLANS.plus.priceMonthly : PLANS.plus.priceYearly)}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -262,16 +269,16 @@ export default function PlansPage({
           <div className="pt-6">
             <button
               type="button"
-              disabled={isProcessing || currentTier === 'plus'}
+              disabled={isNativeAndroid || isProcessing || currentTier === 'plus'}
               onClick={() => handleSelectPlan('plus')}
-              className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
-                currentTier === 'plus'
+              className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs ${
+                isNativeAndroid || currentTier === 'plus'
                   ? 'bg-slate-100 text-slate-500 cursor-default'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white active:scale-98'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white active:scale-98 cursor-pointer'
               }`}
             >
-              <span>{currentTier === 'plus' ? 'Current Plan' : 'Upgrade to Plus'}</span>
-              {currentTier !== 'plus' && <ArrowRight size={13} />}
+              <span>{isNativeAndroid ? 'Included on Android' : currentTier === 'plus' ? 'Current Plan' : 'Upgrade to Plus'}</span>
+              {!isNativeAndroid && currentTier !== 'plus' && <ArrowRight size={13} />}
             </button>
           </div>
         </div>
@@ -300,7 +307,7 @@ export default function PlansPage({
             <div>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  {billingCycle === 'monthly' ? PLANS.pro.priceMonthly : PLANS.pro.priceYearly}
+                  {isNativeAndroid ? 'FREE' : (billingCycle === 'monthly' ? PLANS.pro.priceMonthly : PLANS.pro.priceYearly)}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -321,16 +328,16 @@ export default function PlansPage({
           <div className="pt-6">
             <button
               type="button"
-              disabled={isProcessing || currentTier === 'pro'}
+              disabled={isNativeAndroid || isProcessing || currentTier === 'pro'}
               onClick={() => handleSelectPlan('pro')}
-              className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
-                currentTier === 'pro'
-                  ? 'bg-slate-100 text-slate-500 cursor-default'
-                  : 'bg-purple-600 hover:bg-purple-700 text-white active:scale-98'
+              className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs ${
+                isNativeAndroid || currentTier === 'pro'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                  : 'bg-purple-600 hover:bg-purple-700 text-white active:scale-98 cursor-pointer'
               }`}
             >
-              <span>{currentTier === 'pro' ? 'Current Plan' : 'Upgrade to Pro'}</span>
-              {currentTier !== 'pro' && <ArrowRight size={13} />}
+              <span>{isNativeAndroid ? 'Active Free on Android' : currentTier === 'pro' ? 'Current Plan' : 'Upgrade to Pro'}</span>
+              {!isNativeAndroid && currentTier !== 'pro' && <ArrowRight size={13} />}
             </button>
           </div>
         </div>
@@ -395,59 +402,75 @@ export default function PlansPage({
         </div>
       </section>
 
-      {/* Razorpay Standard Checkout Integrity Footer */}
-      <section className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck size={20} className="text-indigo-600 shrink-0" />
+      {/* Integrity Footer (Web billing controls hidden in native Android APK) */}
+      {isNativeAndroid ? (
+        <section className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-center gap-3">
+          <ShieldCheck size={20} className="text-emerald-600 shrink-0" />
           <div className="text-xs">
             <h4 className="font-bold text-slate-900">
-              Razorpay Standard Checkout &amp; Banking Integrity
+              Full Student Access Unlocked
             </h4>
-            <p className="text-slate-500 mt-0.5">
-              Subscriptions are securely processed via Razorpay Standard Checkout (UPI, Cards, 50+ NetBanking, Wallets). 256-bit SSL encrypted.
+            <p className="text-slate-600 mt-0.5">
+              All NeoNova educational tools, 3D science simulations, flashcards, and step-by-step solvers are included free in the Android app.
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleRestorePurchases}
-            disabled={isProcessing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-          >
-            <RotateCcw size={13} />
-            <span>Restore Purchases</span>
-          </button>
-          {currentTier !== 'starter' && (
+        </section>
+      ) : (
+        <section className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <ShieldCheck size={20} className="text-indigo-600 shrink-0" />
+            <div className="text-xs">
+              <h4 className="font-bold text-slate-900">
+                Web Subscription &amp; Security Integrity
+              </h4>
+              <p className="text-slate-500 mt-0.5">
+                Web subscriptions are securely processed via verified checkout with 256-bit SSL encryption.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => {
-                setCheckoutTargetTier(currentTier as 'plus' | 'pro');
-                setIsCheckoutOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              onClick={handleRestorePurchases}
+              disabled={isProcessing}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
-              <span>Manage Subscription</span>
-              <ExternalLink size={12} />
+              <RotateCcw size={13} />
+              <span>Restore Purchases</span>
             </button>
-          )}
-        </div>
-      </section>
+            {currentTier !== 'starter' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutTargetTier(currentTier as 'plus' | 'pro');
+                  setIsCheckoutOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <span>Manage Subscription</span>
+                <ExternalLink size={12} />
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
-      {/* Official Payment & Checkout Sheet */}
-      <PaymentCheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        targetTier={checkoutTargetTier}
-        initialBillingCycle={billingCycle}
-        onPaymentSuccess={(newState) => {
-          onSubscriptionUpdated(newState);
-          setFeedbackMessage({
-            text: `Payment verified successfully! Welcome to NeoNova ${PLANS[newState.tier].name}.`,
-            type: 'success'
-          });
-        }}
-      />
+      {/* Official Payment & Checkout Sheet (Web only) */}
+      {!isNativeAndroid && (
+        <PaymentCheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          targetTier={checkoutTargetTier}
+          initialBillingCycle={billingCycle}
+          onPaymentSuccess={(newState) => {
+            onSubscriptionUpdated(newState);
+            setFeedbackMessage({
+              text: `Payment verified successfully! Welcome to NeoNova ${PLANS[newState.tier].name}.`,
+              type: 'success'
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -186,7 +186,8 @@ export default function App() {
     const entitlement = getCurrentSubscriptionState();
     return entitlement;
   });
-  const currentTier: PlanTier = subscriptionState.tier;
+  const isNativeAndroid = Capacitor.isNativePlatform();
+  const currentTier: PlanTier = isNativeAndroid ? 'pro' : subscriptionState.tier;
 
   // Modals & Overlays
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -431,6 +432,10 @@ export default function App() {
   };
 
   const handleSelectPlan = (targetTier: 'plus' | 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
+    if (isNativeAndroid) {
+      setActiveTab('home');
+      return;
+    }
     if (!currentUser) {
       setPendingCheckout({ tier: targetTier, billingCycle });
       setAuthPromptMessage("Log in or create an account to purchase and manage your subscription.");
@@ -488,14 +493,15 @@ export default function App() {
     setStudentName('Alex');
   };
 
-  // URL Hash routing listener for deep links (#privacy, #delete-account)
+  // URL Path & Hash routing listener for deep links (/privacy-policy, /delete-account, #privacy, #delete-account)
   useEffect(() => {
-    const handleHashChange = () => {
+    const syncLegalRoute = () => {
+      const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      if (hash === '#privacy' || hash === '#/privacy') {
+      if (path === '/privacy-policy' || hash === '#privacy' || hash === '#/privacy') {
         setIsPrivacyRoute(true);
         setIsDeleteAccountRoute(false);
-      } else if (hash === '#delete-account' || hash === '#/delete-account') {
+      } else if (path === '/delete-account' || hash === '#delete-account' || hash === '#/delete-account') {
         setIsDeleteAccountRoute(true);
         setIsPrivacyRoute(false);
       } else {
@@ -504,9 +510,26 @@ export default function App() {
       }
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    (window as any).navigateToPrivacyPolicy = () => {
+      window.history.pushState({}, '', '/privacy-policy');
+      setIsPrivacyRoute(true);
+      setIsDeleteAccountRoute(false);
+    };
+    (window as any).navigateToDeleteAccount = () => {
+      window.history.pushState({}, '', '/delete-account');
+      setIsDeleteAccountRoute(true);
+      setIsPrivacyRoute(false);
+    };
+
+    syncLegalRoute();
+    window.addEventListener('hashchange', syncLegalRoute);
+    window.addEventListener('popstate', syncLegalRoute);
+    return () => {
+      window.removeEventListener('hashchange', syncLegalRoute);
+      window.removeEventListener('popstate', syncLegalRoute);
+      delete (window as any).navigateToPrivacyPolicy;
+      delete (window as any).navigateToDeleteAccount;
+    };
   }, []);
 
   // Sync font scaling class to html root
@@ -851,7 +874,7 @@ export default function App() {
   const handleToggleDictation = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Speech recognition is not supported in this browser.');
+      setApiError('Voice dictation is not supported on this device or browser.');
       return;
     }
 
@@ -964,8 +987,14 @@ export default function App() {
     return (
       <PrivacyPolicyPage
         onBackToApp={() => {
+          window.history.pushState({}, '', '/');
           window.location.hash = '';
           setIsPrivacyRoute(false);
+        }}
+        onOpenDeleteAccount={() => {
+          window.history.pushState({}, '', '/delete-account');
+          setIsPrivacyRoute(false);
+          setIsDeleteAccountRoute(true);
         }}
       />
     );
@@ -975,8 +1004,19 @@ export default function App() {
     return (
       <DeleteAccountPage
         onBackToApp={() => {
+          window.history.pushState({}, '', '/');
           window.location.hash = '';
           setIsDeleteAccountRoute(false);
+        }}
+        onOpenPrivacyPolicy={() => {
+          window.history.pushState({}, '', '/privacy-policy');
+          setIsDeleteAccountRoute(false);
+          setIsPrivacyRoute(true);
+        }}
+        onAccountDeleted={() => {
+          setCurrentUser(null);
+          setSubscriptionState({ tier: 'starter', status: 'none' });
+          setStudentName('Alex');
         }}
       />
     );
@@ -1519,9 +1559,9 @@ export default function App() {
         }}
       />
 
-      {/* PhonePe QR & Payment Checkout Modal */}
+      {/* PhonePe QR & Payment Checkout Modal (Web only — never rendered in Android APK) */}
       <PaymentCheckoutModal
-        isOpen={isPaymentCheckoutOpen}
+        isOpen={isPaymentCheckoutOpen && !isNativeAndroid}
         onClose={() => setIsPaymentCheckoutOpen(false)}
         targetTier={checkoutTargetTier}
         initialBillingCycle={checkoutBillingCycle}

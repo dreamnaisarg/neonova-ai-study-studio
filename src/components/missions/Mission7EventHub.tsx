@@ -59,6 +59,7 @@ export default function Mission7EventHub({
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [claimCelebration, setClaimCelebration] = useState<string | null>(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
   useEffect(() => {
     const handleUpdate = (e: any) => {
@@ -76,10 +77,14 @@ export default function Mission7EventHub({
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset your Mission 7 Championship progress for a new attempt?')) {
-      const fresh = resetMission7State();
-      setState(fresh);
+    if (!confirmingReset) {
+      setConfirmingReset(true);
+      setTimeout(() => setConfirmingReset(false), 5000);
+      return;
     }
+    const fresh = resetMission7State();
+    setState(fresh);
+    setConfirmingReset(false);
   };
 
   const completedCount = state.tasks.filter(t => t.status === 'completed' || t.status === 'claimed').length;
@@ -187,15 +192,35 @@ export default function Mission7EventHub({
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleReset}
-            className="text-[11px] font-semibold text-slate-400 hover:text-rose-600 transition-colors flex items-center gap-1 cursor-pointer"
-            title="Reset progress to retry the event"
-          >
-            <RotateCcw size={12} />
-            <span>Reset Event</span>
-          </button>
+          {confirmingReset ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw size={12} />
+                <span>Confirm Reset?</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingReset(false)}
+                className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="text-[11px] font-semibold text-slate-400 hover:text-rose-600 transition-colors flex items-center gap-1 cursor-pointer"
+              title="Reset progress to retry the event"
+            >
+              <RotateCcw size={12} />
+              <span>Reset Event</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

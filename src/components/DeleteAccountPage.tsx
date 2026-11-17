@@ -23,9 +23,15 @@ import NeoNovaLogo from './common/NeoNovaLogo';
 
 interface DeleteAccountPageProps {
   onBackToApp?: () => void;
+  onOpenPrivacyPolicy?: () => void;
+  onAccountDeleted?: () => void;
 }
 
-export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProps) {
+export default function DeleteAccountPage({
+  onBackToApp,
+  onOpenPrivacyPolicy,
+  onAccountDeleted
+}: DeleteAccountPageProps) {
   const [activeStep, setActiveStep] = useState<'options' | 'client_wiped' | 'request_submitted'>('options');
   const [isWiping, setIsWiping] = useState(false);
   const [requestEmail, setRequestEmail] = useState('');
@@ -72,7 +78,7 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
     }
   };
 
-  // Instant on-device data erasure
+  // Instant full device + backend data erasure
   const handleInstantClientWipe = async () => {
     if (confirmText.trim().toUpperCase() !== 'DELETE') {
       setErrorMessage('Please type DELETE in the confirmation box below.');
@@ -81,11 +87,74 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
     setIsWiping(true);
     setErrorMessage(null);
     try {
+      let storedUserId = '';
+      let storedEmail = '';
+      let storedUsername = '';
+      let storedToken = '';
+
       if (typeof window !== 'undefined') {
+        try {
+          storedToken = localStorage.getItem('neonova_auth_token') || '';
+          const userRaw = localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile');
+          if (userRaw) {
+            const parsed = JSON.parse(userRaw);
+            storedUserId = parsed?.id || '';
+            storedEmail = parsed?.email || '';
+            storedUsername = parsed?.username || parsed?.studentName || '';
+          }
+        } catch {}
+
+        // Trigger real server deletion if user had any session or account
+        try {
+          await fetch('/api/delete-account-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: storedUserId || undefined,
+              email: storedEmail || requestEmail.trim() || undefined,
+              nickname: storedUsername || requestNickname.trim() || undefined,
+              token: storedToken || undefined,
+              reason: 'User initiated full account & data deletion',
+              timestamp: new Date().toISOString()
+            })
+          });
+        } catch {}
+
+        // Attempt optional Firebase/SQL user erasure if signed in via Firebase
+        try {
+          const { auth } = await import('../lib/firebase');
+          const fbUser = auth.currentUser;
+          if (fbUser) {
+            try {
+              const idToken = await fbUser.getIdToken();
+              await fetch('/api/sql/delete-account', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${idToken}`
+                }
+              });
+            } catch {}
+            try {
+              await fbUser.delete();
+            } catch {}
+          }
+        } catch {}
+
+        // Wipe browser IndexedDB databases if available
+        try {
+          if (window.indexedDB && typeof window.indexedDB.databases === 'function') {
+            const dbs = await window.indexedDB.databases();
+            for (const dbInfo of dbs) {
+              if (dbInfo.name) window.indexedDB.deleteDatabase(dbInfo.name);
+            }
+          }
+        } catch {}
+
         localStorage.clear();
         sessionStorage.clear();
       }
-      await new Promise(resolve => setTimeout(resolve, 800));
+      onAccountDeleted?.();
       setIsWiping(false);
       setActiveStep('client_wiped');
     } catch (err: any) {
@@ -103,10 +172,24 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
+      let storedUserId = '';
+      let storedToken = '';
+      if (typeof window !== 'undefined') {
+        storedToken = localStorage.getItem('neonova_auth_token') || '';
+        const userRaw = localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile');
+        if (userRaw) {
+          try {
+            storedUserId = JSON.parse(userRaw)?.id || '';
+          } catch {}
+        }
+      }
+
       const res = await fetch('/api/delete-account-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: storedUserId || undefined,
+          token: storedToken || undefined,
           email: requestEmail.trim(),
           nickname: requestNickname.trim(),
           reason: requestReason,
@@ -114,24 +197,29 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
         })
       });
       const data = await res.json();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('neonova_auth_token');
+        localStorage.removeItem('neonova_auth_user');
+        localStorage.removeItem('neonova_installed_profile');
+        localStorage.removeItem('NEONOVA_SUBSCRIPTION_VERIFIED_STATE');
+      }
+      onAccountDeleted?.();
       setTicketId(data.ticketId || `NEO-DEL-${Math.floor(100000 + Math.random() * 900000)}`);
       setIsSubmitting(false);
       setActiveStep('request_submitted');
     } catch (err: any) {
-      const fallbackTicket = `NEO-DEL-${Math.floor(100000 + Math.random() * 900000)}`;
-      setTicketId(fallbackTicket);
       setIsSubmitting(false);
-      setActiveStep('request_submitted');
+      setErrorMessage('Could not reach deletion service right now. Please try Instant On-Device Wipe or contact dreamnaisarg@gmail.com.');
     }
   };
 
   return (
-    <div id="delete-account-page" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-rose-100 selection:text-rose-900">
+    <div id="delete-account-page" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-rose-100 selection:text-rose-900 pb-safe">
       {/* Top Accent Bar */}
       <div className="w-full h-1 bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-500 fixed top-0 left-0 z-50" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 py-3.5 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 py-3.5 pt-safe flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <button
             id="btn-back-from-delete"
@@ -160,7 +248,11 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
             href="/privacy-policy"
             onClick={(e) => {
               e.preventDefault();
-              if (typeof window !== 'undefined') {
+              if (onOpenPrivacyPolicy) {
+                onOpenPrivacyPolicy();
+              } else if (typeof (window as any).navigateToPrivacyPolicy === 'function') {
+                (window as any).navigateToPrivacyPolicy();
+              } else if (typeof window !== 'undefined') {
                 window.history.pushState({}, '', '/privacy-policy');
                 window.dispatchEvent(new PopStateEvent('popstate'));
               }
@@ -193,15 +285,15 @@ export default function DeleteAccountPage({ onBackToApp }: DeleteAccountPageProp
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">App Identifier</span>
-                <strong className="text-indigo-700 font-mono text-xs">com.neonova.app</strong>
+                <strong className="text-indigo-700 font-mono text-xs break-all">com.firstlightstudios.neonova</strong>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">Turnaround Time</span>
-                <strong className="text-emerald-700 font-medium">Instant (Local) / &lt; 24h (Server)</strong>
+                <strong className="text-emerald-700 font-medium">Instant (Local &amp; Server)</strong>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">Support Contact</span>
-                <a href="mailto:dreamfind4424@gmail.com" className="text-indigo-600 hover:underline break-all font-medium">dreamfind4424@gmail.com</a>
+                <a href="mailto:dreamnaisarg@gmail.com" className="text-indigo-600 hover:underline break-all font-medium">dreamnaisarg@gmail.com</a>
               </div>
             </div>
 

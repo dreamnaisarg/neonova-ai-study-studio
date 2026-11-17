@@ -1,22 +1,35 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MJTPXYBPHZ"></script>
+    <!-- Analytics only loaded on standard web (disabled in native Android APK; COPPA/Families-safe flags) -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-MJTPXYBPHZ');
+      (function () {
+        var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
+          window.location.protocol === 'capacitor:' ||
+          window.location.protocol === 'file:';
+        if (isNative) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-MJTPXYBPHZ';
+        document.head.appendChild(s);
+        var rzpScript = document.createElement('script');
+        rzpScript.async = true;
+        rzpScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        document.head.appendChild(rzpScript);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){window.dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-MJTPXYBPHZ', {
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+          restricted_data_processing: true
+        });
+      })();
     </script>
-
-    <!-- Razorpay Standard Web Checkout SDK -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="google-adsense-account" content="ca-pub-2809682199317733" />
     <title>NeoNova AI Study Studio</title>
     
     <!-- Primary Meta Annotations for Google Search Console -->
@@ -86,17 +99,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Service Worker Registration for Offline Support -->
+    <!-- Service Worker Registration for Offline Web Support (skipped on Capacitor native) -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then((reg) => {
-            console.log('NEONOVA ServiceWorker registered successfully with scope: ', reg.scope);
-          }).catch((err) => {
-            console.warn('NEONOVA ServiceWorker registration failed: ', err);
+      (function () {
+        var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
+          window.location.protocol === 'capacitor:' ||
+          window.location.protocol === 'file:';
+        if (!isNative && 'serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
           });
-        });
-      }
+        }
+      })();
     </script>
   </head>
   <body>

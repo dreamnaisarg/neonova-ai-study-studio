@@ -104,6 +104,7 @@ export default function AIHomeworkSolverView({
   const [speakingStepIdx, setSpeakingStepIdx] = useState<number | null>(null);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [cachedScans, setCachedScans] = useState<CachedHomeworkScan[]>(() => getSavedScans());
+  const [confirmingClearOffline, setConfirmingClearOffline] = useState(false);
   const [isOfflineResult, setIsOfflineResult] = useState(false);
   const [isDeviceOnline, setIsDeviceOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
@@ -1245,19 +1246,40 @@ export default function AIHomeworkSolverView({
 
               <div className="flex items-center gap-2">
                 {cachedScans.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm('Clear all saved offline scans from this device?')) {
-                        clearAllSavedScans();
-                        setCachedScans([]);
-                      }
-                    }}
-                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                    title="Clear all offline scans"
-                  >
-                    Clear All
-                  </button>
+                  confirmingClearOffline ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearAllSavedScans();
+                          setCachedScans([]);
+                          setConfirmingClearOffline(false);
+                        }}
+                        className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Confirm Clear?
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingClearOffline(false)}
+                        className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmingClearOffline(true);
+                        setTimeout(() => setConfirmingClearOffline(false), 5000);
+                      }}
+                      className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                      title="Clear all offline scans"
+                    >
+                      Clear All
+                    </button>
+                  )
                 )}
                 <button
                   type="button"

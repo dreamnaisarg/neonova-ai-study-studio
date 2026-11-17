@@ -27,7 +27,8 @@ import {
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
 import { SUBJECTS } from '../../types';
-import { PlanTier, PLANS, canAccessFeature } from '../../lib/billing';
+import { PlanTier, PLANS, canAccessFeature, isNativeAndroidApp } from '../../lib/billing';
+import { calculateProgressAnalytics } from '../../lib/progressStorage';
 import Mission7QuickWidget from '../missions/Mission7QuickWidget';
 
 interface HomePageProps {
@@ -67,6 +68,8 @@ export default function HomePage({
   const [activeCategory, setActiveCategory] = useState<FeatureCategory>('all');
   const [filterQuery, setFilterQuery] = useState('');
   const [studentProfile, setStudentProfile] = useState<any | null>(null);
+  const isNativeAndroid = isNativeAndroidApp();
+  const progressAnalytics = React.useMemo(() => calculateProgressAnalytics(), []);
 
   // Load real student learning memory & recommendations
   React.useEffect(() => {
@@ -403,16 +406,18 @@ export default function HomePage({
             <span>•</span>
             <button
               type="button"
-              onClick={onOpenPlans}
+              onClick={isNativeAndroid ? () => onNavigateTab('profile') : onOpenPlans}
               className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                currentTier === 'pro'
+                isNativeAndroid
+                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                  : currentTier === 'pro'
                   ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
                   : currentTier === 'plus'
                   ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              {PLANS[currentTier]?.badge || 'STARTER'}
+              {isNativeAndroid ? 'STUDENT FREE' : (PLANS[currentTier]?.badge || 'STARTER')}
             </button>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -885,45 +890,31 @@ export default function HomePage({
           </div>
 
           <div className="space-y-3 pt-1">
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">Mathematics</span>
-                <span className="font-bold text-slate-900 font-mono">68%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: '68%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">Science</span>
-                <span className="font-bold text-slate-900 font-mono">52%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '52%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">English</span>
-                <span className="font-bold text-slate-900 font-mono">74%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-sky-500 rounded-full" style={{ width: '74%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-700">Computer Science</span>
-                <span className="font-bold text-slate-900 font-mono">80%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 rounded-full" style={{ width: '80%' }} />
-              </div>
-            </div>
+            {[
+              { key: 'Mathematics', label: 'Mathematics', barColor: 'bg-amber-500' },
+              { key: 'General Science', label: 'Science', barColor: 'bg-emerald-500' },
+              { key: 'English Literature', label: 'English', barColor: 'bg-sky-500' },
+              { key: 'Computer Science', label: 'Computer Science', barColor: 'bg-purple-500' }
+            ].map((item) => {
+              const breakdown = progressAnalytics.subjectBreakdowns.find(
+                (s) => s.subject === item.key
+              );
+              const pct = breakdown ? breakdown.masteryPercentage : 0;
+              return (
+                <div key={item.key}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-slate-700">{item.label}</span>
+                    <span className="font-bold text-slate-900 font-mono">{pct}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${item.barColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>

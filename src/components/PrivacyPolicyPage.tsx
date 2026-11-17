@@ -22,9 +22,10 @@ import NeoNovaLogo from './common/NeoNovaLogo';
 
 interface PrivacyPolicyPageProps {
   onBackToApp?: () => void;
+  onOpenDeleteAccount?: () => void;
 }
 
-export default function PrivacyPolicyPage({ onBackToApp }: PrivacyPolicyPageProps) {
+export default function PrivacyPolicyPage({ onBackToApp, onOpenDeleteAccount }: PrivacyPolicyPageProps) {
   const [copiedCustomUrl, setCopiedCustomUrl] = useState(false);
   const [copiedAppUrl, setCopiedAppUrl] = useState(false);
 
@@ -71,19 +72,27 @@ export default function PrivacyPolicyPage({ onBackToApp }: PrivacyPolicyPageProp
   };
 
   const navigateTo = (path: string) => {
+    if (path === '/delete-account' && onOpenDeleteAccount) {
+      onOpenDeleteAccount();
+      return;
+    }
     if (typeof window !== 'undefined') {
+      if (path === '/delete-account' && typeof (window as any).navigateToDeleteAccount === 'function') {
+        (window as any).navigateToDeleteAccount();
+        return;
+      }
       window.history.pushState({}, '', path);
       window.dispatchEvent(new PopStateEvent('popstate'));
     }
   };
 
   return (
-    <div id="privacy-policy-page" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+    <div id="privacy-policy-page" className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900 pb-safe">
       {/* Top Accent Bar */}
       <div className="w-full h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 fixed top-0 left-0 z-50" />
 
       {/* Navigation Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 py-3.5 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-8 py-3.5 pt-safe flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <button
             id="btn-back-from-privacy"
@@ -156,7 +165,7 @@ export default function PrivacyPolicyPage({ onBackToApp }: PrivacyPolicyPageProp
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">Package Identifier</span>
-                <span className="text-indigo-700 font-mono text-[11px] font-semibold break-all">com.neonova.app</span>
+                <span className="text-indigo-700 font-mono text-[11px] font-semibold break-all">com.firstlightstudios.neonova</span>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">Effective Date</span>
@@ -164,7 +173,7 @@ export default function PrivacyPolicyPage({ onBackToApp }: PrivacyPolicyPageProp
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
                 <span className="text-[10px] text-slate-500 block uppercase font-medium">Contact Inquiries</span>
-                <a href="mailto:dreamfind4424@gmail.com" className="text-indigo-600 hover:underline break-all font-medium">dreamfind4424@gmail.com</a>
+                <a href="mailto:dreamnaisarg@gmail.com" className="text-indigo-600 hover:underline break-all font-medium">dreamnaisarg@gmail.com</a>
               </div>
             </div>
 
@@ -295,6 +304,19 @@ export default function PrivacyPolicyPage({ onBackToApp }: PrivacyPolicyPageProp
                 <span>Parents and guardians have full control to inspect, export, or permanently wipe any stored notes or progress metrics at any time.</span>
               </li>
             </ul>
+          </section>
+
+          <section id="sec-ai-safety" className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+            <div className="flex items-center gap-2.5 text-slate-900 font-extrabold text-base md:text-lg mb-3">
+              <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold">4</span>
+              <h2>AI Educational Guidance &amp; Content Safety</h2>
+            </div>
+            <p className="mb-3 text-slate-600">
+              NeoNova provides AI-generated explanations, study guides, and step-by-step tutoring strictly as an educational aid. While verified symbolic and curriculum engines are used, students should review important homework and exam work against approved textbooks or with an educator.
+            </p>
+            <p className="text-xs text-slate-600">
+              Users can report any inaccurate or concerning response at any time using the in-app <strong>Safety &amp; Content Report</strong> button in Settings or by emailing <a href="mailto:dreamnaisarg@gmail.com" className="text-indigo-600 hover:underline font-medium">dreamnaisarg@gmail.com</a>.
+            </p>
           </section>
         </div>
 

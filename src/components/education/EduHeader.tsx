@@ -24,7 +24,7 @@ import {
   Bot
 } from 'lucide-react';
 import { GRADES, SUBJECTS } from '../../types';
-import { PlanTier, PLANS } from '../../lib/billing';
+import { PlanTier, PLANS, isNativeAndroidApp } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
 import { useTranslation } from '../../lib/i18n';
 
@@ -88,6 +88,7 @@ export default function EduHeader({
   onOpenChatHistory
 }: EduHeaderProps) {
   const { t, lang, toggleLanguage, isFinnish } = useTranslation();
+  const isNativeAndroid = isNativeAndroidApp();
   const [gradeDropdownOpen, setGradeDropdownOpen] = useState(false);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
   const [curriculumDropdownOpen, setCurriculumDropdownOpen] = useState(false);
@@ -127,7 +128,7 @@ export default function EduHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 py-2.5 flex items-center justify-between shadow-xs transition-colors">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 py-2.5 pt-safe flex items-center justify-between shadow-xs transition-colors">
       {/* Left: Mobile Toggle & Brand Logo */}
       <div className="flex items-center gap-2 sm:gap-3">
         {onOpenMobileMenu && (
@@ -505,8 +506,8 @@ export default function EduHeader({
           )}
         </div>
 
-        {/* Subscription Plan Badge */}
-        {onOpenPlans && (
+        {/* Subscription Plan Badge (Web only) */}
+        {!isNativeAndroid && onOpenPlans && (
           <button
             type="button"
             onClick={onOpenPlans}

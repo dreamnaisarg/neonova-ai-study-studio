@@ -69,6 +69,7 @@ export default function ProgressTracker({
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<'all' | 'mastered' | 'in_progress' | 'needs_review'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedQuizId, setExpandedQuizId] = useState<string | null>(null);
+  const [confirmingReset, setConfirmingReset] = useState<boolean>(false);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -168,10 +169,14 @@ export default function ProgressTracker({
   };
 
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to reset all progress tracking data? This will clear your log back to 0.")) {
-      resetProgressData();
-      refreshData();
+    if (!confirmingReset) {
+      setConfirmingReset(true);
+      setTimeout(() => setConfirmingReset(false), 5000);
+      return;
     }
+    resetProgressData();
+    refreshData();
+    setConfirmingReset(false);
   };
 
   const handleExportJSON = () => {
@@ -242,15 +247,35 @@ export default function ProgressTracker({
             <Download size={13} />
             <span className="hidden sm:inline">Export Report</span>
           </button>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 text-xs font-semibold rounded-xl transition-all cursor-pointer"
-            title="Reset progress tracking stats"
-          >
-            <RotateCcw size={13} />
-            <span>Reset Data</span>
-          </button>
+          {confirmingReset ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="flex items-center gap-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+              >
+                <RotateCcw size={13} />
+                <span>Confirm Reset?</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingReset(false)}
+                className="px-2.5 py-2 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 text-xs font-semibold rounded-xl transition-all cursor-pointer"
+              title="Reset progress tracking stats"
+            >
+              <RotateCcw size={13} />
+              <span>Reset Data</span>
+            </button>
+          )}
         </div>
       </div>
 

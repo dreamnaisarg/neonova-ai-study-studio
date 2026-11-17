@@ -107,6 +107,26 @@ export default function NeoNovaAuthScreen({
         grade: 'Grade 8'
       });
 
+      // Sync user profile to Cloud SQL via verified Firebase ID token (kept in memory only)
+      try {
+        const idToken = await gUser.getIdToken();
+        await fetch('/api/sql/sync-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            studentName: gUser.displayName || 'Student',
+            studentAvatar: gUser.photoURL || '🎓',
+            grade: 'Grade 8',
+            planTier: 'starter',
+          }),
+        });
+      } catch {
+        // Non-blocking sync
+      }
+
       // Sync with backend authoritative store
       const syncRes = await fetch('/api/auth/sync-session', {
         method: 'POST',

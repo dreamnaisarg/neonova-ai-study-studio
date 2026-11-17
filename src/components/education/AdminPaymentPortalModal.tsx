@@ -61,6 +61,13 @@ export default function AdminPaymentPortalModal({
   const [filterQuery, setFilterQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'REVIEW_REQUIRED' | 'VERIFIED' | 'FAILED'>('ALL');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmingApproveTxn, setConfirmingApproveTxn] = useState<AuthoritativeTransaction | null>(null);
+  const [reasonModal, setReasonModal] = useState<{
+    mode: 'reject' | 'refund';
+    txn: AuthoritativeTransaction;
+    reason: string;
+  } | null>(null);
   const [selectedTxnAudit, setSelectedTxnAudit] = useState<AuthoritativeTransaction | null>(null);
 
   // New manual transaction form
@@ -118,10 +125,14 @@ export default function AdminPaymentPortalModal({
     setIsLoading(false);
   };
 
-  const handleApprove = async (txn: AuthoritativeTransaction) => {
-    const confirmMsg = `Authorize genuine payment confirmation?\n\n• Transaction Ref / UTR: ${txn.transactionId}\n• Order ID: ${txn.orderId}\n• Student: ${txn.studentName} (${txn.studentEmail || txn.accountId})\n• Plan: NeoNova ${txn.planTier.toUpperCase()} (${txn.billingCycle}) ₹${txn.amount}\n\nPlease confirm you have verified ₹${txn.amount}.00 received into official PhonePe merchant account (Bank of Baroda **5536).`;
-    if (!confirm(confirmMsg)) return;
+  const handleApprove = (txn: AuthoritativeTransaction) => {
+    setActionError(null);
+    setConfirmingApproveTxn(txn);
+  };
 
+  const executeApprove = async (txn: AuthoritativeTransaction) => {
+    setConfirmingApproveTxn(null);
+    setActionError(null);
     try {
       setIsLoading(true);
       const res = await fetch('/api/admin/approve-transaction', {
@@ -140,78 +151,67 @@ export default function AdminPaymentPortalModal({
         refreshLedger();
         setTimeout(() => setActionSuccess(null), 3500);
       } else {
-        alert(data.error || 'Failed to approve transaction.');
+        setActionError(data.error || 'Failed to approve transaction.');
       }
     } catch {
-      alert('Network error communicating with approval gateway.');
+      setActionError('Network error communicating with approval gateway.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleReject = async (txn: AuthoritativeTransaction) => {
-    const reason = prompt(
-      `Enter reason for rejecting transaction ${txn.transactionId}:`,
-      "Payment could not be verified in PhonePe merchant records."
-    );
-    if (reason === null) return;
-
-    try {
-      setIsLoading(true);
-      const res = await fetch('/api/admin/reject-transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adminKey,
-          transactionId: txn.transactionId,
-          reason: reason || "Payment not found in PhonePe merchant statement",
-          adminName: 'Naisarg Ramdatti (Administrator)'
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setActionSuccess(`Transaction ${txn.transactionId} marked as FAILED. Premium access remains disabled.`);
-        refreshLedger();
-        setTimeout(() => setActionSuccess(null), 3500);
-      } else {
-        alert(data.error || 'Failed to reject transaction.');
-      }
-    } catch {
-      alert('Network error communicating with gateway.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleReject = (txn: AuthoritativeTransaction) => {
+    setActionError(null);
+    setReasonModal({
+      mode: 'reject',
+      txn,
+      reason: 'Payment could not be verified in PhonePe merchant records.'
+    });
   };
 
-  const handleRefund = async (txn: AuthoritativeTransaction) => {
-    const reason = prompt(
-      `Are you sure you want to refund/revoke subscription for ${txn.transactionId} (${txn.studentName})?\nEnter reason:`,
-      "Subscription refunded and revoked"
-    );
-    if (reason === null) return;
+  const handleRefund = (txn: AuthoritativeTransaction) => {
+    setActionError(null);
+    setReasonModal({
+      mode: 'refund',
+      txn,
+      reason: 'Subscription refunded and revoked'
+    });
+  };
+
+  const executeReasonAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reasonModal) return;
+    const { mode, txn, reason } = reasonModal;
+    setReasonModal(null);
+    setActionError(null);
 
     try {
       setIsLoading(true);
-      const res = await fetch('/api/admin/refund-transaction', {
+      const endpoint = mode === 'reject' ? '/api/admin/reject-transaction' : '/api/admin/refund-transaction';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           adminKey,
           transactionId: txn.transactionId,
-          reason,
+          reason: reason.trim() || (mode === 'reject' ? 'Payment not found in PhonePe merchant statement' : 'Subscription refunded and revoked'),
           adminName: 'Naisarg Ramdatti (Administrator)'
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setActionSuccess(`Transaction ${txn.transactionId} marked as REFUNDED. Premium access revoked.`);
+        setActionSuccess(
+          mode === 'reject'
+            ? `Transaction ${txn.transactionId} marked as FAILED. Premium access remains disabled.`
+            : `Transaction ${txn.transactionId} marked as REFUNDED. Premium access revoked.`
+        );
         refreshLedger();
         setTimeout(() => setActionSuccess(null), 3500);
       } else {
-        alert(data.error || 'Failed to refund transaction.');
+        setActionError(data.error || `Failed to ${mode} transaction.`);
       }
     } catch {
-      alert('Network error updating refund status.');
+      setActionError(`Network error updating ${mode} status.`);
     } finally {
       setIsLoading(false);
     }
@@ -219,8 +219,9 @@ export default function AdminPaymentPortalModal({
 
   const handleAuthorizeNew = async (e: React.FormEvent) => {
     e.preventDefault();
+    setActionError(null);
     if (!newTxnId.trim() || !newStudentName.trim()) {
-      alert('Please fill out transaction ID and student name.');
+      setActionError('Please fill out transaction ID and student name.');
       return;
     }
 
@@ -251,10 +252,10 @@ export default function AdminPaymentPortalModal({
         refreshLedger();
         setTimeout(() => setActionSuccess(null), 3500);
       } else {
-        alert(data.error || 'Failed to authorize transaction');
+        setActionError(data.error || 'Failed to authorize transaction');
       }
     } catch {
-      alert('Network error authorizing transaction');
+      setActionError('Network error authorizing transaction');
     }
   };
 
@@ -358,6 +359,22 @@ export default function AdminPaymentPortalModal({
               <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                 <span>{actionSuccess}</span>
+              </div>
+            )}
+
+            {actionError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={16} className="text-rose-600 shrink-0" />
+                  <span>{actionError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActionError(null)}
+                  className="text-rose-600 hover:text-rose-900 font-bold text-xs cursor-pointer"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
 
@@ -642,6 +659,81 @@ export default function AdminPaymentPortalModal({
                 </table>
               </div>
             </div>
+
+            {/* Approve Confirmation Modal */}
+            {confirmingApproveTxn && (
+              <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+                <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-slate-800">
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h4 className="text-sm font-bold text-slate-900">Authorize Payment Confirmation</h4>
+                    <button type="button" onClick={() => setConfirmingApproveTxn(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer"><X size={16} /></button>
+                  </div>
+                  <div className="text-xs text-slate-600 space-y-1.5">
+                    <p>Transaction Ref / UTR: <strong className="font-mono text-slate-900">{confirmingApproveTxn.transactionId}</strong></p>
+                    <p>Order ID: <strong className="font-mono text-slate-900">{confirmingApproveTxn.orderId}</strong></p>
+                    <p>Student: <strong className="text-slate-900">{confirmingApproveTxn.studentName} ({confirmingApproveTxn.studentEmail || confirmingApproveTxn.accountId})</strong></p>
+                    <p>Plan: <strong className="text-slate-900">NeoNova {confirmingApproveTxn.planTier.toUpperCase()} ({confirmingApproveTxn.billingCycle}) ₹{confirmingApproveTxn.amount}</strong></p>
+                    <p className="pt-1 text-slate-500">Confirm that ₹{confirmingApproveTxn.amount}.00 has been received into the merchant account.</p>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingApproveTxn(null)}
+                      className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => executeApprove(confirmingApproveTxn)}
+                      className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer"
+                    >
+                      Confirm &amp; Approve
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Reject / Refund Reason Modal */}
+            {reasonModal && (
+              <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+                <form onSubmit={executeReasonAction} className="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-200 text-slate-800">
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h4 className="text-sm font-bold text-slate-900">
+                      {reasonModal.mode === 'reject' ? 'Reject Transaction' : 'Refund & Revoke Subscription'}
+                    </h4>
+                    <button type="button" onClick={() => setReasonModal(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer"><X size={16} /></button>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Transaction: <strong className="font-mono text-slate-900">{reasonModal.txn.transactionId}</strong> ({reasonModal.txn.studentName})
+                  </p>
+                  <input
+                    type="text"
+                    value={reasonModal.reason}
+                    onChange={(e) => setReasonModal({ ...reasonModal, reason: e.target.value })}
+                    placeholder="Enter reason..."
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setReasonModal(null)}
+                      className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer"
+                    >
+                      {reasonModal.mode === 'reject' ? 'Confirm Reject' : 'Confirm Refund'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
             {/* Audit Trail Modal */}
             {selectedTxnAudit && (

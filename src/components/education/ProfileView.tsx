@@ -14,7 +14,8 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
-import { PlanTier, PLANS, VerifiedSubscriptionState } from '../../lib/billing';
+import { PlanTier, PLANS, VerifiedSubscriptionState, isNativeAndroidApp } from '../../lib/billing';
+import { calculateProgressAnalytics, getQuizScores, getTopicMasteryList } from '../../lib/progressStorage';
 
 interface ProfileViewProps {
   studentName: string;
@@ -51,6 +52,11 @@ export default function ProfileView({
   isGuest = false,
   onOpenLogin
 }: ProfileViewProps) {
+  const isNativeAndroid = isNativeAndroidApp();
+  const analytics = React.useMemo(() => calculateProgressAnalytics(), []);
+  const quizScores = React.useMemo(() => getQuizScores(), []);
+  const topics = React.useMemo(() => getTopicMasteryList(), []);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
       {/* Header */}
@@ -103,24 +109,24 @@ export default function ProfileView({
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="text-[11px] text-slate-500 font-medium">Questions Asked</div>
-              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">24</div>
-              <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Step-by-step analyzed</div>
+              <div className="text-[11px] text-slate-500 font-medium">Assignments Logged</div>
+              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">{analytics.totalAssignments}</div>
+              <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Tracked locally on device</div>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
               <div className="text-[11px] text-slate-500 font-medium">Quizzes Completed</div>
-              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">12</div>
-              <div className="text-[10px] text-indigo-600 font-medium mt-0.5">85% average score</div>
+              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">{quizScores.length}</div>
+              <div className="text-[10px] text-indigo-600 font-medium mt-0.5">{analytics.averageScorePercentage}% average score</div>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="text-[11px] text-slate-500 font-medium">Chapters Studied</div>
-              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">9</div>
-              <div className="text-[10px] text-slate-600 font-medium mt-0.5">Across all enrolled subjects</div>
+              <div className="text-[11px] text-slate-500 font-medium">Topics Studied</div>
+              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">{topics.length}</div>
+              <div className="text-[10px] text-slate-600 font-medium mt-0.5">{analytics.topicsMasteredCount} mastered</div>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="text-[11px] text-slate-500 font-medium">Study Progress</div>
-              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">68%</div>
-              <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Term on track</div>
+              <div className="text-[11px] text-slate-500 font-medium">Study Mastery</div>
+              <div className="text-2xl font-bold text-slate-900 font-mono mt-1">{analytics.overallMasteryPercentage}%</div>
+              <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Across studied topics</div>
             </div>
           </div>
         </div>
@@ -176,7 +182,9 @@ export default function ProfileView({
                 )}
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Log in or create a student account to permanently synchronize your XP, save test certificates, and unlock verified Plus or Pro subscriptions.
+                {isNativeAndroid
+                  ? 'Log in or create a student account to synchronize your XP and save test certificates across sessions.'
+                  : 'Log in or create a student account to permanently synchronize your XP, save test certificates, and manage your account.'}
               </p>
             </div>
           ) : (
@@ -195,19 +203,21 @@ export default function ProfileView({
                     </span>
                   )}
                   <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
-                    currentTier === 'pro'
+                    isNativeAndroid
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : currentTier === 'pro'
                       ? 'bg-purple-100 text-purple-800'
                       : currentTier === 'plus'
                       ? 'bg-indigo-100 text-indigo-800'
                       : 'bg-slate-200 text-slate-700'
                   }`}>
-                    {PLANS[currentTier]?.badge || 'STARTER'}
+                    {isNativeAndroid ? 'FREE STUDENT' : (PLANS[currentTier]?.badge || 'STARTER')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600">
                   Username: <strong className="text-slate-800 font-mono font-bold">{username || studentName}</strong> • Email: <strong className="text-slate-800 font-mono">{userEmail || 'registered student'}</strong>
                 </p>
-                {currentTier !== 'starter' && subscriptionState?.expiryTime && (
+                {!isNativeAndroid && currentTier !== 'starter' && subscriptionState?.expiryTime && (
                   <p className="text-[11px] font-medium text-indigo-700">
                     {subscriptionState.billingCycle === 'yearly' ? '📅 Yearly Plan (365 days)' : '📅 Monthly Plan (30 days)'} • Valid until {new Date(subscriptionState.expiryTime).toLocaleDateString()}
                   </p>

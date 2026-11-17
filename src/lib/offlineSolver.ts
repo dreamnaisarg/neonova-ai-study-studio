@@ -675,14 +675,7 @@ export function printHomeworkSolution(solution: {
   steps: { stepNumber: number; title: string; content: string }[];
   narrativeExplanation: string;
 }): void {
-  if (typeof window === 'undefined') return;
-
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    // If popups blocked, trigger standard window.print
-    window.print();
-    return;
-  }
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
   const dateStr = new Date().toLocaleDateString(undefined, {
     year: 'numeric',
@@ -859,19 +852,45 @@ export function printHomeworkSolution(solution: {
           <div>Generated with NeoNova Academic Verification Engine</div>
           <div>Student Learning Record &middot; Verified Academic Homework</div>
         </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-          };
-        </script>
       </body>
     </html>
   `;
 
-  printWindow.document.open();
-  printWindow.document.write(html);
-  printWindow.document.close();
+  try {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+
+    const frameDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!frameDoc || !iframe.contentWindow) {
+      iframe.remove();
+      window.print();
+      return;
+    }
+
+    frameDoc.open();
+    frameDoc.write(html);
+    frameDoc.close();
+
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch {
+        window.print();
+      } finally {
+        setTimeout(() => iframe.remove(), 1500);
+      }
+    }, 150);
+  } catch {
+    window.print();
+  }
 }
 
 function escapeHtml(str: string): string {

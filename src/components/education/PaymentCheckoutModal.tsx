@@ -31,7 +31,8 @@ import {
   verifyPaymentOnServer, 
   checkPaymentStatusOnServer,
   getPlayStoreSubscriptionUrl,
-  initiatePlayBillingPurchase
+  initiatePlayBillingPurchase,
+  isNativeAndroidApp
 } from '../../lib/billing';
 import PhonePeQrCard from './PhonePeQrCard';
 import { buildPhonePeUpiUri } from '../../lib/phonepeQrHelper';
@@ -360,13 +361,10 @@ export default function PaymentCheckoutModal({
         throw new Error(orderData.error || "Failed to create Razorpay payment order.");
       }
 
-      if (orderData.isSandboxFallback) {
-        setIsProcessing(false);
-        setVerificationError("Razorpay API rejected credentials (Authentication failed: Key ID and Secret do not match or are inactive in Razorpay Dashboard).");
-        return;
+      const razorpayKeyId = orderData.key_id || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!razorpayKeyId) {
+        throw new Error("Razorpay public Key ID is not configured.");
       }
-
-      const razorpayKeyId = orderData.key_id || 'rzp_test_TrguNqR3Yo84kk';
 
       // 3. Step 2: Open Razorpay modal with order_id
       const options = {
@@ -556,7 +554,7 @@ export default function PaymentCheckoutModal({
     document.body.removeChild(a);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || isNativeAndroidApp()) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
@@ -758,6 +756,13 @@ export default function PaymentCheckoutModal({
                     </span>
                     <span className="text-xs font-medium">{verificationError}</span>
                   </div>
+                </div>
+              )}
+
+              {!isProcessing && !verificationError && submissionStatus === 'idle' && statusMessage && (
+                <div className="p-3 rounded-2xl bg-slate-100 border border-slate-300 text-slate-800 flex items-center gap-2.5 animate-in fade-in duration-150">
+                  <Info size={16} className="text-slate-600 shrink-0" />
+                  <span className="text-xs font-medium">{statusMessage}</span>
                 </div>
               )}
 

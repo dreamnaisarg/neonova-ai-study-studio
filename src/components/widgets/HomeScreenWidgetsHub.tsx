@@ -68,6 +68,7 @@ export default function HomeScreenWidgetsHub({
   
   // Notification permission state
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
+  const [notifError, setNotifError] = useState<string | null>(null);
   const [reminderSettings, setReminderSettings] = useState<StudyReminderSettings>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_REMINDER_KEY);
@@ -140,8 +141,9 @@ export default function HomeScreenWidgetsHub({
 
   // Request browser notification permissions
   const handleRequestNotificationPermission = async () => {
+    setNotifError(null);
     if (!('Notification' in window)) {
-      alert('Your browser does not support desktop notifications.');
+      setNotifError('Push notifications are not supported in this view. Use the daily reminder chime below instead.');
       return;
     }
 
@@ -360,6 +362,19 @@ export default function HomeScreenWidgetsHub({
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs rounded-xl flex items-center gap-2 animate-in fade-in">
               <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Study alarm test chime fired! Your notification and sound are fully working.</span>
+            </div>
+          )}
+
+          {notifError && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs rounded-xl flex items-center justify-between gap-2 animate-in fade-in">
+              <span>{notifError}</span>
+              <button
+                type="button"
+                onClick={() => setNotifError(null)}
+                className="text-amber-700 hover:text-amber-900 font-bold text-xs cursor-pointer"
+              >
+                Dismiss
+              </button>
             </div>
           )}
 

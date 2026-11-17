@@ -24,9 +24,23 @@ export interface PlanConfig {
   ctaLabel: string;
 }
 
-export const PLAY_STORE_PACKAGE_NAME = "studio.ai.neonova_ai_homework_helper_2007.twa";
+export const PLAY_STORE_PACKAGE_NAME = "com.firstlightstudios.neonova";
 export const SKU_PLUS = "neonova_plus";
 export const SKU_PRO = "neonova_pro";
+
+/**
+ * Pure, Node-safe detector for when the app is running inside the native Capacitor Android shell.
+ */
+export function isNativeAndroidApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const cap = (window as any).Capacitor;
+    if (cap?.isNativePlatform?.()) return true;
+    if (cap?.getPlatform?.() === 'android') return true;
+    if (window.location?.protocol === 'capacitor:') return true;
+  } catch {}
+  return false;
+}
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
   starter: {

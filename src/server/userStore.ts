@@ -670,3 +670,49 @@ export function syncClientUser(clientUser: Partial<SanitizedUser>, token?: strin
 
   return { success: true, user: sanitizeUser(restoredUser), token: sessionToken };
 }
+
+/**
+ * Permanently delete a user account matching userId, token, email, or username/identifier
+ */
+export function deleteUserAccount(input: {
+  userId?: string;
+  email?: string;
+  identifier?: string;
+  token?: string;
+}): { deletedCount: number; deletedUserIds: string[] } {
+  const users = loadUsers();
+  const cleanEmail = (input.email || '').trim().toLowerCase();
+  const cleanIdentifier = (input.identifier || '').trim().toLowerCase();
+  const deletedUserIds: string[] = [];
+
+  const remaining = users.filter((u) => {
+    const matchesId = !!(input.userId && u.id === input.userId);
+    const matchesToken = !!(input.token && u.sessionToken === input.token);
+    const matchesEmail = !!(cleanEmail && u.email.toLowerCase() === cleanEmail);
+    const matchesIdentifier = !!(
+      cleanIdentifier &&
+      (u.username.toLowerCase() === cleanIdentifier ||
+        u.email.toLowerCase() === cleanIdentifier ||
+        u.studentName.toLowerCase() === cleanIdentifier)
+    );
+    if (matchesId || matchesToken || matchesEmail || matchesIdentifier) {
+      deletedUserIds.push(u.id);
+      return false;
+    }
+    return true;
+  });
+
+  if (deletedUserIds.length > 0) {
+    usersCache = remaining;
+    saveUsers();
+    logAuthAudit({
+      type: 'logout',
+      identifier: cleanEmail || cleanIdentifier || input.userId,
+      userId: deletedUserIds[0],
+      success: true,
+      message: `Permanently deleted ${deletedUserIds.length} user account record(s)`
+    });
+  }
+
+  return { deletedCount: deletedUserIds.length, deletedUserIds };
+}

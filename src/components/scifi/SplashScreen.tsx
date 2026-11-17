@@ -80,7 +80,7 @@ export default function SplashScreen({ onBootComplete }: SplashScreenProps) {
         initial={{ opacity: 1 }}
         animate={{ opacity: isFadingOut ? 0 : 1 }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white select-none overflow-hidden cursor-default font-sans"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white select-none overflow-hidden cursor-default font-sans pt-safe pb-safe"
       >
         {/* ======================================================== */}
         {/* 1. ULTRA-SUBTLE BACKGROUND: PURE WHITE WITH SOFT RADIANCE */}

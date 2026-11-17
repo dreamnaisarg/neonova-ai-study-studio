@@ -333,3 +333,24 @@ export function updateStudentCurriculum(userId: string, curriculum: StudentLearn
   saveMemoryDb(db);
   return profile;
 }
+
+/**
+ * Permanently delete a student's learning memory profile
+ */
+export function deleteStudentMemory(identifiers: string[]): number {
+  const cleanIds = identifiers.map((id) => id.trim()).filter(Boolean);
+  if (cleanIds.length === 0) return 0;
+
+  const db = loadMemoryDb();
+  let removed = 0;
+  for (const id of cleanIds) {
+    if (db[id]) {
+      delete db[id];
+      removed += 1;
+    }
+  }
+  if (removed > 0) {
+    saveMemoryDb(db);
+  }
+  return removed;
+}

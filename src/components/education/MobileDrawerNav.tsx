@@ -32,7 +32,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { EduTab } from './EduSidebar';
-import { PlanTier, PLANS } from '../../lib/billing';
+import { PlanTier, PLANS, isNativeAndroidApp } from '../../lib/billing';
 import { GRADES } from '../../types';
 
 interface MobileDrawerNavProps {
@@ -82,6 +82,8 @@ export default function MobileDrawerNav({
 }: MobileDrawerNavProps) {
   if (!isOpen) return null;
 
+  const isNativeAndroid = isNativeAndroidApp();
+
   const handleStartNewChat = () => {
     onTabChange('ai_tutor');
     if (onNewChat) onNewChat();
@@ -129,7 +131,7 @@ export default function MobileDrawerNav({
       <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 animate-in slide-in-from-left duration-200">
         <div>
           {/* Drawer Header */}
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div className="p-4 pt-safe border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs select-none">
                 N
@@ -295,19 +297,31 @@ export default function MobileDrawerNav({
           </div>
 
           {/* Subscription Banner */}
-          <button
-            type="button"
-            onClick={() => handleSelectTab('plans')}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 text-xs font-semibold text-indigo-800"
-          >
-            <div className="flex items-center gap-1.5">
-              <Sparkles size={14} className="text-indigo-600" />
-              <span>{PLANS[currentTier]?.name || 'Plan'}</span>
+          {isNativeAndroid ? (
+            <div className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={14} className="text-emerald-600" />
+                <span>Student Edition</span>
+              </div>
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-white rounded border border-emerald-200">
+                FREE • FULL
+              </span>
             </div>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-white rounded border border-indigo-200">
-              {PLANS[currentTier]?.badge || 'STARTER'}
-            </span>
-          </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleSelectTab('plans')}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 text-xs font-semibold text-indigo-800"
+            >
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={14} className="text-indigo-600" />
+                <span>{PLANS[currentTier]?.name || 'Plan'}</span>
+              </div>
+              <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-white rounded border border-indigo-200">
+                {PLANS[currentTier]?.badge || 'STARTER'}
+              </span>
+            </button>
+          )}
 
           {onOpenWidgets && (
             <button

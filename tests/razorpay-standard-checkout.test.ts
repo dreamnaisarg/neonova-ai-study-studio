@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import crypto from 'crypto';
 import { handleWorkerRequest } from '../src/server/workerHandler';
 import { getUserByToken, registerUser } from '../src/server/userStore';
@@ -37,8 +38,8 @@ async function runRazorpayStandardCheckoutSuite() {
   assert(getUserByToken(cadet.token)?.planTier === 'starter', 'Setup: Cadet starts strictly on starter plan');
 
   const testEnv = {
-    RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || 'rzp_test_TrguNqR3Yo84kk',
-    RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || 'HkFScd2JFlA7zOAqPETMxih2'
+    RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || '',
+    RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || ''
   };
 
   // =========================================================================

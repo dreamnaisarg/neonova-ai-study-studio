@@ -33,7 +33,8 @@ import {
   resetPassword,
   updateUserProfile,
   updateUserSubscription,
-  syncClientUser
+  syncClientUser,
+  deleteUserAccount
 } from './userStore';
 import { fetchCompleteBookText } from './bookContentService';
 import { processEducationalProblem } from './solverPipeline';
@@ -46,7 +47,8 @@ import {
   getStudentLearningProfile, 
   recordQuestionAttempt, 
   generateExamRevisionPlan, 
-  updateStudentCurriculum 
+  updateStudentCurriculum,
+  deleteStudentMemory
 } from './studentMemoryStore';
 import { CURRICULUM_CATALOG } from './curriculumCatalog';
 import { generateStageQuestionsAuthoritative } from './stageEngine';
@@ -1278,20 +1280,14 @@ Respond ONLY with valid JSON conforming to this schema:
         };
       }
 
-      let key_id: string | undefined = undefined;
-      let key_secret: string | undefined = undefined;
+      const key_id = env && typeof env.RAZORPAY_KEY_ID !== 'undefined'
+        ? env.RAZORPAY_KEY_ID
+        : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_ID : undefined);
+      const key_secret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
+        ? env.RAZORPAY_KEY_SECRET
+        : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined);
 
-      if (env && typeof env.RAZORPAY_KEY_ID !== 'undefined') {
-        key_id = env.RAZORPAY_KEY_ID;
-        key_secret = env.RAZORPAY_KEY_SECRET;
-      } else {
-        const envKey = typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_ID : undefined;
-        const envSecret = typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined;
-        key_id = (envKey && envKey !== 'rzp_test_TrJzYDlPmBHMn5' && envKey !== 'rzp_test_TrJdVHAcpe4bpF') ? envKey : 'rzp_test_TrguNqR3Yo84kk';
-        key_secret = (envSecret && !envSecret.startsWith('Pdn7') && envSecret !== 'Co7RY075SqkY7VRvAwVgeGOA') ? envSecret : 'HkFScd2JFlA7zOAqPETMxih2';
-      }
-
-      // STEP 1 ERROR HANDLING: Handle auth/credential failures (return 401 when explicitly empty)
+      // STEP 1 ERROR HANDLING: Handle auth/credential failures (return 401)
       if (!key_id || !key_secret) {
         return {
           status: 401,
@@ -1345,31 +1341,25 @@ Respond ONLY with valid JSON conforming to this schema:
             key_id
           }
         };
-      } catch {
-        // Fallback to authoritative sandbox order so student checkout never breaks
-        const fallbackOrderId = `order_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`;
-        try {
-          createCardOrderAuthoritative({
-            planTier: tier === 'plus' ? 'plus' : 'pro',
-            billingCycle: billingCycle === 'yearly' ? 'yearly' : 'monthly',
-            studentName: studentName || 'Student',
-            studentEmail: studentEmail || '',
-            accountId: accountId || 'student-default',
-            gatewayOrderId: fallbackOrderId
-          });
-        } catch {}
+      } catch (err: any) {
+        const statusCode = Number(err?.statusCode || err?.status || 500);
+        const errorMessage = err?.error?.description || err?.message || 'Razorpay order creation failed.';
+
+        if (statusCode === 401 || statusCode === 403 || /auth/i.test(errorMessage)) {
+          return {
+            status: 401,
+            data: {
+              success: false,
+              error: `Razorpay authentication failed: ${errorMessage}`
+            }
+          };
+        }
 
         return {
-          status: 200,
+          status: 500,
           data: {
-            success: true,
-            order_id: fallbackOrderId,
-            id: fallbackOrderId,
-            amount: Math.round(amountInPaise),
-            currency: currency || 'INR',
-            receipt: receiptId,
-            key_id,
-            isSandboxFallback: true
+            success: false,
+            error: `Razorpay API error: ${errorMessage}`
           }
         };
       }
@@ -1401,13 +1391,9 @@ Respond ONLY with valid JSON conforming to this schema:
           };
         }
 
-        let razorpaySecret: string | undefined = undefined;
-        if (env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined') {
-          razorpaySecret = env.RAZORPAY_KEY_SECRET;
-        } else {
-          const envSecret = typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined;
-          razorpaySecret = (envSecret && !envSecret.startsWith('Pdn7') && envSecret !== 'Co7RY075SqkY7VRvAwVgeGOA') ? envSecret : 'HkFScd2JFlA7zOAqPETMxih2';
-        }
+        const razorpaySecret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
+          ? env.RAZORPAY_KEY_SECRET
+          : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined);
 
         if (!razorpaySecret) {
           return {
@@ -1426,7 +1412,13 @@ Respond ONLY with valid JSON conforming to this schema:
           .update(`${order_id}|${payment_id}`)
           .digest('hex');
 
-        if (expectedSignature !== signature && signature !== 'authoritative_mock_sig') {
+        const sigBuffer = Buffer.from(signature, 'utf8');
+        const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+        const isSignatureValid =
+          sigBuffer.length === expectedBuffer.length &&
+          crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+
+        if (!isSignatureValid) {
           // STEP 3: Signature mismatch: return 400, do NOT mark as paid
           return {
             status: 400,
@@ -1779,7 +1771,7 @@ Respond ONLY with valid JSON conforming to this schema:
           currency: cardOrder.currency,
           planTier: validatedTier,
           billingCycle: validatedCycle,
-          keyId: razorpayKeyId || 'rzp_live_official_bankofbaroda_switch',
+          keyId: razorpayKeyId || '',
           isLiveGateway: Boolean(razorpayKeyId),
           merchantName: 'NeoNova AI Homework Helper',
           merchantSettlementNotice: 'Direct Settlement to Merchant Bank of Baroda Account (Naisarg Ramdatti)',
@@ -2306,13 +2298,30 @@ Respond ONLY with valid JSON conforming to this schema:
     }
 
     if (url === '/api/delete-account-request') {
+      const { userId, email, nickname, identifier, token } = body || {};
+      const userDeletion = deleteUserAccount({
+        userId,
+        email,
+        identifier: nickname || identifier,
+        token
+      });
+      const memoryRemoved = deleteStudentMemory([
+        userId || '',
+        email || '',
+        nickname || '',
+        identifier || '',
+        ...userDeletion.deletedUserIds
+      ]);
       const ticketId = `NEO-DEL-${Math.floor(100000 + Math.random() * 900000)}`;
       return {
         status: 200,
         data: {
           success: true,
+          deleted: true,
+          deletedAccounts: userDeletion.deletedCount,
+          deletedMemoryProfiles: memoryRemoved,
           ticketId,
-          message: 'Your data deletion request has been registered and verified.'
+          message: 'Your account and associated server data have been permanently deleted.'
         }
       };
     }

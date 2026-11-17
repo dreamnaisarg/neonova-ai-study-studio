@@ -30,7 +30,7 @@ import {
   Clock,
   MessageSquare
 } from 'lucide-react';
-import { PlanTier, PLANS } from '../../lib/billing';
+import { PlanTier, PLANS, isNativeAndroidApp } from '../../lib/billing';
 import NeoNovaLogo from '../common/NeoNovaLogo';
 import { useTranslation } from '../../lib/i18n';
 
@@ -94,6 +94,7 @@ export default function EduSidebar({
   onOpenChatHistory
 }: EduSidebarProps) {
   const { t, toggleLanguage, isFinnish } = useTranslation();
+  const isNativeAndroid = isNativeAndroidApp();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === 'true';
@@ -278,8 +279,17 @@ export default function EduSidebar({
 
       {/* Bottom Settings, Plan & Help */}
       <div className="p-3 border-t border-slate-200/80 space-y-2">
-        {/* Subscription Plan Card */}
-        {!isCollapsed ? (
+        {/* Subscription Plan Card (Hidden/Unlocked Free on Android APK) */}
+        {isNativeAndroid ? (
+          !isCollapsed && (
+            <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-[11px]">
+              <span className="text-emerald-800 font-semibold">Student Edition</span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-white text-emerald-700 border border-emerald-200">
+                FREE • FULL
+              </span>
+            </div>
+          )
+        ) : !isCollapsed ? (
           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-slate-500 font-medium">Plan</span>
