@@ -8,7 +8,7 @@
  * 4. Sub-3-Second Automated Verification Engine & Atomic Premium Activation
  */
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { 
   AuthoritativeTransaction, 
   PaymentStatus, 

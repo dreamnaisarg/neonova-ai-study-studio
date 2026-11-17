@@ -1,6 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import crypto from 'crypto';
-import Razorpay from 'razorpay';
+import crypto from 'node:crypto';
 import { 
   getAllTransactions, 
   createPendingOrder, 
@@ -1303,21 +1302,49 @@ Respond ONLY with valid JSON conforming to this schema:
       const receiptId = receipt || `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
       try {
-        const instance = new Razorpay({
-          key_id,
-          key_secret
+        const basicAuth = typeof btoa === 'function'
+          ? btoa(`${key_id}:${key_secret}`)
+          : Buffer.from(`${key_id}:${key_secret}`).toString('base64');
+
+        const rzpRes = await fetch('https://api.razorpay.com/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${basicAuth}`
+          },
+          body: JSON.stringify({
+            amount: Math.round(amountInPaise),
+            currency: currency || 'INR',
+            receipt: receiptId,
+            notes: {
+              platform: 'NeoNova AI Study Studio',
+              merchant: 'NeoNova Education',
+              ...notes
+            }
+          })
         });
 
-        const rzpOrder: any = await instance.orders.create({
-          amount: Math.round(amountInPaise),
-          currency: currency || 'INR',
-          receipt: receiptId,
-          notes: {
-            platform: 'NeoNova AI Study Studio',
-            merchant: 'NeoNova Education',
-            ...notes
+        const rzpOrder: any = await rzpRes.json().catch(() => ({}));
+
+        if (!rzpRes.ok || !rzpOrder?.id) {
+          const errorMessage = rzpOrder?.error?.description || rzpOrder?.message || `Razorpay order creation failed (HTTP ${rzpRes.status}).`;
+          if (rzpRes.status === 401 || rzpRes.status === 403 || /auth/i.test(errorMessage)) {
+            return {
+              status: 401,
+              data: {
+                success: false,
+                error: `Razorpay authentication failed: ${errorMessage}`
+              }
+            };
           }
-        });
+          return {
+            status: 500,
+            data: {
+              success: false,
+              error: `Razorpay API error: ${errorMessage}`
+            }
+          };
+        }
 
         // Also track in authoritative card order ledger
         try {
@@ -1344,19 +1371,7 @@ Respond ONLY with valid JSON conforming to this schema:
           }
         };
       } catch (err: any) {
-        const statusCode = Number(err?.statusCode || err?.status || 500);
-        const errorMessage = err?.error?.description || err?.message || 'Razorpay order creation failed.';
-
-        if (statusCode === 401 || statusCode === 403 || /auth/i.test(errorMessage)) {
-          return {
-            status: 401,
-            data: {
-              success: false,
-              error: `Razorpay authentication failed: ${errorMessage}`
-            }
-          };
-        }
-
+        const errorMessage = err?.message || 'Razorpay order creation failed.';
         return {
           status: 500,
           data: {
