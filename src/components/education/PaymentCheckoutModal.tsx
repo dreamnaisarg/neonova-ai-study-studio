@@ -433,7 +433,15 @@ export default function PaymentCheckoutModal({
       rzp.on('payment.failed', function (resp: any) {
         setIsProcessing(false);
         setSubmissionStatus('FAILED');
-        setVerificationError(resp.error?.description || "Payment failed or was declined by card/bank.");
+        const desc = resp.error?.description || "Payment failed or was declined by card/bank.";
+        if (/website|domain|registered/i.test(desc)) {
+          const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+          setVerificationError(
+            `${desc} (Active page origin: ${currentOrigin} | Active key: ${razorpayKeyId}. Ensure this exact URL is registered under Razorpay Dashboard -> Account & Settings -> Website and App Settings.)`
+          );
+        } else {
+          setVerificationError(desc);
+        }
       });
 
       rzp.open();

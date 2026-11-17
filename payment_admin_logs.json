@@ -3043,5 +3043,96 @@
     "action": "PAYMENT_SUBMITTED",
     "targetTransactionId": "UTR_HOOK_1794825610391_7378",
     "details": "Pending verification for Cadet Bob (plus)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.043Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "986689785997",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.062Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UNREC_1794919573841_1802",
+    "details": "Pending verification for Student One (pro)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.077Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "REJECT_PAYMENT",
+    "targetTransactionId": "UNREC_1794919573841_1802",
+    "details": "Rejected: Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.088Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "MISMATCH_1794919573841_1802",
+    "details": "Pending verification for Student One (plus)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.100Z",
+    "admin": "Naisarg Ramdatti",
+    "action": "AUTHORIZE_TRANSACTION",
+    "targetTransactionId": "DUP_1794919573841_1802",
+    "details": "Status: VERIFIED, Plan: plus"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.136Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "ORD_MIS_1794919573841_1802",
+    "details": "Pending verification for Student Two (plus)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.153Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "TARGET_1794919573841_1802",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.156Z",
+    "admin": "UNAUTHORIZED_ATTEMPT",
+    "action": "APPROVE_FAIL",
+    "targetTransactionId": "TARGET_1794919573841_1802",
+    "details": "Invalid admin key"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.167Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "GENUINE_1794919573841_1802",
+    "details": "Pending verification for Student Two (pro)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:14.180Z",
+    "admin": "Naisarg Ramdatti (Administrator)",
+    "action": "APPROVE_PAYMENT",
+    "targetTransactionId": "GENUINE_1794919573841_1802",
+    "details": "Approved pro (₹1799) for Student Two"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:16.877Z",
+    "admin": "SYSTEM_AUTOMATION",
+    "action": "INSTANT_PAYMENT_VERIFIED",
+    "targetTransactionId": "UTR_PHONEPE_1794919576718_5176",
+    "details": "Automatically activated PRO"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:16.893Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "RANDOM_UTR_1794919576718_5176_881509",
+    "details": "Pending verification for Cadet Bob (pro)"
+  },
+  {
+    "timestamp": "2026-11-17T12:46:16.907Z",
+    "admin": "SYSTEM",
+    "action": "PAYMENT_SUBMITTED",
+    "targetTransactionId": "UTR_HOOK_1794919576718_5176",
+    "details": "Pending verification for Cadet Bob (plus)"
   }
 ]

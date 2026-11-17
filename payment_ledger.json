@@ -12724,5 +12724,465 @@
         "details": "Card order created for ₹199"
       }
     ]
+  },
+  {
+    "id": "req_1794919462144_ypv6",
+    "transactionId": "TXN-CARD-1794919462144-S8AW0Z",
+    "orderId": "order_card_1794919462144-S8AW0Z",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "PENDING",
+    "studentName": "Student",
+    "studentEmail": "",
+    "accountId": "student-default",
+    "createdAt": "2026-11-17T12:44:22.144Z",
+    "gatewayOrderId": "order_U1FMuUodJTx5Kc",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Awaiting PCI-compliant card tokenization & 3DS bank authentication",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:44:22.144Z",
+        "action": "CARD_ORDER_CREATED",
+        "performedBy": "student-default",
+        "details": "Card order created for ₹199"
+      }
+    ]
+  },
+  {
+    "id": "req_1794919558196_leto",
+    "transactionId": "TXN-CARD-1794919558196-CAY8OR",
+    "orderId": "order_card_1794919558196-CAY8OR",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "PENDING",
+    "studentName": "Student",
+    "studentEmail": "",
+    "accountId": "student-default",
+    "createdAt": "2026-11-17T12:45:58.196Z",
+    "gatewayOrderId": "order_U1FOb7Q1NG8Sb1",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Awaiting PCI-compliant card tokenization & 3DS bank authentication",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:45:58.196Z",
+        "action": "CARD_ORDER_CREATED",
+        "performedBy": "student-default",
+        "details": "Card order created for ₹199"
+      }
+    ]
+  },
+  {
+    "id": "req_1794919568283_xl76",
+    "transactionId": "TXN-CARD-1794919568283-71P06P",
+    "orderId": "order_card_1794919568283-71P06P",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "VERIFIED",
+    "studentName": "Test Student",
+    "studentEmail": "student@example.com",
+    "accountId": "student-default",
+    "createdAt": "2026-11-17T12:46:08.283Z",
+    "gatewayOrderId": "order_rzp_1794919568283-71P06P",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Verified card transaction. Settling to Bank of Baroda **5536 (Naisarg Ramdatti). Payment ID: pay_test_1794919568287",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:08.283Z",
+        "action": "CARD_ORDER_CREATED",
+        "performedBy": "student-default",
+        "details": "Card order created for ₹99"
+      },
+      {
+        "timestamp": "2026-11-17T12:46:08.293Z",
+        "action": "CARD_GATEWAY_VERIFIED",
+        "performedBy": "Payment Gateway",
+        "details": "Authorized payment ID: pay_test_1794919568287"
+      }
+    ],
+    "gatewayPaymentId": "pay_test_1794919568287",
+    "verifiedAt": "2026-11-17T12:46:08.293Z",
+    "verifiedBy": "PCI-DSS Certified 3D-Secure Card Gateway (Settlement: Bank of Baroda **5536)",
+    "claimedByAccount": "student-default"
+  },
+  {
+    "id": "req_1794919574039_agpi",
+    "transactionId": "986689785997",
+    "orderId": "ORD-RAND-1794919573841_1802",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "PENDING",
+    "studentName": "Student One",
+    "studentEmail": "std1_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919573952_d516164e",
+    "createdAt": "2026-11-17T12:46:14.039Z",
+    "submittedAt": "2026-11-17T12:46:14.039Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.039Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919573952_d516164e",
+        "details": "Submitted PhonePe transaction UTR: 986689785997 for PLUS (₹99). Status: PENDING."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919574058_ep2s",
+    "transactionId": "UNREC_1794919573841_1802",
+    "orderId": "ORD-UNREC-1794919573841_1802",
+    "planTier": "pro",
+    "billingCycle": "yearly",
+    "amount": 1799,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "FAILED",
+    "studentName": "Student One",
+    "studentEmail": "std1_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919573952_d516164e",
+    "createdAt": "2026-11-17T12:46:14.058Z",
+    "submittedAt": "2026-11-17T12:46:14.058Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation. | Rejected by admin: Payment not received in PhonePe / Bank of Baroda account 5536",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.058Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919573952_d516164e",
+        "details": "Submitted PhonePe transaction UTR: UNREC_1794919573841_1802 for PRO (₹1799). Status: PENDING."
+      },
+      {
+        "timestamp": "2026-11-17T12:46:14.070Z",
+        "action": "ADMIN_REJECTED",
+        "performedBy": "Naisarg Ramdatti (Administrator)",
+        "details": "Payment not received in PhonePe / Bank of Baroda account 5536"
+      }
+    ],
+    "rejectionReason": "Payment not received in PhonePe / Bank of Baroda account 5536"
+  },
+  {
+    "id": "req_1794919574084_fcac",
+    "transactionId": "MISMATCH_1794919573841_1802",
+    "orderId": "ORD-MISMATCH-1794919573841_1802",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "REVIEW_REQUIRED",
+    "studentName": "Student One",
+    "studentEmail": "std1_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919573952_d516164e",
+    "createdAt": "2026-11-17T12:46:14.084Z",
+    "submittedAt": "2026-11-17T12:46:14.084Z",
+    "notes": "Payment amount mismatch (submitted ₹49, expected ₹99). Marked for review.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.084Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919573952_d516164e",
+        "details": "Submitted PhonePe transaction UTR: MISMATCH_1794919573841_1802 for PLUS (₹99). Status: REVIEW_REQUIRED."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919574096_ng8z",
+    "transactionId": "DUP_1794919573841_1802",
+    "orderId": "ORD-DUP1-1794919573841_1802",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "VERIFIED",
+    "studentName": "Student One",
+    "studentEmail": "std1_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919573952_d516164e",
+    "createdAt": "2026-11-17T12:46:14.096Z",
+    "submittedAt": "2026-11-17T12:46:14.096Z",
+    "verifiedBy": "Administrator Naisarg Ramdatti (Manual Settlement Review)",
+    "notes": "Manually authorized in ledger by admin",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.096Z",
+        "action": "ADMIN_MANUAL_REGISTRATION",
+        "performedBy": "Naisarg Ramdatti",
+        "details": "Manually added to ledger with status: verified"
+      }
+    ],
+    "claimedByAccount": "usr_1794919573952_d516164e"
+  },
+  {
+    "id": "req_1794919574132_5ctd",
+    "transactionId": "ORD_MIS_1794919573841_1802",
+    "orderId": "ORD-ORIG-1794919573841_1802",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "PENDING",
+    "studentName": "Student Two",
+    "studentEmail": "std2_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919574022_0189d6b1",
+    "createdAt": "2026-11-17T12:46:14.132Z",
+    "submittedAt": "2026-11-17T12:46:14.132Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.132Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919574022_0189d6b1",
+        "details": "Submitted PhonePe transaction UTR: ORD_MIS_1794919573841_1802 for PLUS (₹99). Status: PENDING."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919574149_2zsu",
+    "transactionId": "TARGET_1794919573841_1802",
+    "orderId": "ORD-TARGET-1794919573841_1802",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "PENDING",
+    "studentName": "Student Two",
+    "studentEmail": "std2_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919574022_0189d6b1",
+    "createdAt": "2026-11-17T12:46:14.149Z",
+    "submittedAt": "2026-11-17T12:46:14.149Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.149Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919574022_0189d6b1",
+        "details": "Submitted PhonePe transaction UTR: TARGET_1794919573841_1802 for PRO (₹199). Status: PENDING."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919574163_ls7l",
+    "transactionId": "GENUINE_1794919573841_1802",
+    "orderId": "ORD-GENUINE-1794919573841_1802",
+    "planTier": "pro",
+    "billingCycle": "yearly",
+    "amount": 1799,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "VERIFIED",
+    "studentName": "Student Two",
+    "studentEmail": "std2_1794919573841_1802@test.edu",
+    "accountId": "usr_1794919574022_0189d6b1",
+    "createdAt": "2026-11-17T12:46:14.163Z",
+    "submittedAt": "2026-11-17T12:46:14.163Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation. | Approved by admin: Confirmed in PhonePe Merchant Bank of Baroda statement for ₹1799",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:14.163Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919574022_0189d6b1",
+        "details": "Submitted PhonePe transaction UTR: GENUINE_1794919573841_1802 for PRO (₹1799). Status: PENDING."
+      },
+      {
+        "timestamp": "2026-11-17T12:46:14.174Z",
+        "action": "ADMIN_APPROVED",
+        "performedBy": "Naisarg Ramdatti (Administrator)",
+        "details": "Confirmed matching payment in PhonePe records. Confirmed in PhonePe Merchant Bank of Baroda statement for ₹1799"
+      }
+    ],
+    "verifiedAt": "2026-11-17T12:46:14.174Z",
+    "verifiedBy": "Naisarg Ramdatti (Administrator) (Verified against PhonePe Merchant 9898074424@axl)"
+  },
+  {
+    "id": "req_1794919576869_tod6",
+    "transactionId": "UTR_PHONEPE_1794919576718_5176",
+    "orderId": "ORD-INSTANT-1794919576718_5176",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "VERIFIED",
+    "studentName": "Cadet Alice",
+    "studentEmail": "cadeta_1794919576718_5176@neonova.academy",
+    "accountId": "usr_1794919576787_c01b8db7",
+    "createdAt": "2026-11-17T12:46:16.869Z",
+    "submittedAt": "2026-11-17T12:46:16.869Z",
+    "verifiedAt": "2026-11-17T12:46:16.869Z",
+    "verifiedBy": "Automated Payment Provider Verification (PhonePe Merchant Bank of Baroda 5536)",
+    "claimedByAccount": "usr_1794919576787_c01b8db7",
+    "settlementAccount": "•••• •••• •••• 5536",
+    "notes": "Automated real-time verification against PhonePe / Bank of Baroda merchant settlement",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:16.869Z",
+        "action": "AUTOMATED_PROVIDER_VERIFIED",
+        "performedBy": "NeoNova Payment Verification Engine",
+        "details": "Confirmed matching payment of ₹199 for PRO via provider gateway. Instant activation granted."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919576889_5agw",
+    "transactionId": "RANDOM_UTR_1794919576718_5176_881509",
+    "orderId": "ORD-RANDOM-1794919576718_5176",
+    "planTier": "pro",
+    "billingCycle": "yearly",
+    "amount": 1799,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "PENDING",
+    "studentName": "Cadet Bob",
+    "studentEmail": "cadetb_1794919576718_5176@neonova.academy",
+    "accountId": "usr_1794919576853_7e579d49",
+    "createdAt": "2026-11-17T12:46:16.889Z",
+    "submittedAt": "2026-11-17T12:46:16.889Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:16.889Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919576853_7e579d49",
+        "details": "Submitted PhonePe transaction UTR: RANDOM_UTR_1794919576718_5176_881509 for PRO (₹1799). Status: PENDING."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919576902_p2lj",
+    "transactionId": "UTR_HOOK_1794919576718_5176",
+    "orderId": "ORD-WEBHOOK-1794919576718_5176",
+    "planTier": "plus",
+    "billingCycle": "monthly",
+    "amount": 99,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "VERIFIED",
+    "studentName": "Cadet Bob",
+    "studentEmail": "cadetb_1794919576718_5176@neonova.academy",
+    "accountId": "usr_1794919576853_7e579d49",
+    "createdAt": "2026-11-17T12:46:16.902Z",
+    "submittedAt": "2026-11-17T12:46:16.902Z",
+    "notes": "Submitted via PhonePe QR by student. Awaiting payment provider settlement confirmation.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:16.902Z",
+        "action": "SUBMISSION_RECORDED",
+        "performedBy": "usr_1794919576853_7e579d49",
+        "details": "Submitted PhonePe transaction UTR: UTR_HOOK_1794919576718_5176 for PLUS (₹99). Status: PENDING."
+      },
+      {
+        "timestamp": "2026-11-17T12:46:16.926Z",
+        "action": "AUTOMATED_POLL_VERIFIED",
+        "performedBy": "NeoNova Payment Verification Engine",
+        "details": "Confirmed matching payment of ₹99 for PLUS via provider gateway. Instant activation granted."
+      }
+    ],
+    "verifiedAt": "2026-11-17T12:46:16.926Z",
+    "verifiedBy": "Automated Payment Provider Verification (PhonePe Merchant Bank of Baroda 5536)"
+  },
+  {
+    "id": "req_1794919576950_xywi",
+    "transactionId": "UTR_MISMATCH_1794919576718_5176",
+    "orderId": "ORD-MISMATCH-1794919576718_5176",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "upi",
+    "status": "REVIEW_REQUIRED",
+    "studentName": "Cadet Bob",
+    "studentEmail": "cadetb_1794919576718_5176@neonova.academy",
+    "accountId": "usr_1794919576853_7e579d49",
+    "createdAt": "2026-11-17T12:46:16.950Z",
+    "submittedAt": "2026-11-17T12:46:16.950Z",
+    "notes": "Payment amount mismatch: provider received ₹50, expected ₹199. Marked for review.",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:16.950Z",
+        "action": "AMOUNT_MISMATCH_RECORDED",
+        "performedBy": "usr_1794919576853_7e579d49",
+        "details": "Provider amount ₹50 does not match plan price ₹199."
+      }
+    ]
+  },
+  {
+    "id": "req_1794919577008_qa3q",
+    "transactionId": "TXN-CARD-1794919577008-6HMKL2",
+    "orderId": "order_card_1794919577008-6HMKL2",
+    "planTier": "pro",
+    "billingCycle": "yearly",
+    "amount": 1799,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "VERIFIED",
+    "studentName": "Cadet Alice",
+    "studentEmail": "cadeta_1794919576718_5176@neonova.academy",
+    "accountId": "usr_1794919576787_c01b8db7",
+    "createdAt": "2026-11-17T12:46:17.008Z",
+    "gatewayOrderId": "order_rzp_1794919577008-6HMKL2",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Verified card transaction. Settling to Bank of Baroda **5536 (Naisarg Ramdatti). Payment ID: pay_test_1794919576718_5176",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:17.008Z",
+        "action": "CARD_ORDER_CREATED",
+        "performedBy": "usr_1794919576787_c01b8db7",
+        "details": "Card order created for ₹1799"
+      },
+      {
+        "timestamp": "2026-11-17T12:46:17.018Z",
+        "action": "CARD_GATEWAY_VERIFIED",
+        "performedBy": "Payment Gateway",
+        "details": "Authorized payment ID: pay_test_1794919576718_5176"
+      }
+    ],
+    "gatewayPaymentId": "pay_test_1794919576718_5176",
+    "gatewaySignature": "authoritative_mock_sig",
+    "verifiedAt": "2026-11-17T12:46:17.018Z",
+    "verifiedBy": "PCI-DSS Certified 3D-Secure Card Gateway (Settlement: Bank of Baroda **5536)",
+    "claimedByAccount": "usr_1794919576787_c01b8db7"
+  },
+  {
+    "id": "req_1794919580286_d8rv",
+    "transactionId": "TXN-CARD-1794919580286-PWE142",
+    "orderId": "order_card_1794919580286-PWE142",
+    "planTier": "pro",
+    "billingCycle": "monthly",
+    "amount": 199,
+    "currency": "INR",
+    "paymentMethod": "credit_card",
+    "status": "PENDING",
+    "studentName": "Razorpay Test Cadet",
+    "studentEmail": "razorpay_1794919579549_563@neonova.academy",
+    "accountId": "student-default",
+    "createdAt": "2026-11-17T12:46:20.287Z",
+    "gatewayOrderId": "order_U1FOzOwnIeSAZj",
+    "gatewayProvider": "razorpay",
+    "settlementAccount": "Bank of Baroda **5536 (Beneficiary: Naisarg Ramdatti)",
+    "notes": "Awaiting PCI-compliant card tokenization & 3DS bank authentication",
+    "auditTrail": [
+      {
+        "timestamp": "2026-11-17T12:46:20.287Z",
+        "action": "CARD_ORDER_CREATED",
+        "performedBy": "student-default",
+        "details": "Card order created for ₹199"
+      }
+    ]
   }
 ]

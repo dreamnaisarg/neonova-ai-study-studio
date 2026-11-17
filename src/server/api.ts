@@ -1280,12 +1280,14 @@ Respond ONLY with valid JSON conforming to this schema:
         };
       }
 
-      const key_id = env && typeof env.RAZORPAY_KEY_ID !== 'undefined'
+      const rawKeyId = env && typeof env.RAZORPAY_KEY_ID !== 'undefined'
         ? env.RAZORPAY_KEY_ID
         : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_ID : undefined);
-      const key_secret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
+      const rawKeySecret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
         ? env.RAZORPAY_KEY_SECRET
         : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined);
+      const key_id = typeof rawKeyId === 'string' ? rawKeyId.trim() : rawKeyId;
+      const key_secret = typeof rawKeySecret === 'string' ? rawKeySecret.trim() : rawKeySecret;
 
       // STEP 1 ERROR HANDLING: Handle auth/credential failures (return 401)
       if (!key_id || !key_secret) {
@@ -1391,9 +1393,10 @@ Respond ONLY with valid JSON conforming to this schema:
           };
         }
 
-        const razorpaySecret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
+        const rawSecret = env && typeof env.RAZORPAY_KEY_SECRET !== 'undefined'
           ? env.RAZORPAY_KEY_SECRET
           : (typeof process !== 'undefined' ? process.env?.RAZORPAY_KEY_SECRET : undefined);
+        const razorpaySecret = typeof rawSecret === 'string' ? rawSecret.trim() : rawSecret;
 
         if (!razorpaySecret) {
           return {
