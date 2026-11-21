@@ -22,16 +22,20 @@ export interface BookContentResult {
   fullText?: string;
 }
 
-let CACHE_DIR = 'books_cache';
-try {
-  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
-  CACHE_DIR = path.join(cwd, 'books_cache');
-} catch {}
+function getCacheDir(): string {
+  try {
+    const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+    return path.join(cwd, 'books_cache');
+  } catch {
+    return 'books_cache';
+  }
+}
 
 function ensureCacheDir() {
   try {
-    if (typeof fs !== 'undefined' && fs.existsSync && !fs.existsSync(CACHE_DIR)) {
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
+    const cacheDir = getCacheDir();
+    if (typeof fs !== 'undefined' && fs.existsSync && !fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
     }
   } catch {}
 }
@@ -446,8 +450,9 @@ export async function fetchCompleteBookText(options: {
   const gbId = options.gutenbergId || KNOWN_GUTENBERG_MAPPING[bookId];
 
   // 1. Check disk cache first
-  const cacheFile = path.join(CACHE_DIR, `${gbId || bookId}.txt`);
-  const metaFile = path.join(CACHE_DIR, `${gbId || bookId}_parsed.json`);
+  const cacheDir = getCacheDir();
+  const cacheFile = path.join(cacheDir, `${gbId || bookId}.txt`);
+  const metaFile = path.join(cacheDir, `${gbId || bookId}_parsed.json`);
 
   if (fs.existsSync(metaFile) && fs.existsSync(cacheFile)) {
     try {

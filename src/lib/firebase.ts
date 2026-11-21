@@ -25,6 +25,7 @@ import {
   type User 
 } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
+import { isComplimentaryProEmail } from './billing';
 
 // Initialize Firebase App
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -107,6 +108,7 @@ export async function syncUserProfileToFirestore(user: User, additionalData?: { 
   if (!user || !user.uid) return null;
   const userRef = doc(db, 'users', user.uid);
   const now = new Date().toISOString();
+  const isComplimentary = isComplimentaryProEmail(user.email);
   
   try {
     const existingSnap = await getDoc(userRef);
@@ -116,7 +118,7 @@ export async function syncUserProfileToFirestore(user: User, additionalData?: { 
         email: user.email || '',
         displayName: additionalData?.studentName || user.displayName || user.email?.split('@')[0] || 'Student',
         grade: additionalData?.grade || 'Grade 10',
-        planTier: additionalData?.planTier || 'starter',
+        planTier: isComplimentary ? 'pro' : (additionalData?.planTier || 'starter'),
         createdAt: now,
         updatedAt: now
       };
@@ -128,7 +130,11 @@ export async function syncUserProfileToFirestore(user: User, additionalData?: { 
         ...data,
         updatedAt: now,
         ...(additionalData?.grade ? { grade: additionalData.grade } : {}),
-        ...(additionalData?.planTier ? { planTier: additionalData.planTier } : {}),
+        ...(isComplimentary
+          ? { planTier: 'pro' }
+          : additionalData?.planTier && additionalData.planTier !== 'starter'
+            ? { planTier: additionalData.planTier }
+            : {}),
         ...(additionalData?.studentName ? { displayName: additionalData.studentName } : {})
       };
       await setDoc(userRef, updated, { merge: true });

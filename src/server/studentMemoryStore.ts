@@ -49,16 +49,20 @@ export interface StudentLearningProfile {
   lastRevisionGeneratedAt?: string;
 }
 
-let MEMORY_DB_PATH = 'student_memory.json';
-try {
-  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
-  MEMORY_DB_PATH = path.join(cwd, 'student_memory.json');
-} catch {}
+function getMemoryDbPath(): string {
+  try {
+    const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+    return path.join(cwd, 'student_memory.json');
+  } catch {
+    return 'student_memory.json';
+  }
+}
 
 function loadMemoryDb(): { [userId: string]: StudentLearningProfile } {
   try {
-    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(MEMORY_DB_PATH)) {
-      const raw = fs.readFileSync(MEMORY_DB_PATH, 'utf-8');
+    const dbPath = getMemoryDbPath();
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(dbPath)) {
+      const raw = fs.readFileSync(dbPath, 'utf-8');
       return JSON.parse(raw);
     }
   } catch (e) {
@@ -69,7 +73,7 @@ function loadMemoryDb(): { [userId: string]: StudentLearningProfile } {
 
 function saveMemoryDb(db: { [userId: string]: StudentLearningProfile }) {
   try {
-    fs.writeFileSync(MEMORY_DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
+    fs.writeFileSync(getMemoryDbPath(), JSON.stringify(db, null, 2), 'utf-8');
   } catch (e) {
     console.error('Failed to save student memory DB:', e);
   }

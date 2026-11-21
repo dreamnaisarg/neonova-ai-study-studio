@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from './index.ts';
 import { users } from './schema.ts';
+import { isComplimentaryProEmail } from '../lib/billing.ts';
 
 export interface UserProfileInput {
   username?: string;
@@ -18,6 +19,7 @@ export async function getOrCreateUser(
 ) {
   try {
     const safeEmail = email || `${uid}@neonovastudy.local`;
+    const resolvedPlanTier = isComplimentaryProEmail(safeEmail) ? 'pro' : extra?.planTier;
     const now = new Date();
     const result = await db
       .insert(users)
@@ -28,7 +30,7 @@ export async function getOrCreateUser(
         studentName: extra?.studentName || 'Student',
         studentAvatar: extra?.studentAvatar || '🚀',
         grade: extra?.grade || 'Grade 10',
-        planTier: extra?.planTier || 'starter',
+        planTier: resolvedPlanTier || 'starter',
         isEmailVerified: extra?.isEmailVerified ?? false,
         lastLoginAt: now,
       })
@@ -40,7 +42,7 @@ export async function getOrCreateUser(
           ...(extra?.studentName ? { studentName: extra.studentName } : {}),
           ...(extra?.studentAvatar ? { studentAvatar: extra.studentAvatar } : {}),
           ...(extra?.grade ? { grade: extra.grade } : {}),
-          ...(extra?.planTier ? { planTier: extra.planTier } : {}),
+          ...(resolvedPlanTier ? { planTier: resolvedPlanTier } : {}),
           ...(typeof extra?.isEmailVerified === 'boolean'
             ? { isEmailVerified: extra.isEmailVerified }
             : {}),

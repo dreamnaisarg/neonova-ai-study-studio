@@ -25,17 +25,14 @@ interface SessionHistory {
 
 const sessionStore = new Map<string, SessionHistory>();
 
-// Clean up stale sessions older than 24 hours
-const cleanupTimer = setInterval(() => {
-  const now = Date.now();
+// Lazily clean up stale sessions older than 24 hours during request handling
+// (Avoids top-level setInterval which is disallowed in Cloudflare Workers global scope)
+function cleanupStaleSessions(now: number = Date.now()): void {
   for (const [key, val] of sessionStore.entries()) {
     if (now - val.lastUpdated > 24 * 60 * 60 * 1000) {
       sessionStore.delete(key);
     }
   }
-}, 60 * 60 * 1000);
-if (typeof cleanupTimer?.unref === 'function') {
-  cleanupTimer.unref();
 }
 
 export function normalizeQuestionSignature(text: string): string {
@@ -836,14 +833,16 @@ export async function generateStageQuestionsAuthoritative(params: {
     aiInstance
   } = params;
 
-  // Track session signatures
+  // Lazily prune stale sessions & track session signatures
+  const now = Date.now();
+  cleanupStaleSessions(now);
   const sessionKey = `${userId}__${subject.toLowerCase()}__${topic.toLowerCase()}__${stage}`;
   let history = sessionStore.get(sessionKey);
   if (!history) {
-    history = { lastUpdated: Date.now(), recentQuestionSignatures: new Set<string>() };
+    history = { lastUpdated: now, recentQuestionSignatures: new Set<string>() };
     sessionStore.set(sessionKey, history);
   }
-  history.lastUpdated = Date.now();
+  history.lastUpdated = now;
 
   const allExcludes = Array.from(new Set([...excludeSignatures, ...Array.from(history.recentQuestionSignatures)]));
 

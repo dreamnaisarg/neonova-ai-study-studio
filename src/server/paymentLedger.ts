@@ -55,13 +55,23 @@ export interface AdminLogEntry {
   details: string;
 }
 
-let LEDGER_FILE = 'payment_ledger.json';
-let ADMIN_LOG_FILE = 'payment_admin_logs.json';
-try {
-  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '.';
-  LEDGER_FILE = path.join(cwd, 'payment_ledger.json');
-  ADMIN_LOG_FILE = path.join(cwd, 'payment_admin_logs.json');
-} catch {}
+function getLedgerFile(): string {
+  try {
+    const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+    return path.join(cwd, 'payment_ledger.json');
+  } catch {
+    return 'payment_ledger.json';
+  }
+}
+
+function getAdminLogFile(): string {
+  try {
+    const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+    return path.join(cwd, 'payment_admin_logs.json');
+  } catch {
+    return 'payment_admin_logs.json';
+  }
+}
 
 // Normalize legacy statuses e.g. 'successful' -> 'VERIFIED', 'pending' -> 'PENDING'
 export function normalizeStatus(rawStatus: string): PaymentStatus {
@@ -77,8 +87,9 @@ export function normalizeStatus(rawStatus: string): PaymentStatus {
 
 export function loadLedger(): AuthoritativeTransaction[] {
   try {
-    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(LEDGER_FILE)) {
-      const data = fs.readFileSync(LEDGER_FILE, 'utf-8');
+    const ledgerFile = getLedgerFile();
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(ledgerFile)) {
+      const data = fs.readFileSync(ledgerFile, 'utf-8');
       const parsed: any[] = JSON.parse(data);
       if (Array.isArray(parsed)) {
         return parsed.map(item => ({
@@ -129,7 +140,7 @@ export function loadLedger(): AuthoritativeTransaction[] {
 
 export function saveLedger(transactions: AuthoritativeTransaction[]): void {
   try {
-    fs.writeFileSync(LEDGER_FILE, JSON.stringify(transactions, null, 2), 'utf-8');
+    fs.writeFileSync(getLedgerFile(), JSON.stringify(transactions, null, 2), 'utf-8');
   } catch (e) {
     console.error('Failed to write ledger file:', e);
   }
@@ -137,9 +148,10 @@ export function saveLedger(transactions: AuthoritativeTransaction[]): void {
 
 export function logAdminAction(admin: string, action: string, targetId?: string, details: string = '') {
   try {
+    const adminLogFile = getAdminLogFile();
     let logs: AdminLogEntry[] = [];
-    if (fs.existsSync(ADMIN_LOG_FILE)) {
-      logs = JSON.parse(fs.readFileSync(ADMIN_LOG_FILE, 'utf-8'));
+    if (fs.existsSync(adminLogFile)) {
+      logs = JSON.parse(fs.readFileSync(adminLogFile, 'utf-8'));
     }
     logs.push({
       timestamp: new Date().toISOString(),
@@ -148,7 +160,7 @@ export function logAdminAction(admin: string, action: string, targetId?: string,
       targetTransactionId: targetId,
       details
     });
-    fs.writeFileSync(ADMIN_LOG_FILE, JSON.stringify(logs, null, 2), 'utf-8');
+    fs.writeFileSync(adminLogFile, JSON.stringify(logs, null, 2), 'utf-8');
   } catch (e) {
     console.error('Failed to write admin log:', e);
   }

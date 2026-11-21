@@ -176,41 +176,87 @@ export interface VerifiedSubscriptionState {
 }
 
 const STORAGE_KEY_SUBSCRIPTION = 'NEONOVA_SUBSCRIPTION_VERIFIED_STATE';
+const COMPLIMENTARY_PRO_PROVIDER = 'NeoNova Complimentary Pro Entitlement';
+
+export const COMPLIMENTARY_PRO_EMAILS = new Set<string>([
+  'dreamfind4424@gmail.com',
+]);
+
+export const COMPLIMENTARY_PRO_EXPIRY = '2099-12-31T23:59:59.000Z';
+
+export function isComplimentaryProEmail(email?: string | null): boolean {
+  if (!email || typeof email !== 'string') return false;
+  return COMPLIMENTARY_PRO_EMAILS.has(email.trim().toLowerCase());
+}
+
+export function createComplimentaryProState(studentName?: string): VerifiedSubscriptionState {
+  const nowIso = new Date().toISOString();
+  return {
+    tier: 'pro',
+    sku: SKU_PRO,
+    orderId: 'COMPLIMENTARY-PRO-ENTITLEMENT',
+    purchaseToken: 'COMPLIMENTARY-PRO',
+    purchaseTime: nowIso,
+    expiryTime: COMPLIMENTARY_PRO_EXPIRY,
+    isAutoRenewing: false,
+    status: 'active',
+    lastVerifiedAt: nowIso,
+    billingCycle: 'yearly',
+    amountPaid: 0,
+    studentName,
+    provider: COMPLIMENTARY_PRO_PROVIDER
+  };
+}
 
 export function getStoredEntitlement(): VerifiedSubscriptionState {
   if (typeof window === 'undefined') {
     return { tier: 'starter', status: 'none' };
   }
   try {
+    let authUser: any = null;
+    try {
+      const userRaw = localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile');
+      if (userRaw) {
+        authUser = JSON.parse(userRaw);
+      }
+    } catch {}
+
+    // Complimentary Pro is strictly limited to the allowlisted email
+    if (authUser?.email && isComplimentaryProEmail(authUser.email)) {
+      const compState = createComplimentaryProState(authUser.studentName || authUser.username);
+      localStorage.setItem(STORAGE_KEY_SUBSCRIPTION, JSON.stringify(compState));
+      return compState;
+    }
+
     const raw = localStorage.getItem(STORAGE_KEY_SUBSCRIPTION);
     let parsed: VerifiedSubscriptionState | null = raw ? JSON.parse(raw) : null;
+
+    // Never allow a complimentary Pro record to carry over to any other user or guest
+    if (parsed?.provider === COMPLIMENTARY_PRO_PROVIDER) {
+      localStorage.removeItem(STORAGE_KEY_SUBSCRIPTION);
+      parsed = null;
+    }
     
-    // Also check authenticated user profile for plan tier & expiry
+    // Also check authenticated user profile for paid plan tier & expiry
     if (!parsed || parsed.tier === 'starter') {
-      try {
-        const userRaw = localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile');
-        if (userRaw) {
-          const user = JSON.parse(userRaw);
-          if (user && (user.planTier === 'plus' || user.planTier === 'pro')) {
-            const now = Date.now();
-            const cycle: 'monthly' | 'yearly' = user.billingCycle === 'yearly' ? 'yearly' : 'monthly';
-            const exp = user.subscriptionExpires ? new Date(user.subscriptionExpires).getTime() : (now + 30 * 24 * 60 * 60 * 1000);
-            if (now < exp) {
-              parsed = {
-                tier: user.planTier,
-                sku: user.planTier === 'plus' ? SKU_PLUS : SKU_PRO,
-                status: 'active',
-                billingCycle: cycle,
-                expiryTime: user.subscriptionExpires || new Date(exp).toISOString(),
-                purchaseTime: user.createdAt || new Date(now).toISOString(),
-                studentName: user.studentName || user.username,
-                provider: 'NeoNova Student Account Entitlement'
-              };
-              localStorage.setItem(STORAGE_KEY_SUBSCRIPTION, JSON.stringify(parsed));
-            }
-          }
+      if (authUser && (authUser.planTier === 'plus' || authUser.planTier === 'pro') && authUser.subscriptionStatus === 'active') {
+        const now = Date.now();
+        const cycle: 'monthly' | 'yearly' = authUser.billingCycle === 'yearly' ? 'yearly' : 'monthly';
+        const exp = authUser.subscriptionExpires ? new Date(authUser.subscriptionExpires).getTime() : (now + 30 * 24 * 60 * 60 * 1000);
+        if (!isNaN(exp) && now < exp) {
+          parsed = {
+            tier: authUser.planTier,
+            sku: authUser.planTier === 'plus' ? SKU_PLUS : SKU_PRO,
+            status: 'active',
+            billingCycle: cycle,
+            expiryTime: authUser.subscriptionExpires || new Date(exp).toISOString(),
+            purchaseTime: authUser.createdAt || new Date(now).toISOString(),
+            studentName: authUser.studentName || authUser.username,
+            provider: 'NeoNova Student Account Entitlement'
+          };
+          localStorage.setItem(STORAGE_KEY_SUBSCRIPTION, JSON.stringify(parsed));
         }
-      } catch {}
+      }
     }
 
     if (!parsed) return { tier: 'starter', status: 'none' };
@@ -246,6 +292,27 @@ export function saveActiveSubscriptionPlan(
   billingCycle: 'monthly' | 'yearly' = 'monthly',
   studentName?: string
 ): VerifiedSubscriptionState {
+  // Check if current logged-in user holds complimentary Pro
+  try {
+    if (typeof window !== 'undefined') {
+      const userRaw = localStorage.getItem('neonova_auth_user') || localStorage.getItem('neonova_installed_profile');
+      if (userRaw) {
+        const user = JSON.parse(userRaw);
+        if (user?.email && isComplimentaryProEmail(user.email)) {
+          const compState = createComplimentaryProState(studentName || user.studentName || user.username);
+          saveVerifiedSubscription(compState);
+          user.planTier = 'pro';
+          user.billingCycle = 'yearly';
+          user.subscriptionExpires = COMPLIMENTARY_PRO_EXPIRY;
+          user.subscriptionStatus = 'active';
+          localStorage.setItem('neonova_auth_user', JSON.stringify(user));
+          localStorage.setItem('neonova_installed_profile', JSON.stringify(user));
+          return compState;
+        }
+      }
+    }
+  } catch {}
+
   const now = Date.now();
   const durationDays = billingCycle === 'yearly' ? 365 : 30;
   const expiryTime = new Date(now + durationDays * 24 * 60 * 60 * 1000).toISOString();

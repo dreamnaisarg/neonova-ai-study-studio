@@ -38,7 +38,6 @@ import {
 import { fetchCompleteBookText } from './bookContentService';
 import { processEducationalProblem } from './solverPipeline';
 import { analyzeEducationalImage } from './ocrVisionEngine';
-import { runSymbolicMathPipeline } from './symbolicMathEngine';
 import { runScienceReasoningPipeline } from './scienceReasoningEngine';
 import { runCSReasoningPipeline } from './computerScienceEngine';
 import { runLanguageReasoningPipeline } from './languageReasoningEngine';
@@ -351,30 +350,8 @@ export function sanitizeEducationalOutput(text: string): string {
   return cleaned;
 }
 
-// Initialize Gemini client (picks up process.env.GEMINI_API_KEY or env.GEMINI_API_KEY)
+// Lazy Gemini client reference (picks up process.env.GEMINI_API_KEY or env.GEMINI_API_KEY at request time)
 let aiClient: GoogleGenAI | null = null;
-try {
-  if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
-    aiClient = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  } else {
-    aiClient = new GoogleGenAI({
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-} catch (e) {
-  console.warn('GoogleGenAI failed to initialize directly:', e);
-}
 
 function getAi(env?: any) {
   const apiKey = env?.GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : undefined);
@@ -535,6 +512,7 @@ export async function handleApiRoute(url: string, body: any, env?: any): Promise
       // 2. Deterministic Mathematics Fast-Path (instant 2ms calculation)
       if (!image && message) {
         try {
+          const { runSymbolicMathPipeline } = await import('./symbolicMathEngine');
           const mathRes = runSymbolicMathPipeline(message);
           if (mathRes.isMath && mathRes.finalAnswer) {
             const given = mathRes.givenInfo && mathRes.givenInfo.length > 0

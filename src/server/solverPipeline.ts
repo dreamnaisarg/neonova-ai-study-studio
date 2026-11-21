@@ -1,5 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
-import { runSymbolicMathPipeline, SymbolicMathResult, verifyMathEquation, evaluateMathExpression } from './symbolicMathEngine';
+import type { SymbolicMathResult } from './symbolicMathEngine';
+
+async function getSymbolicMathEngine() {
+  return import('./symbolicMathEngine');
+}
 import { runScienceReasoningPipeline, ScienceReasoningResult } from './scienceReasoningEngine';
 import { runCSReasoningPipeline, CSReasoningResult } from './computerScienceEngine';
 import { runLanguageReasoningPipeline, LanguageReasoningResult } from './languageReasoningEngine';
@@ -221,6 +225,7 @@ export async function processEducationalProblem(
   let socRes: SocialScienceResult | undefined;
 
   // A. Mathematics Engine
+  const { runSymbolicMathPipeline, verifyMathEquation } = await getSymbolicMathEngine();
   mathRes = runSymbolicMathPipeline(rawQuestion);
   if (mathRes.isMath && mathRes.finalAnswer) {
     confidenceState = mathRes.verification?.verificationStatus === 'verified' ? 'Verified' : 'Needs Review';

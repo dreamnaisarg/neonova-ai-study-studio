@@ -1,7 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import defaultUsersData from '../../users_db.json' with { type: 'json' };
+import defaultUsersData from '../../users_db.json';
+import { isComplimentaryProEmail, COMPLIMENTARY_PRO_EXPIRY } from '../lib/billing';
+
+function enforceComplimentaryEntitlement(user: UserAccount): void {
+  if (isComplimentaryProEmail(user.email)) {
+    user.planTier = 'pro';
+    user.billingCycle = 'yearly';
+    user.subscriptionExpires = COMPLIMENTARY_PRO_EXPIRY;
+    user.subscriptionStatus = 'active';
+  }
+}
 
 export interface UserAccount {
   id: string;
@@ -45,9 +55,14 @@ export interface SanitizedUser {
   lastLoginAt?: string;
 }
 
-const getCwd = () => (typeof process !== 'undefined' && process.cwd ? process.cwd() : '.');
-const USERS_FILE = path.join(getCwd(), 'users_db.json');
-const USERS_FILE_ALT = path.join(getCwd(), 'users-db.json');
+const getUsersFile = () => {
+  const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+  return path.join(cwd, 'users_db.json');
+};
+const getUsersFileAlt = () => {
+  const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '.';
+  return path.join(cwd, 'users-db.json');
+};
 
 // Memory cache of users synced to disk
 let usersCache: UserAccount[] | null = null;
@@ -82,8 +97,9 @@ function loadUsers(): UserAccount[] {
 
   // 1. Try reading primary users_db.json from disk if fs is available (Node.js runtime)
   try {
-    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(USERS_FILE)) {
-      const data = fs.readFileSync(USERS_FILE, 'utf-8');
+    const usersFile = getUsersFile();
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(usersFile)) {
+      const data = fs.readFileSync(usersFile, 'utf-8');
       const list: UserAccount[] = JSON.parse(data);
       if (Array.isArray(list)) {
         list.forEach(u => { if (u && u.id) mergedMap.set(u.id, u); });
@@ -95,8 +111,9 @@ function loadUsers(): UserAccount[] {
 
   // 2. Try reading alternate users-db.json and merge without losing existing records
   try {
-    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(USERS_FILE_ALT)) {
-      const data = fs.readFileSync(USERS_FILE_ALT, 'utf-8');
+    const usersFileAlt = getUsersFileAlt();
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(usersFileAlt)) {
+      const data = fs.readFileSync(usersFileAlt, 'utf-8');
       const list: UserAccount[] = JSON.parse(data);
       if (Array.isArray(list)) {
         list.forEach(u => {
@@ -110,7 +127,10 @@ function loadUsers(): UserAccount[] {
     // Disk reading skipped safely
   }
 
-  usersCache = Array.from(mergedMap.values());
+  usersCache = Array.from(mergedMap.values()).map((u) => {
+    enforceComplimentaryEntitlement(u);
+    return u;
+  });
   return usersCache;
 }
 
@@ -119,9 +139,9 @@ function saveUsers(): void {
     if (typeof fs !== 'undefined' && fs.writeFileSync) {
       if (!usersCache) usersCache = [];
       const jsonStr = JSON.stringify(usersCache, null, 2);
-      fs.writeFileSync(USERS_FILE, jsonStr, 'utf-8');
+      fs.writeFileSync(getUsersFile(), jsonStr, 'utf-8');
       try {
-        fs.writeFileSync(USERS_FILE_ALT, jsonStr, 'utf-8');
+        fs.writeFileSync(getUsersFileAlt(), jsonStr, 'utf-8');
       } catch {}
     }
   } catch (err) {
@@ -160,6 +180,25 @@ export function verifyPassword(password: string, storedHash: string, salt: strin
  * Strips sensitive password hashes and internal keys from user object
  */
 export function sanitizeUser(user: UserAccount): SanitizedUser {
+  if (isComplimentaryProEmail(user.email)) {
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      isEmailVerified: user.isEmailVerified,
+      grade: user.grade,
+      studentName: user.studentName,
+      studentAvatar: user.studentAvatar,
+      planTier: 'pro',
+      billingCycle: 'yearly',
+      subscriptionExpires: COMPLIMENTARY_PRO_EXPIRY,
+      subscriptionStatus: 'active',
+      studyXP: user.studyXP || 100,
+      createdAt: user.createdAt,
+      lastLoginAt: user.lastLoginAt
+    };
+  }
+
   let currentTier = user.planTier || 'starter';
   let status = user.subscriptionStatus || (currentTier !== 'starter' ? 'active' : 'none');
   if (user.subscriptionExpires) {
@@ -256,17 +295,12 @@ export function registerUser(input: {
   const token = `neo_sess_${crypto.randomBytes(32).toString('hex')}`;
   const sessionExpires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Plan Tier duration (monthly = 30 days, yearly = 365 days)
-  const chosenTier: 'starter' | 'plus' | 'pro' = (input.planTier === 'plus' || input.planTier === 'pro') ? input.planTier : 'starter';
-  const cycle: 'monthly' | 'yearly' = input.billingCycle === 'yearly' ? 'yearly' : 'monthly';
-  let subscriptionExpires: string | undefined = undefined;
-  let subscriptionStatus: 'active' | 'none' = 'none';
-
-  if (chosenTier !== 'starter') {
-    const days = cycle === 'yearly' ? 365 : (input.durationMonths ? input.durationMonths * 30 : 30);
-    subscriptionExpires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-    subscriptionStatus = 'active';
-  }
+  // Free Pro only for complimentary allowlisted email; all other new accounts start strictly on starter
+  const isComplimentary = isComplimentaryProEmail(rawEmail);
+  const chosenTier: 'starter' | 'plus' | 'pro' = isComplimentary ? 'pro' : 'starter';
+  const cycle: 'monthly' | 'yearly' = isComplimentary ? 'yearly' : (input.billingCycle === 'yearly' ? 'yearly' : 'monthly');
+  const subscriptionExpires: string | undefined = isComplimentary ? COMPLIMENTARY_PRO_EXPIRY : undefined;
+  const subscriptionStatus: 'active' | 'none' = isComplimentary ? 'active' : 'none';
 
   const newUser: UserAccount = {
     id: `usr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -415,6 +449,7 @@ export function loginUser(input: {
 
   // Valid credentials: auto-verify user so student is never locked out of their created profile
   user.isEmailVerified = true;
+  enforceComplimentaryEntitlement(user);
 
   // Generate 1-year persistent session token
   const token = `neo_sess_${crypto.randomBytes(32).toString('hex')}`;
@@ -592,18 +627,22 @@ export function updateUserSubscription(input: {
     return { success: false, error: 'User account not found.' };
   }
 
-  user.planTier = input.planTier;
-  user.billingCycle = input.billingCycle || 'monthly';
-  
-  if (input.planTier === 'starter') {
-    user.subscriptionStatus = 'none';
-    user.subscriptionExpires = undefined;
+  if (isComplimentaryProEmail(user.email)) {
+    enforceComplimentaryEntitlement(user);
   } else {
-    const cycle = input.billingCycle || 'monthly';
-    const durationDays = cycle === 'yearly' ? 365 : (input.durationMonths ? input.durationMonths * 30 : 30);
-    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
-    user.subscriptionExpires = expiresAt;
-    user.subscriptionStatus = 'active';
+    user.planTier = input.planTier;
+    user.billingCycle = input.billingCycle || 'monthly';
+    
+    if (input.planTier === 'starter') {
+      user.subscriptionStatus = 'none';
+      user.subscriptionExpires = undefined;
+    } else {
+      const cycle = input.billingCycle || 'monthly';
+      const durationDays = cycle === 'yearly' ? 365 : (input.durationMonths ? input.durationMonths * 30 : 30);
+      const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+      user.subscriptionExpires = expiresAt;
+      user.subscriptionStatus = 'active';
+    }
   }
 
   saveUsers();
@@ -632,17 +671,13 @@ export function syncClientUser(clientUser: Partial<SanitizedUser>, token?: strin
     user.sessionToken = sessionToken;
     user.sessionExpires = sessionExpires;
     user.lastLoginAt = new Date().toISOString();
-    if (clientUser.planTier && clientUser.planTier !== 'starter') {
-      user.planTier = clientUser.planTier;
-      user.billingCycle = clientUser.billingCycle || user.billingCycle || 'monthly';
-      user.subscriptionExpires = clientUser.subscriptionExpires || user.subscriptionExpires || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-      user.subscriptionStatus = 'active';
-    }
+    enforceComplimentaryEntitlement(user);
     saveUsers();
     return { success: true, user: sanitizeUser(user), token: sessionToken };
   }
 
-  // Restore user from client backup if lost during server reset
+  // Restore user from client backup if lost during server reset (never grant unverified Pro)
+  const isComplimentary = isComplimentaryProEmail(cleanEmail);
   const { hash, salt } = hashPassword('persisted-session-safe');
   const restoredUser: UserAccount = {
     id: clientUser.id || `usr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -654,10 +689,10 @@ export function syncClientUser(clientUser: Partial<SanitizedUser>, token?: strin
     grade: clientUser.grade || 'Grade 8',
     studentName: clientUser.studentName || cleanUsername || 'Cadet',
     studentAvatar: clientUser.studentAvatar || '🎓',
-    planTier: clientUser.planTier || 'starter',
-    billingCycle: clientUser.billingCycle || 'monthly',
-    subscriptionExpires: clientUser.subscriptionExpires,
-    subscriptionStatus: clientUser.subscriptionStatus || (clientUser.planTier && clientUser.planTier !== 'starter' ? 'active' : 'none'),
+    planTier: isComplimentary ? 'pro' : 'starter',
+    billingCycle: isComplimentary ? 'yearly' : 'monthly',
+    subscriptionExpires: isComplimentary ? COMPLIMENTARY_PRO_EXPIRY : undefined,
+    subscriptionStatus: isComplimentary ? 'active' : 'none',
     studyXP: clientUser.studyXP || 100,
     sessionToken,
     sessionExpires,

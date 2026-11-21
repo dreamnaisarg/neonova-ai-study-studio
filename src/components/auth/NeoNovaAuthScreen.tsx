@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2, X, ArrowLeft, Sparkles, ShieldCheck, Lock } from 'lucide-react';
 import NeoNovaLogo from '../common/NeoNovaLogo';
-import { saveActiveSubscriptionPlan } from '../../lib/billing';
+import {
+  saveActiveSubscriptionPlan,
+  clearSubscription,
+  isComplimentaryProEmail,
+  createComplimentaryProState,
+  saveVerifiedSubscription
+} from '../../lib/billing';
 import { auth, googleProvider, syncUserProfileToFirestore } from '../../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 
@@ -99,11 +105,12 @@ export default function NeoNovaAuthScreen({
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       const gUser = cred.user;
+      const defaultTier = isComplimentaryProEmail(gUser.email) ? 'pro' : 'starter';
 
       // Sync user profile to Firestore root document
       await syncUserProfileToFirestore(gUser, {
         studentName: gUser.displayName || 'Student',
-        planTier: 'starter',
+        planTier: defaultTier,
         grade: 'Grade 8'
       });
 
@@ -120,7 +127,7 @@ export default function NeoNovaAuthScreen({
             studentName: gUser.displayName || 'Student',
             studentAvatar: gUser.photoURL || '🎓',
             grade: 'Grade 8',
-            planTier: 'starter',
+            planTier: defaultTier,
           }),
         });
       } catch {
@@ -140,7 +147,7 @@ export default function NeoNovaAuthScreen({
             studentAvatar: gUser.photoURL || '🎓',
             isEmailVerified: gUser.emailVerified,
             grade: 'Grade 8',
-            planTier: 'starter'
+            planTier: defaultTier
           }
         })
       });
@@ -154,7 +161,8 @@ export default function NeoNovaAuthScreen({
         grade: 'Grade 8',
         studentName: gUser.displayName || 'Student',
         studentAvatar: gUser.photoURL || '🎓',
-        planTier: 'starter',
+        planTier: defaultTier,
+        subscriptionStatus: defaultTier === 'pro' ? 'active' : 'none',
         studyXP: 100,
         createdAt: new Date().toISOString()
       };
@@ -162,6 +170,19 @@ export default function NeoNovaAuthScreen({
       const token = syncData?.token || `google_token_${Date.now()}`;
       localStorage.setItem('neonova_auth_token', token);
       localStorage.setItem('neonova_auth_user', JSON.stringify(mappedUser));
+      localStorage.setItem('neonova_installed_profile', JSON.stringify(mappedUser));
+
+      if (isComplimentaryProEmail(mappedUser.email)) {
+        saveVerifiedSubscription(createComplimentaryProState(mappedUser.studentName || mappedUser.username));
+      } else if (mappedUser.planTier === 'plus' || mappedUser.planTier === 'pro') {
+        saveActiveSubscriptionPlan(
+          mappedUser.planTier,
+          mappedUser.billingCycle || 'monthly',
+          mappedUser.studentName || mappedUser.username
+        );
+      } else {
+        clearSubscription();
+      }
 
       onAuthSuccess(mappedUser, token);
     } catch (err: any) {
@@ -229,12 +250,16 @@ export default function NeoNovaAuthScreen({
       localStorage.setItem('neonova_auth_user', JSON.stringify(data.user));
       localStorage.setItem('neonova_installed_profile', JSON.stringify(data.user));
 
-      if (data.user.planTier === 'plus' || data.user.planTier === 'pro') {
+      if (isComplimentaryProEmail(data.user.email)) {
+        saveVerifiedSubscription(createComplimentaryProState(data.user.studentName || data.user.username));
+      } else if (data.user.planTier === 'plus' || data.user.planTier === 'pro') {
         saveActiveSubscriptionPlan(
           data.user.planTier,
           data.user.billingCycle || 'monthly',
           data.user.studentName || data.user.username
         );
+      } else {
+        clearSubscription();
       }
 
       onAuthSuccess(data.user, data.token);
@@ -312,6 +337,12 @@ export default function NeoNovaAuthScreen({
         localStorage.setItem('neonova_auth_token', data.token);
         localStorage.setItem('neonova_auth_user', JSON.stringify(data.user));
         localStorage.setItem('neonova_installed_profile', JSON.stringify(data.user));
+
+        if (isComplimentaryProEmail(data.user.email)) {
+          saveVerifiedSubscription(createComplimentaryProState(data.user.studentName || data.user.username));
+        } else {
+          clearSubscription();
+        }
 
         onAuthSuccess(data.user, data.token);
         return;

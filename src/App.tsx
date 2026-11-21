@@ -66,7 +66,11 @@ import {
   getCurrentSubscriptionState, 
   VerifiedSubscriptionState, 
   saveLocalSubscription,
-  saveActiveSubscriptionPlan
+  saveActiveSubscriptionPlan,
+  clearSubscription,
+  isComplimentaryProEmail,
+  createComplimentaryProState,
+  COMPLIMENTARY_PRO_EXPIRY
 } from './lib/billing';
 import { 
   addCompletedAssignment, 
@@ -112,12 +116,19 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && (parsed.id || parsed.username)) {
-          const sub = getCurrentSubscriptionState();
-          if (sub.status === 'active' && (sub.tier === 'plus' || sub.tier === 'pro')) {
-            parsed.planTier = sub.tier;
+          if (isComplimentaryProEmail(parsed.email)) {
+            parsed.planTier = 'pro';
+            parsed.billingCycle = 'yearly';
+            parsed.subscriptionExpires = COMPLIMENTARY_PRO_EXPIRY;
             parsed.subscriptionStatus = 'active';
-            if (sub.expiryTime) parsed.subscriptionExpires = sub.expiryTime;
-            if (sub.billingCycle) parsed.billingCycle = sub.billingCycle;
+          } else {
+            const sub = getCurrentSubscriptionState();
+            if (sub.status === 'active' && (sub.tier === 'plus' || sub.tier === 'pro')) {
+              parsed.planTier = sub.tier;
+              parsed.subscriptionStatus = 'active';
+              if (sub.expiryTime) parsed.subscriptionExpires = sub.expiryTime;
+              if (sub.billingCycle) parsed.billingCycle = sub.billingCycle;
+            }
           }
           return parsed;
         }
@@ -375,14 +386,32 @@ export default function App() {
         if (res.ok) {
           const data = await res.json();
           if (data.user) {
-            // Merge with local state to preserve active subscription tier
-            const merged: AuthenticatedUser = {
-              ...data.user,
-              planTier: (localUser?.planTier && localUser.planTier !== 'starter') ? localUser.planTier : data.user.planTier,
-              billingCycle: localUser?.billingCycle || data.user.billingCycle || 'monthly',
-              subscriptionExpires: localUser?.subscriptionExpires || data.user.subscriptionExpires,
-              subscriptionStatus: localUser?.subscriptionStatus || data.user.subscriptionStatus
-            };
+            const isComplimentary = isComplimentaryProEmail(data.user.email);
+            const merged: AuthenticatedUser = isComplimentary
+              ? {
+                  ...data.user,
+                  planTier: 'pro',
+                  billingCycle: 'yearly',
+                  subscriptionExpires: COMPLIMENTARY_PRO_EXPIRY,
+                  subscriptionStatus: 'active'
+                }
+              : {
+                  ...data.user,
+                  billingCycle: data.user.billingCycle || localUser?.billingCycle || 'monthly'
+                };
+
+            if (isComplimentary) {
+              saveLocalSubscription(createComplimentaryProState(merged.studentName || merged.username));
+            } else if (merged.planTier === 'plus' || merged.planTier === 'pro') {
+              if (merged.subscriptionStatus === 'active') {
+                saveActiveSubscriptionPlan(merged.planTier, merged.billingCycle || 'monthly', merged.studentName || merged.username);
+              } else {
+                clearSubscription();
+              }
+            } else {
+              clearSubscription();
+            }
+
             setCurrentUser(merged);
             localStorage.setItem('neonova_auth_user', JSON.stringify(merged));
             localStorage.setItem('neonova_installed_profile', JSON.stringify(merged));
@@ -412,6 +441,7 @@ export default function App() {
                   setCurrentUser(syncData.user);
                   localStorage.setItem('neonova_auth_user', JSON.stringify(syncData.user));
                   localStorage.setItem('neonova_installed_profile', JSON.stringify(syncData.user));
+                  setSubscriptionState(getCurrentSubscriptionState());
                 }
               }
             } catch {}
@@ -448,28 +478,45 @@ export default function App() {
   };
 
   const handleAuthSuccess = (user: AuthenticatedUser, token: string) => {
-    setCurrentUser(user);
+    const isComplimentary = isComplimentaryProEmail(user.email);
+    const normalizedUser: AuthenticatedUser = isComplimentary
+      ? {
+          ...user,
+          planTier: 'pro',
+          billingCycle: 'yearly',
+          subscriptionExpires: COMPLIMENTARY_PRO_EXPIRY,
+          subscriptionStatus: 'active'
+        }
+      : user;
+
+    setCurrentUser(normalizedUser);
     localStorage.setItem('neonova_auth_token', token);
-    localStorage.setItem('neonova_auth_user', JSON.stringify(user));
-    localStorage.setItem('neonova_installed_profile', JSON.stringify(user));
-    if (user.studentName) setStudentName(user.studentName);
-    if (user.studentAvatar) setStudentAvatar(user.studentAvatar);
-    if (user.grade) setCurrentGrade(user.grade);
+    localStorage.setItem('neonova_auth_user', JSON.stringify(normalizedUser));
+    localStorage.setItem('neonova_installed_profile', JSON.stringify(normalizedUser));
+    if (normalizedUser.studentName) setStudentName(normalizedUser.studentName);
+    if (normalizedUser.studentAvatar) setStudentAvatar(normalizedUser.studentAvatar);
+    if (normalizedUser.grade) setCurrentGrade(normalizedUser.grade);
     
-    if (user.planTier === 'plus' || user.planTier === 'pro') {
-      saveActiveSubscriptionPlan(user.planTier, user.billingCycle || 'monthly', user.studentName || user.username);
+    if (isComplimentary) {
+      saveLocalSubscription(createComplimentaryProState(normalizedUser.studentName || normalizedUser.username));
+    } else if (normalizedUser.planTier === 'plus' || normalizedUser.planTier === 'pro') {
+      saveActiveSubscriptionPlan(normalizedUser.planTier, normalizedUser.billingCycle || 'monthly', normalizedUser.studentName || normalizedUser.username);
+    } else {
+      clearSubscription();
     }
     setSubscriptionState(getCurrentSubscriptionState());
     setIsAuthModalOpen(false);
 
-    // If a plan checkout was requested before authentication, automatically continue checkout!
+    // If a plan checkout was requested before authentication, skip checkout if user already holds that tier
     if (pendingCheckout) {
       const target = pendingCheckout;
       setPendingCheckout(null);
       setAuthPromptMessage(undefined);
-      setCheckoutTargetTier(target.tier);
-      setCheckoutBillingCycle(target.billingCycle);
-      setIsPaymentCheckoutOpen(true);
+      if (!isComplimentary && normalizedUser.planTier !== target.tier && normalizedUser.planTier !== 'pro') {
+        setCheckoutTargetTier(target.tier);
+        setCheckoutBillingCycle(target.billingCycle);
+        setIsPaymentCheckoutOpen(true);
+      }
     }
   };
 
@@ -1559,7 +1606,7 @@ export default function App() {
         }}
       />
 
-      {/* PhonePe QR & Payment Checkout Modal (Web only — never rendered in Android APK) */}
+      {/* Razorpay Standard Payment Checkout Modal (Web only — never rendered in Android APK) */}
       <PaymentCheckoutModal
         isOpen={isPaymentCheckoutOpen && !isNativeAndroid}
         onClose={() => setIsPaymentCheckoutOpen(false)}
